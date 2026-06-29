@@ -1,0 +1,92 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MovieCard from '../components/MovieCard.astro';
+import { movies } from '../data/schema';
+
+// 获取今日推荐（暂时用第一个电影）
+const todayMovie = movies[0];
+---
+
+<Layout title="首页">
+  <main>
+    <header class="hero">
+      <h1>每日一电影</h1>
+      <p>发现经典好电影，每天推荐一部值得观看的影片</p>
+    </header>
+
+    <section class="today-recommendation">
+      <h2>今日推荐</h2>
+      {todayMovie ? (
+        <MovieCard movie={todayMovie} />
+      ) : (
+        <p class="no-movie">暂无推荐电影</p>
+      )}
+    </section>
+
+    <section class="movie-list">
+      <h2>电影库</h2>
+      <div class="movies-grid">
+        {movies.map((movie) => (
+          <MovieCard movie={movie} />
+        ))}
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px;
+    margin-bottom: 40px;
+  }
+
+  .hero h1 {
+    font-size: 3rem;
+    margin-bottom: 16px;
+  }
+
+  .hero p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+  }
+
+  .today-recommendation {
+    margin-bottom: 60px;
+  }
+
+  .today-recommendation h2 {
+    font-size: 1.8rem;
+    margin-bottom: 24px;
+    color: #333;
+  }
+
+  .no-movie {
+    text-align: center;
+    padding: 40px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    color: #666;
+  }
+
+  .movie-list h2 {
+    font-size: 1.8rem;
+    margin-bottom: 24px;
+    color: #333;
+  }
+
+  .movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+</style>

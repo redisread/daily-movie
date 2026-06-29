@@ -1,0 +1,81 @@
+---
+import type { Movie } from '../data/schema';
+
+interface Props {
+  movie: Movie;
+}
+
+const { movie } = Astro.props;
+---
+
+<article class="movie-card" style={`background: ${movie.coverBg}`}>
+  <div class="movie-info">
+    <h2 class="movie-title">{movie.title}</h2>
+    {movie.titleEn && <p class="movie-title-en">{movie.titleEn}</p>}
+    <p class="movie-director">导演: {movie.director}</p>
+    <p class="movie-meta">
+      <span class="movie-year">{movie.year}</span>
+      <span class="movie-duration">{movie.duration} 分钟</span>
+      <span class="movie-rating">⭐ {movie.rating}</span>
+    </p>
+    <p class="movie-category">{movie.category}</p>
+    <p class="movie-desc">{movie.desc}</p>
+  </div>
+</article>
+
+<style>
+  .movie-card {
+    border-radius: 12px;
+    padding: 24px;
+    color: white;
+    transition: transform 0.2s ease;
+  }
+
+  .movie-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .movie-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .movie-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  .movie-title-en {
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+
+  .movie-director {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  .movie-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 0.85rem;
+    opacity: 0.9;
+  }
+
+  .movie-category {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    width: fit-content;
+  }
+
+  .movie-desc {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-top: 8px;
+    opacity: 0.9;
+  }
+</style>
