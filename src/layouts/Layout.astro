@@ -45,6 +45,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     {image && <meta name="twitter:image" content={image} />}
 
     <title>{title} | 每日一电影</title>
+    <meta name="view-transition" content="same-origin" />
   </head>
   <body>
     <div class="page-wrapper">
@@ -121,6 +122,31 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
   a:hover {
     color: var(--accent-hover);
+  }
+
+  /* Focus visible for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Skip to content link */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: var(--bg-primary) !important;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    z-index: 9999;
+    transition: top 0.2s ease;
+  }
+
+  .skip-link:focus {
+    top: 8px;
   }
 
   /* Fade-in animation for page load */

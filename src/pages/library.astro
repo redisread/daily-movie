@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MovieCard from '../components/MovieCard.astro';
+import EmptyState from '../components/ui/EmptyState.astro';
 import { movies } from '../data/movies';
 
 // 提取所有类型并排序
@@ -63,10 +64,13 @@ filteredMovies = [...filteredMovies].sort((a, b) => {
         ))}
       </div>
     ) : (
-      <div class="empty-state">
-        <p>🎬 暂无匹配的电影</p>
-        <p>试试其他筛选条件</p>
-      </div>
+      <EmptyState
+        title="暂无匹配的电影"
+        description="试试其他筛选条件，或者看看今日推荐吧"
+        emoji="🎬"
+        ctaText="返回首页"
+        ctaHref="/"
+      />
     )}
   </main>
 </Layout>
@@ -160,19 +164,7 @@ filteredMovies = [...filteredMovies].sort((a, b) => {
     font-weight: 600;
   }
 
-  /* 空状态 */
-  .empty-state {
-    text-align: center;
-    padding: 80px 20px;
-    color: var(--text-secondary);
-  }
 
-  .empty-state p:first-child {
-    font-size: 2rem;
-    margin-bottom: 8px;
-  }
-
-  /* 电影网格 */
   .movies-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
