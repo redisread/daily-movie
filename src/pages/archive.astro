@@ -1,0 +1,71 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MovieCard from '../components/MovieCard.astro';
+import { movies } from '../data/movies';
+
+const sortedMovies = movies.sort((a, b) => b.publishedDate.localeCompare(a.publishedDate));
+---
+
+<Layout title="电影归档">
+  <main>
+    <header class="page-header">
+      <h1>电影归档</h1>
+      <p>共 {sortedMovies.length} 部电影</p>
+    </header>
+
+    <div class="archive-grid">
+      {sortedMovies.map(movie => (
+        <MovieCard movie={movie} />
+      ))}
+    </div>
+
+    <nav class="back-nav">
+      <a href="/">← 返回首页</a>
+    </nav>
+  </main>
+</Layout>
+
+<style>
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  .page-header p {
+    font-size: 1.1rem;
+    color: #666;
+  }
+
+  .archive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+  }
+
+  .back-nav {
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  .back-nav a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .back-nav a:hover {
+    text-decoration: underline;
+  }
+</style>

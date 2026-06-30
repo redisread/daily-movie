@@ -1,0 +1,207 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { movies } from '../data/movies';
+---
+
+<Layout title="搜索电影">
+  <main>
+    <header class="page-header">
+      <h1>搜索电影</h1>
+      <p>输入关键词搜索电影标题、导演、演员、类型</p>
+    </header>
+
+    <div class="search-box">
+      <input
+        type="search"
+        id="search-input"
+        placeholder="搜索电影标题、导演、演员..."
+        autofocus
+      />
+    </div>
+
+    <div id="search-results" class="search-results">
+      <p class="hint">请输入关键词开始搜索</p>
+    </div>
+
+    <nav class="back-nav">
+      <a href="/">← 返回首页</a> | <a href="/archive/">电影归档</a>
+    </nav>
+  </main>
+</Layout>
+
+<script define:vars={{ movies }}>
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+
+  function renderMovie(movie) {
+    return `
+      <a href="/movie/${movie.publishedDate}/" class="movie-result">
+        <div class="movie-info">
+          <h3>${movie.title}</h3>
+          ${movie.titleOriginal ? `<p class="original">${movie.titleOriginal}</p>` : ''}
+          <p class="meta">导演：${movie.director.name} | ${movie.year} | ⭐ ${movie.rating}</p>
+          <div class="genres">${movie.genre.map(g => `<span>${g}</span>`).join('')}</div>
+        </div>
+      </a>
+    `;
+  }
+
+  function search(query) {
+    if (!query.trim()) {
+      results.innerHTML = '<p class="hint">请输入关键词开始搜索</p>';
+      return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    const matches = movies.filter(m => {
+      return m.title.toLowerCase().includes(lowerQuery)
+        || (m.titleOriginal && m.titleOriginal.toLowerCase().includes(lowerQuery))
+        || m.director.name.toLowerCase().includes(lowerQuery)
+        || m.cast.some(c => c.name.toLowerCase().includes(lowerQuery))
+        || m.genre.some(g => g.toLowerCase().includes(lowerQuery));
+    });
+
+    if (matches.length === 0) {
+      results.innerHTML = '<p class="no-results">未找到匹配的电影</p>';
+    } else {
+      results.innerHTML = `
+        <p class="result-count">找到 ${matches.length} 部电影</p>
+        ${matches.map(renderMovie).join('')}
+      `;
+    }
+  }
+
+  input.addEventListener('input', e => search(e.target.value));
+</script>
+
+<style>
+  main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  .page-header p {
+    font-size: 1.1rem;
+    color: #666;
+  }
+
+  .search-box {
+    margin-bottom: 32px;
+  }
+
+  #search-input {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 1.1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  #search-input:focus {
+    border-color: #667eea;
+  }
+
+  .search-results {
+    min-height: 200px;
+  }
+
+  .hint {
+    text-align: center;
+    color: #999;
+    font-size: 1.1rem;
+    padding: 40px;
+  }
+
+  .no-results {
+    text-align: center;
+    color: #666;
+    font-size: 1.1rem;
+    padding: 40px;
+    background: #f8f9fa;
+    border-radius: 12px;
+  }
+
+  .result-count {
+    color: #666;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+  }
+
+  :global(.movie-result) {
+    display: block;
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  :global(.movie-result:hover) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  :global(.movie-info h3) {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 4px;
+  }
+
+  :global(.original) {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  :global(.meta) {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  :global(.genres) {
+    display: flex;
+    gap: 8px;
+  }
+
+  :global(.genres span) {
+    background: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #666;
+  }
+
+  .back-nav {
+    text-align: center;
+    margin-top: 40px;
+    color: #666;
+  }
+
+  .back-nav a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .back-nav a:hover {
+    text-decoration: underline;
+  }
+</style>
