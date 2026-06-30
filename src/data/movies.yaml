@@ -13,13 +13,13 @@
   genre: ["剧情"]
   rating: 9.7
   cover:
-    url: https://example.com/shawshank-cover.jpg
+    url: https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
     bg: 'linear-gradient(145deg, #1a2a3a, #2a4a6a, #1a2a3a)'
   posters:
-    - url: https://example.com/shawshank-poster-1.jpg
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Shawshank_redemption_ver1.jpg/800px-Shawshank_redemption_ver1.jpg
       caption: 安迪在雨中拥抱自由的经典画面
-    - url: https://example.com/shawshank-poster-2.jpg
-    - url: https://example.com/shawshank-poster-3.jpg
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Tim_Robbins_%26_Morgan_Freeman_%28Crooped%29.jpg/800px-Tim_Robbins_%26_Morgan_Freeman_%28Crooped%29.jpg
+    - url: https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
   cast:
     - name: 蒂姆·罗宾斯
       role: 安迪·杜佛兰
