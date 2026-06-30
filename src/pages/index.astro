@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import MovieCard from '../components/MovieCard.astro';
 import { movies } from '../data/movies';
 
 // 获取今日推荐（按 publishedDate 倒序第一本）
@@ -15,7 +14,7 @@ const todayQuotes = todayMovie?.quotes || [];
 const quotesJson = JSON.stringify(todayQuotes);
 ---
 
-<Layout title="今日电影">
+<Layout title="今日电影" activeTab="home">
   <main>
     <!-- 日期显示 -->
     <p class="date-display">📅 {dateStr}</p>
@@ -47,39 +46,35 @@ const quotesJson = JSON.stringify(todayQuotes);
               />
             ))}
           </div>
-
-          <!-- 电影信息 -->
-          <div class="quote-info">
-            <p class="quote-movie">《{todayMovie.title}》</p>
-            <div class="quote-meta">
-              <span>📅 {todayMovie.publishedDate}</span>
-              <span>⭐ {todayMovie.rating}</span>
-              <span>⏱ {todayMovie.duration}分钟</span>
-            </div>
-            <div class="quote-submeta">
-              <span>🎭 {todayMovie.genre.join(' / ')}</span>
-              <span>🎬 {todayMovie.director.name}</span>
-            </div>
-            <a href={`/movie/${todayMovie.publishedDate}/`} class="quote-cta">查看详情 →</a>
-          </div>
         </div>
       ) : (
         <p class="no-movie">暂无推荐电影</p>
       )}
     </section>
 
-    <!-- 电影库 -->
-    <section class="movie-library">
-      <div class="section-header">
-        <h2>电影库</h2>
-        <span class="counter">共 {movies.length} 部</span>
-      </div>
-      <div class="movies-grid">
-        {movies.map((movie, idx) => (
-          <MovieCard movie={movie} delay={idx * 0.1} />
-        ))}
-      </div>
-    </section>
+    <!-- 今日电影封面卡片 -->
+    {todayMovie && (
+      <section class="movie-card">
+        <div class="movie-cover" style={`background: ${todayMovie.cover.bg}`}>
+          <img src={todayMovie.cover.url} alt={todayMovie.title} loading="lazy" onerror="this.src='/fallback-poster.svg'" />
+        </div>
+        <div class="movie-info">
+          <h2>{todayMovie.title}</h2>
+          {todayMovie.titleOriginal && <p class="original">{todayMovie.titleOriginal}</p>}
+          <div class="meta">
+            <span>📅 {todayMovie.publishedDate}</span>
+            <span>⭐ {todayMovie.rating}</span>
+            <span>⏱ {todayMovie.duration}min</span>
+          </div>
+          <div class="meta">
+            <span>🎭 {todayMovie.genre.join(' / ')}</span>
+            <span>🎬 {todayMovie.director.name}</span>
+          </div>
+          <p class="synopsis-preview">{todayMovie.synopsis.slice(0, 100)}……</p>
+          <a href={`/movie/${todayMovie.publishedDate}/`} class="cta">查看详情 →</a>
+        </div>
+      </section>
+    )}
   </main>
 </Layout>
 
@@ -91,15 +86,14 @@ const quotesJson = JSON.stringify(todayQuotes);
     const dots = carousel.querySelectorAll('.dot');
     let currentIndex = 0;
     const total = slides.length;
-    let autoplayTimer: ReturnType<typeof setInterval> | null = null;
+    let autoplayTimer = null;
     let touchStartX = 0;
     let touchEndX = 0;
 
-    function goTo(index: number) {
+    function goTo(index) {
       if (index < 0) index = total - 1;
       if (index >= total) index = 0;
       currentIndex = index;
-
       slides.forEach((slide, i) => {
         slide.classList.toggle('active', i === currentIndex);
       });
@@ -108,9 +102,7 @@ const quotesJson = JSON.stringify(todayQuotes);
       });
     }
 
-    function next() {
-      goTo(currentIndex + 1);
-    }
+    function next() { goTo(currentIndex + 1); }
 
     function startAutoplay() {
       if (autoplayTimer) clearInterval(autoplayTimer);
@@ -122,15 +114,10 @@ const quotesJson = JSON.stringify(todayQuotes);
       startAutoplay();
     }
 
-    // 指示器点击
     dots.forEach((dot, idx) => {
-      dot.addEventListener('click', () => {
-        goTo(idx);
-        resetAutoplay();
-      });
+      dot.addEventListener('click', () => { goTo(idx); resetAutoplay(); });
     });
 
-    // 触摸滑动
     carousel.addEventListener('touchstart', (e) => {
       touchStartX = e.changedTouches[0].screenX;
     }, { passive: true });
@@ -145,14 +132,13 @@ const quotesJson = JSON.stringify(todayQuotes);
       }
     }, { passive: true });
 
-    // 启动自动轮播
     if (total > 1) startAutoplay();
   }
 </script>
 
 <style>
   main {
-    max-width: 1200px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 0 20px 60px;
   }
@@ -167,7 +153,7 @@ const quotesJson = JSON.stringify(todayQuotes);
 
   /* 今日推荐 - 金句轮播 */
   .today-recommendation {
-    margin-bottom: 60px;
+    margin-bottom: 40px;
   }
 
   .quote-carousel {
@@ -239,57 +225,82 @@ const quotesJson = JSON.stringify(todayQuotes);
     transform: scale(1.3);
   }
 
-  .dot:hover {
-    background: var(--text-secondary);
+  .dot:hover { background: var(--text-secondary); }
+  .dot.active:hover { background: var(--accent-hover); }
+
+  /* 电影封面卡片 */
+  .movie-card {
+    display: flex;
+    gap: 40px;
+    max-width: 800px;
+    margin: 40px auto 0;
+    padding: 40px;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
   }
 
-  .dot.active:hover {
-    background: var(--accent-hover);
+  .movie-cover {
+    flex-shrink: 0;
+    width: 300px;
+    height: 450px;
+    border-radius: var(--radius);
+    overflow: hidden;
   }
 
-  /* 电影信息 */
-  .quote-info {
+  .movie-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .movie-info {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    justify-content: center;
     gap: 8px;
   }
 
-  .quote-movie {
-    font-size: 1.1rem;
+  .movie-info h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
     color: var(--text-primary);
+    line-height: 1.2;
   }
 
-  .quote-meta {
+  .movie-info .original {
+    font-size: 1rem;
+    color: var(--text-secondary);
+  }
+
+  .meta {
     display: flex;
-    justify-content: center;
     flex-wrap: wrap;
     gap: 16px;
     font-size: 0.85rem;
     color: var(--text-secondary);
   }
 
-  .quote-submeta {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 16px;
-    font-size: 0.85rem;
+  .synopsis-preview {
+    font-size: 0.9rem;
+    line-height: 1.6;
     color: var(--text-secondary);
+    margin: 4px 0;
   }
 
-  .quote-cta {
+  .cta {
     display: inline-block;
-    margin-top: 8px;
+    margin-top: 12px;
     padding: 12px 24px;
     background: var(--accent);
     color: var(--bg-primary) !important;
     font-weight: 600;
     border-radius: 8px;
+    width: fit-content;
     transition: background 0.2s ease;
   }
 
-  .quote-cta:hover {
+  .cta:hover {
     background: var(--accent-hover) !important;
   }
 
@@ -302,72 +313,20 @@ const quotesJson = JSON.stringify(todayQuotes);
   }
 
   /* 响应式 */
-  @media (max-width: 640px) {
-    .quote-carousel {
-      padding: 40px 16px;
+  @media (max-width: 768px) {
+    .quote-carousel { padding: 40px 16px; }
+    .quote-slides { min-height: 100px; }
+
+    .movie-card {
+      flex-direction: column;
+      padding: 24px;
+      gap: 20px;
     }
-    .quote-slides {
-      min-height: 100px;
-    }
-  }
 
-  @media (min-width: 641px) and (max-width: 1024px) {
-    .quote-carousel {
-      padding: 60px 20px;
-    }
-  }
-
-  @media (min-width: 1025px) {
-    .quote-carousel {
-      padding: 80px 20px;
-    }
-  }
-
-  /* 电影库 */
-  .movie-library {
-    margin-bottom: 60px;
-  }
-
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-  }
-
-  .section-header h2 {
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  .counter {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-  }
-
-  .movies-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 20px;
-  }
-
-  @media (max-width: 640px) {
-    .movies-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-    }
-  }
-
-  @media (min-width: 641px) and (max-width: 1024px) {
-    .movies-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  @media (min-width: 1025px) {
-    .movies-grid {
-      grid-template-columns: repeat(4, 1fr);
+    .movie-cover {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 2/3;
     }
   }
 </style>

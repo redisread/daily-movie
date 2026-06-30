@@ -3,12 +3,14 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  activeTab?: 'home' | 'library' | 'search' | 'archive';
 }
 
 const {
   title,
   description = '每日一电影推荐，发现经典好电影',
   image,
+  activeTab,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -49,8 +51,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       <nav class="global-navbar">
         <a href="/" class="logo">🎬 每日电影</a>
         <div class="nav-links">
-          <a href="/archive/">归档</a>
-          <a href="/search/">搜索</a>
+          <a href="/" class:list={[{ 'active': activeTab === 'home' }]}>首页</a>
+          <a href="/library/" class:list={[{ 'active': activeTab === 'library' }]}>电影库</a>
+          <a href="/search/" class:list={[{ 'active': activeTab === 'search' }]}>搜索</a>
+          <a href="/archive/" class:list={[{ 'active': activeTab === 'archive' }]}>归档</a>
           <a href="/rss.xml" class="rss-link" title="订阅 RSS" aria-label="RSS 订阅">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 11a9 9 0 0 1 9 9"></path>
@@ -187,6 +191,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     color: var(--text-secondary);
     font-size: 0.95rem;
     transition: color 0.2s;
+  }
+
+  .nav-links a.active {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 4px;
   }
 
   .nav-links a:hover {
