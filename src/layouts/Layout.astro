@@ -23,7 +23,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/logo.png" />
     <link rel="alternate" type="application/rss+xml" title="每日一电影 RSS" href="/rss.xml" />
 
     <!-- Google Fonts -->
@@ -45,11 +47,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     {image && <meta name="twitter:image" content={image} />}
 
     <title>{title} | 每日一电影</title>
+    <meta name="view-transition" content="same-origin" />
   </head>
   <body>
     <div class="page-wrapper">
       <nav class="global-navbar">
-        <a href="/" class="logo">🎬 每日电影</a>
+        <a href="/" class="logo">
+          <img src="/logo.png" alt="每日电影" width="36" height="36" />
+          <span>每日电影</span>
+        </a>
         <div class="nav-links">
           <a href="/" class:list={[{ 'active': activeTab === 'home' }]}>首页</a>
           <a href="/library/" class:list={[{ 'active': activeTab === 'library' }]}>电影库</a>
@@ -123,6 +129,31 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     color: var(--accent-hover);
   }
 
+  /* Focus visible for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Skip to content link */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: var(--bg-primary) !important;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    z-index: 9999;
+    transition: top 0.2s ease;
+  }
+
+  .skip-link:focus {
+    top: 8px;
+  }
+
   /* Fade-in animation for page load */
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
@@ -172,9 +203,22 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   }
 
   .global-navbar .logo {
-    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--text-primary) !important;
+  }
+
+  .global-navbar .logo img {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+  }
+
+  .global-navbar .logo span {
+    font-size: 1.1rem;
   }
 
   .global-navbar .logo:hover {
