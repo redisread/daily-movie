@@ -1,6 +1,6 @@
 import type { APIContext } from 'astro';
 
-export function GET(context: APIContext) {
+export function GET(_context: APIContext) {
   return new Response(
     JSON.stringify({
       status: 'ok',

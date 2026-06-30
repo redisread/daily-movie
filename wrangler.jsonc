@@ -1,13 +1,5 @@
 {
   "name": "daily-movie",
-  "compatibility_date": "2024-12-01",
-  "routes": [
-    {
-      "pattern": "daily-movie.jiahongw.com",
-      "zone_name": "jiahongw.com"
-    }
-  ],
-  "assets": {
-    "directory": "./dist"
-  }
+  "compatibility_date": "2025-05-01",
+  "pages_build_output_dir": "./dist"
 }

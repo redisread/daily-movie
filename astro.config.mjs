@@ -1,7 +1,13 @@
 import { defineConfig } from 'astro/config';
-import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://daily-movie.jiahongw.com',
-  integrations: [sitemap()],
+  site: 'https://daily-movie.pages.dev',
+  trailingSlash: 'always',
+  i18n: {
+    defaultLocale: 'zh-CN',
+    locales: ['zh-CN'],
+    routing: {
+      prefixDefaultLocale: false,
+    },
+  },
 });

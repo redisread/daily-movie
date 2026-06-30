@@ -1,31 +1,32 @@
-# 每日一电影
+# 每日电影
 
-每日一电影推荐网站，发现经典好电影。
+每天推荐一部经典电影。基于 Astro + Zod 静态站点。
+
+## 开发
+
+```bash
+npm install
+npm run dev    # http://localhost:4321
+```
+
+## 构建
+
+```bash
+npm run build
+npm run preview
+```
+
+## 添加电影
+
+编辑 `src/data/movies.yaml`，运行 `npm run test` 验证 schema。
 
 ## 技术栈
 
 - **框架**: [Astro](https://astro.build/)
 - **语言**: TypeScript
-- **样式**: CSS
 - **数据校验**: Zod
 - **部署**: Cloudflare Pages
 - **CI/CD**: GitHub Actions
-
-## 开发
-
-```bash
-# 安装依赖
-npm install
-
-# 启动开发服务器
-npm run dev
-
-# 构建
-npm run build
-
-# 预览构建结果
-npm run preview
-```
 
 ## 项目结构
 
@@ -45,7 +46,7 @@ daily-movie/
 
 项目通过 GitHub Actions 自动部署到 Cloudflare Pages。
 
-- **生产环境**: daily-movie.jiahongw.com
+- **生产环境**: daily-movie.pages.dev
 - **预览环境**: PR 自动生成预览链接
 
 ## 许可证
