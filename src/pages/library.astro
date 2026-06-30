@@ -39,7 +39,7 @@ filteredMovies = [...filteredMovies].sort((a, b) => {
         <div class="filter-options">
           <a href="/library/" class:list={[{ 'active': selectedGenre === 'all' }]} role="button" aria-label="全部电影">全部</a>
           {allGenres.map(genre => (
-            <a href={`/?genre=${genre}`} class:list={[{ 'active': selectedGenre === genre }]} role="button" aria-label={`筛选: ${genre}`}>{genre}</a>
+            <a href={`/library/?genre=${genre}`} class:list={[{ 'active': selectedGenre === genre }]} role="button" aria-label={`筛选: ${genre}`}>{genre}</a>
           ))}
         </div>
       </div>
@@ -47,10 +47,10 @@ filteredMovies = [...filteredMovies].sort((a, b) => {
       <div class="filter-row">
         <span class="filter-label">排序</span>
         <div class="filter-options">
-          <a href={`/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}sort=publishedDate`} class:list={[{ 'active': sortBy === 'publishedDate' }]} role="button">最新</a>
-          <a href={`/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}sort=rating`} class:list={[{ 'active': sortBy === 'rating' }]} role="button">评分</a>
-          <a href={`/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}sort=year`} class:list={[{ 'active': sortBy === 'year' }]} role="button">年份</a>
-          <a href={`/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}sort=duration`} class:list={[{ 'active': sortBy === 'duration' }]} role="button">时长</a>
+          <a href={`/library/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}sort=publishedDate`} class:list={[{ 'active': sortBy === 'publishedDate' }]} role="button">最新</a>
+          <a href={`/library/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}sort=rating`} class:list={[{ 'active': sortBy === 'rating' }]} role="button">评分</a>
+          <a href={`/library/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}sort=year`} class:list={[{ 'active': sortBy === 'year' }]} role="button">年份</a>
+          <a href={`/library/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}sort=duration`} class:list={[{ 'active': sortBy === 'duration' }]} role="button">时长</a>
         </div>
       </div>
     </section>
