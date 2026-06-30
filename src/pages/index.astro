@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MovieCard from '../components/MovieCard.astro';
-import FeaturedCard from '../components/FeaturedCard.astro';
 import { movies } from '../data/movies';
 
 // 获取今日推荐（按 publishedDate 倒序第一本）
@@ -10,6 +9,9 @@ const todayMovie = movies[0];
 // 格式化今日日期
 const today = new Date();
 const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+// 获取今日金句（quotes 第一条）
+const todayQuote = todayMovie?.quotes?.[0];
 ---
 
 <Layout title="今日电影">
@@ -28,8 +30,24 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
 
     <!-- 今日推荐 -->
     <section class="today-recommendation">
-      {todayMovie ? (
-        <FeaturedCard movie={todayMovie} />
+      {todayMovie && todayQuote ? (
+        <div class="quote-hero">
+          <blockquote class="quote-text" style="animation-delay: 0.3s">
+            「{todayQuote.text}」
+          </blockquote>
+          <p class="quote-movie" style="animation-delay: 0.6s">《{todayMovie.title}》</p>
+          {todayQuote.speaker && <p class="quote-speaker" style="animation-delay: 0.7s">— {todayQuote.speaker}</p>}
+          <div class="quote-meta" style="animation-delay: 0.9s">
+            <span>📅 {todayMovie.publishedDate}</span>
+            <span>⭐ {todayMovie.rating}</span>
+            <span>⏱ {todayMovie.duration}分钟</span>
+          </div>
+          <div class="quote-submeta" style="animation-delay: 1.0s">
+            <span>🎭 {todayMovie.genre.join(' / ')}</span>
+            <span>🎬 {todayMovie.director.name}</span>
+          </div>
+          <a href={`/movie/${todayMovie.publishedDate}/`} class="quote-cta" style="animation-delay: 1.2s">查看详情 →</a>
+        </div>
       ) : (
         <p class="no-movie">暂无推荐电影</p>
       )}
@@ -100,9 +118,93 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
     margin-bottom: 32px;
   }
 
-  /* 今日推荐 */
+  /* 今日推荐 - 金句 */
   .today-recommendation {
     margin-bottom: 60px;
+  }
+
+  .quote-hero {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .quote-text {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    animation: fadeIn 1s ease backwards;
+  }
+
+  .quote-movie {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    animation: fadeIn 1s ease backwards;
+  }
+
+  .quote-speaker {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    animation: fadeIn 1s ease backwards;
+  }
+
+  .quote-meta {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    animation: fadeIn 1s ease backwards;
+  }
+
+  .quote-submeta {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    animation: fadeIn 1s ease backwards;
+  }
+
+  .quote-cta {
+    display: inline-block;
+    padding: 12px 24px;
+    background: var(--accent);
+    color: var(--bg-primary) !important;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+    animation: fadeIn 1s ease backwards;
+  }
+
+  .quote-cta:hover {
+    background: var(--accent-hover) !important;
+  }
+
+  @media (max-width: 640px) {
+    .quote-hero {
+      padding: 40px 16px;
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .quote-hero {
+      padding: 60px 20px;
+    }
+  }
+
+  @media (min-width: 1025px) {
+    .quote-hero {
+      padding: 80px 20px;
+    }
   }
 
   .no-movie {
