@@ -22,6 +22,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title="每日一电影 RSS" href="/rss.xml" />
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -44,7 +45,35 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <title>{title} | 每日一电影</title>
   </head>
   <body>
-    <slot />
+    <div class="page-wrapper">
+      <nav class="global-navbar">
+        <a href="/" class="logo">🎬 每日电影</a>
+        <div class="nav-links">
+          <a href="/archive/">归档</a>
+          <a href="/search/">搜索</a>
+          <a href="/rss.xml" class="rss-link" title="订阅 RSS" aria-label="RSS 订阅">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 11a9 9 0 0 1 9 9"></path>
+              <path d="M4 4a16 16 0 0 1 16 16"></path>
+              <circle cx="5" cy="19" r="1"></circle>
+            </svg>
+          </a>
+        </div>
+      </nav>
+      <main class="page-content">
+        <slot />
+      </main>
+      <footer class="global-footer">
+        <div class="footer-inner">
+          <span>每日电影 © 2026</span>
+          <div class="footer-links">
+            <a href="/rss.xml">RSS 订阅</a>
+            <a href="/archive/">归档</a>
+            <a href="https://github.com/redisread/daily-movie" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
+      </footer>
+    </div>
   </body>
 </html>
 
@@ -113,5 +142,105 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
     border-radius: var(--radius);
+  }
+
+  /* Page wrapper */
+  .page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page-content {
+    flex: 1;
+  }
+
+  /* Global navbar */
+  .global-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .global-navbar .logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary) !important;
+  }
+
+  .global-navbar .logo:hover {
+    color: var(--accent) !important;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover {
+    color: var(--accent) !important;
+  }
+
+  .rss-link {
+    display: flex;
+    align-items: center;
+    color: var(--accent) !important;
+  }
+
+  .rss-link:hover {
+    color: var(--accent-hover) !important;
+  }
+
+  /* Global footer */
+  .global-footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 20px;
+    margin-top: 60px;
+  }
+
+  .footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 20px;
+  }
+
+  .footer-links a {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover {
+    color: var(--accent) !important;
+  }
+
+  @media (max-width: 640px) {
+    .footer-inner {
+      flex-direction: column;
+      text-align: center;
+    }
   }
 </style>

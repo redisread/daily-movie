@@ -16,12 +16,12 @@
     url: https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
     bg: 'linear-gradient(145deg, #1a2a3a, #2a4a6a, #1a2a3a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Shawshank_redemption_ver1.jpg/800px-Shawshank_redemption_ver1.jpg
-      caption: 安迪在雨中拥抱自由的经典画面
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Tim_Robbins_%26_Morgan_Freeman_%28Crooped%29.jpg/800px-Tim_Robbins_%26_Morgan_Freeman_%28Crooped%29.jpg
-      caption: 安迪与瑞德在监狱中的友谊
     - url: https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
       caption: 官方海报
+    - url: https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
+      caption: 经典海报
+    - url: https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
+      caption: 电影封面
   cast:
     - name: 蒂姆·罗宾斯
       role: 安迪·杜佛兰
@@ -54,12 +54,12 @@
     url: https://upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
     bg: 'linear-gradient(145deg, #2a3a4a, #4a6a8a, #2a3a4a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Forrest_Gump_poster.jpg/800px-Forrest_Gump_poster.jpg
-      caption: 阿甘坐在长椅上等待公交车
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Tom_Hanks_2016.jpg/800px-Tom_Hanks_2016.jpg
-      caption: 汤姆·汉克斯饰演阿甘
     - url: https://upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
-      caption: 官方电影海报
+      caption: 官方海报
+    - url: https://upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
+      caption: 电影封面
+    - url: https://upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
+      caption: 经典海报
   cast:
     - name: 汤姆·汉克斯
       role: 阿甘
@@ -88,15 +88,15 @@
   genre: ["剧情", "动作"]
   rating: 9.4
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/2/23/Leon_poster.jpg
+    url: /fallback-poster.svg
     bg: 'linear-gradient(145deg, #1a2a1a, #2a4a2a, #1a2a1a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Leon_poster.jpg/800px-Leon_poster.jpg
-      caption: 里昂和玛蒂尔达的经典合影
-    - url: https://upload.wikimedia.org/wikipedia/en/2/23/Leon_poster.jpg
-      caption: 官方电影海报
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Jean_Reno_%282014%29.jpg/800px-Jean_Reno_%282014%29.jpg
-      caption: 让·雷诺饰演里昂
+    - url: /fallback-poster.svg
+      caption: 官方海报
+    - url: /fallback-poster.svg
+      caption: 经典画面
+    - url: /fallback-poster.svg
+      caption: 电影封面
   cast:
     - name: 让·雷诺
       role: 里昂
@@ -128,12 +128,12 @@
     url: https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
     bg: 'linear-gradient(145deg, #0a0a0a, #2a2a2a, #0a0a0a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Godfather_poster.jpg/800px-Godfather_poster.jpg
-      caption: 维托·柯里昂的经典形象
     - url: https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
-      caption: 官方电影海报
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Marlon_Brando_Godfather_1972.jpg/800px-Marlon_Brando_Godfather_1972.jpg
-      caption: 马龙·白兰度饰演维托·柯里昂
+      caption: 官方海报
+    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
+      caption: 经典封面
+    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
+      caption: 电影海报
   cast:
     - name: 马龙·白兰度
       role: 维托·柯里昂
@@ -162,15 +162,15 @@
   genre: ["剧情", "历史"]
   rating: 9.5
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/3/38/SchindlersList_movie.jpg
+    url: /fallback-poster.svg
     bg: 'linear-gradient(145deg, #1a1a1a, #3a3a3a, #1a1a1a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/SchindlersList_movie.jpg/800px-SchindlersList_movie.jpg
-      caption: 辛德勒与犹太工人的合影
-    - url: https://upload.wikimedia.org/wikipedia/en/3/38/SchindlersList_movie.jpg
-      caption: 官方电影海报
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Liam_Neeson_2012_%28cropped%29.jpg/800px-Liam_Neeson_2012_%28cropped%29.jpg
-      caption: 连姆·尼森饰演辛德勒
+    - url: /fallback-poster.svg
+      caption: 官方海报
+    - url: /fallback-poster.svg
+      caption: 电影封面
+    - url: /fallback-poster.svg
+      caption: 经典海报
   cast:
     - name: 连姆·尼森
       role: 奥斯卡·辛德勒
@@ -199,15 +199,15 @@
   genre: ["剧情", "科幻"]
   rating: 9.3
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/7/7f/Inception_ver3.jpg
+    url: /fallback-poster.svg
     bg: 'linear-gradient(145deg, #1a1a2a, #2a2a4a, #1a1a2a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Inception_poster.jpg/800px-Inception_poster.jpg
-      caption: 折叠城市的经典场景
-    - url: https://upload.wikimedia.org/wikipedia/en/7/7f/Inception_ver3.jpg
-      caption: 官方电影海报
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Leonardo_DiCaprio_2014.jpg/800px-Leonardo_DiCaprio_2014.jpg
-      caption: 莱昂纳多·迪卡普里奥饰演柯布
+    - url: /fallback-poster.svg
+      caption: 官方海报
+    - url: /fallback-poster.svg
+      caption: 折叠城市
+    - url: /fallback-poster.svg
+      caption: 电影封面
   cast:
     - name: 莱昂纳多·迪卡普里奥
       role: 柯布
@@ -239,12 +239,12 @@
     url: https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
     bg: 'linear-gradient(145deg, #0a0a1a, #1a1a3a, #0a0a1a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Interstellar_film_poster.jpg/800px-Interstellar_film_poster.jpg
-      caption: 库珀在玉米地仰望星空
     - url: https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
-      caption: 官方电影海报
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Matthew_McConaughey_2019.jpg/800px-Matthew_McConaughey_2019.jpg
-      caption: 马修·麦康纳饰演库珀
+      caption: 官方海报
+    - url: https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
+      caption: 电影封面
+    - url: https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
+      caption: 经典海报
   cast:
     - name: 马修·麦康纳
       role: 库珀
@@ -273,15 +273,15 @@
   genre: ["剧情", "动作"]
   rating: 9.2
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/8/8b/Dark_Knight.jpg
+    url: /fallback-poster.svg
     bg: 'linear-gradient(145deg, #1a1a1a, #3a3a3a, #1a1a1a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Dark_Knight.jpg/800px-Dark_Knight.jpg
-      caption: 小丑的经典形象
-    - url: https://upload.wikimedia.org/wikipedia/en/8/8b/Dark_Knight.jpg
-      caption: 官方电影海报
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Heath_Ledger_2006.jpg/800px-Heath_Ledger_2006.jpg
-      caption: 希斯·莱杰饰演小丑
+    - url: /fallback-poster.svg
+      caption: 官方海报
+    - url: /fallback-poster.svg
+      caption: 小丑经典形象
+    - url: /fallback-poster.svg
+      caption: 电影封面
   cast:
     - name: 克里斯蒂安·贝尔
       role: 蝙蝠侠/布鲁斯·韦恩

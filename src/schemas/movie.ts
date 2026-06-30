@@ -1,14 +1,19 @@
 import { z } from "zod";
 
+const urlOrPath = z.string().refine(
+  (val) => val.startsWith('http://') || val.startsWith('https://') || val.startsWith('/'),
+  { message: "Must be a valid URL or path starting with /" }
+);
+
 export const PosterSchema = z.object({
-  url: z.string().url(),
+  url: urlOrPath,
   caption: z.string().optional(),
 });
 
 export const CastSchema = z.object({
   name: z.string().min(1),
   role: z.string().min(1),
-  avatar: z.string().url().optional(),
+  avatar: urlOrPath.optional(),
 });
 
 export const QuoteSchema = z.object({
@@ -30,7 +35,7 @@ export const MovieSchema = z.object({
   genre: z.array(z.string()).min(1),
   rating: z.number().min(0).max(10),
   cover: z.object({
-    url: z.string().url(),
+    url: urlOrPath,
     bg: z.string(),  // CSS gradient or hex
   }),
   posters: z.array(PosterSchema).min(3).max(5),  // 3-5 张
