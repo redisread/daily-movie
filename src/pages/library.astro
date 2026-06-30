@@ -3,21 +3,71 @@ import Layout from '../layouts/Layout.astro';
 import MovieCard from '../components/MovieCard.astro';
 import { movies } from '../data/movies';
 
-const sortedMovies = [...movies].sort((a, b) => b.publishedDate.localeCompare(a.publishedDate));
+// 提取所有类型并排序
+const allGenres = [...new Set(movies.flatMap(m => m.genre))].sort();
+
+// 读取 URL 参数（SSR）
+const selectedGenre = Astro.url.searchParams.get('genre') || 'all';
+const sortBy = Astro.url.searchParams.get('sort') || 'publishedDate';
+
+// 筛选电影
+let filteredMovies = movies;
+if (selectedGenre !== 'all') {
+  filteredMovies = movies.filter(m => m.genre.includes(selectedGenre));
+}
+
+// 排序
+filteredMovies = [...filteredMovies].sort((a, b) => {
+  if (sortBy === 'rating') return b.rating - a.rating;
+  if (sortBy === 'year') return b.year - a.year;
+  if (sortBy === 'duration') return a.duration - b.duration;
+  return b.publishedDate.localeCompare(a.publishedDate);
+});
 ---
 
 <Layout title="电影库" activeTab="library">
   <main>
     <header class="page-header">
       <h1>电影库</h1>
-      <p>共 {sortedMovies.length} 部电影</p>
+      <p>共 {movies.length} 部电影 · 当前显示 {filteredMovies.length} 部</p>
     </header>
 
-    <div class="movies-grid">
-      {sortedMovies.map((movie, idx) => (
-        <MovieCard movie={movie} delay={idx * 0.1} />
-      ))}
-    </div>
+    <!-- 筛选栏 -->
+    <section class="filter-section">
+      <div class="filter-row">
+        <span class="filter-label">类型</span>
+        <div class="filter-options">
+          <a href="/library/" class:list={[{ 'active': selectedGenre === 'all' }]} role="button" aria-label="全部电影">全部</a>
+          {allGenres.map(genre => (
+            <a href={`/library/?genre=${genre}`} class:list={[{ 'active': selectedGenre === genre }]} role="button" aria-label={`筛选: ${genre}`}>{genre}</a>
+          ))}
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-label">排序</span>
+        <div class="filter-options">
+          <a href={`/library/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}sort=publishedDate`} class:list={[{ 'active': sortBy === 'publishedDate' }]} role="button">最新</a>
+          <a href={`/library/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}sort=rating`} class:list={[{ 'active': sortBy === 'rating' }]} role="button">评分</a>
+          <a href={`/library/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}sort=year`} class:list={[{ 'active': sortBy === 'year' }]} role="button">年份</a>
+          <a href={`/library/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}sort=duration`} class:list={[{ 'active': sortBy === 'duration' }]} role="button">时长</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 电影网格 -->
+    {filteredMovies.length > 0 ? (
+      <div class="movies-grid">
+        {filteredMovies.map((movie, idx) => (
+          <MovieCard movie={movie} delay={idx * 0.05} />
+        ))}
+      </div>
+    ) : (
+      <div class="empty-state">
+        <p>🎬 暂无匹配的电影</p>
+        <p>试试其他筛选条件</p>
+      </div>
+    )}
   </main>
 </Layout>
 
@@ -45,16 +95,119 @@ const sortedMovies = [...movies].sort((a, b) => b.publishedDate.localeCompare(a.
     color: var(--text-secondary);
   }
 
+  /* 筛选栏 */
+  .filter-section {
+    margin-bottom: 32px;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+  }
+
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .filter-row + .filter-row {
+    margin-top: 16px;
+  }
+
+  .filter-label {
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 40px;
+  }
+
+  .filter-options {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-options::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-options a {
+    flex-shrink: 0;
+    padding: 8px 18px;
+    background: var(--bg-card);
+    border-radius: 20px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .filter-options a:hover {
+    color: var(--text-primary);
+    border-color: var(--accent);
+  }
+
+  .filter-options a.active {
+    background: var(--accent);
+    color: var(--bg-primary) !important;
+    border-color: var(--accent) !important;
+    font-weight: 600;
+  }
+
+  /* 空状态 */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-secondary);
+  }
+
+  .empty-state p:first-child {
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+
+  /* 电影网格 */
   .movies-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 20px;
   }
 
+  /* 响应式 */
   @media (max-width: 640px) {
     .movies-grid {
       grid-template-columns: repeat(2, 1fr);
       gap: 16px;
+    }
+
+    .filter-section {
+      padding: 16px;
+    }
+
+    .filter-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .filter-label {
+      font-size: 14px;
+    }
+
+    .filter-options {
+      width: 100%;
+      padding: 4px 0;
+    }
+
+    .filter-options a {
+      padding: 8px 14px;
+      font-size: 13px;
     }
   }
 
