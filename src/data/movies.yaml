@@ -19,7 +19,9 @@
     - url: https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Shawshank_redemption_ver1.jpg/800px-Shawshank_redemption_ver1.jpg
       caption: 安迪在雨中拥抱自由的经典画面
     - url: https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Tim_Robbins_%26_Morgan_Freeman_%28Crooped%29.jpg/800px-Tim_Robbins_%26_Morgan_Freeman_%28Crooped%29.jpg
+      caption: 安迪与瑞德在监狱中的友谊
     - url: https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
+      caption: 官方海报
   cast:
     - name: 蒂姆·罗宾斯
       role: 安迪·杜佛兰
@@ -55,6 +57,9 @@
     - url: https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Forrest_Gump_poster.jpg/800px-Forrest_Gump_poster.jpg
       caption: 阿甘坐在长椅上等待公交车
     - url: https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Tom_Hanks_2016.jpg/800px-Tom_Hanks_2016.jpg
+      caption: 汤姆·汉克斯饰演阿甘
+    - url: https://upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
+      caption: 官方电影海报
   cast:
     - name: 汤姆·汉克斯
       role: 阿甘
@@ -67,12 +72,14 @@
       speaker: 阿甘
     - text: 妈妈说，人生就像一盒巧克力，结果往往出人意料。
       speaker: 阿甘
+    - text: 我不聪明，但我知道什么是爱。
+      speaker: 阿甘
   synopsis: 阿甘是一名智商只有75的低能儿，但在母亲的爱护下，他纯朴善良，凭借专注和执着，在橄榄球、乒乓球、捕虾等多个领域取得成功，并见证了美国历史上的多个重要时刻。
   publishedDate: '2026-06-29'
 
 - id: leon-the-professional
   title: 这个杀手不太冷
-  titleOriginal: Léon: The Professional
+  titleOriginal: 'Léon: The Professional'
   director:
     name: 吕克·贝松
     works: 《这个杀手不太冷》《第五元素》《碧海蓝天》
@@ -86,6 +93,10 @@
   posters:
     - url: https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Leon_poster.jpg/800px-Leon_poster.jpg
       caption: 里昂和玛蒂尔达的经典合影
+    - url: https://upload.wikimedia.org/wikipedia/en/2/23/Leon_poster.jpg
+      caption: 官方电影海报
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Jean_Reno_%282014%29.jpg/800px-Jean_Reno_%282014%29.jpg
+      caption: 让·雷诺饰演里昂
   cast:
     - name: 让·雷诺
       role: 里昂
@@ -98,7 +109,7 @@
       speaker: 玛蒂尔达
     - text: 总是如此。
       speaker: 里昂
-    - text: 我想我爱上你了，莱昂。
+    - text: 你让我尝到了生活的滋味，我想快乐。
       speaker: 玛蒂尔达
   synopsis: 12岁的玛蒂尔达全家被恶毒的缉毒警察史丹菲尔杀害，只有外出购物的大女儿幸存。她敲开了邻居——职业杀手里昂的门，请求他教自己杀手技能以报家仇。两人在相处中产生了深厚的感情。
   publishedDate: '2026-06-28'
@@ -119,6 +130,10 @@
   posters:
     - url: https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Godfather_poster.jpg/800px-Godfather_poster.jpg
       caption: 维托·柯里昂的经典形象
+    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
+      caption: 官方电影海报
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Marlon_Brando_Godfather_1972.jpg/800px-Marlon_Brando_Godfather_1972.jpg
+      caption: 马龙·白兰度饰演维托·柯里昂
   cast:
     - name: 马龙·白兰度
       role: 维托·柯里昂
@@ -131,6 +146,8 @@
       speaker: 维托·柯里昂
     - text: 不照顾家人的男人，根本算不上是个男人。
       speaker: 维托·柯里昂
+    - text: 永远不要憎恨你的敌人，那会影响你的判断。
+      speaker: 迈克尔·柯里昂
   synopsis: 以维托·柯里昂为首的黑帮家族在纽约势力庞大，小儿子迈克尔本不想参与家族生意，但在父亲被暗杀后，他被迫卷入黑帮斗争，最终成为新一代教父。
   publishedDate: '2026-06-27'
 
@@ -150,6 +167,10 @@
   posters:
     - url: https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/SchindlersList_movie.jpg/800px-SchindlersList_movie.jpg
       caption: 辛德勒与犹太工人的合影
+    - url: https://upload.wikimedia.org/wikipedia/en/3/38/SchindlersList_movie.jpg
+      caption: 官方电影海报
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Liam_Neeson_2012_%28cropped%29.jpg/800px-Liam_Neeson_2012_%28cropped%29.jpg
+      caption: 连姆·尼森饰演辛德勒
   cast:
     - name: 连姆·尼森
       role: 奥斯卡·辛德勒
@@ -159,8 +180,10 @@
       role: 伊扎克·斯特恩
   quotes:
     - text: 救一个人，就是救全世界。
-      speaker: 伊扎克·斯特恩
+      speaker: 犹太法典
     - text: 这份名单就是生命，名单周围是广阔的深渊。
+      speaker: 辛德勒
+    - text: 权力不是因为我们拥有什么，而是因为我们能给予什么。
       speaker: 辛德勒
   synopsis: 二战期间，德国商人奥斯卡·辛德勒通过雇佣犹太工人到自己的工厂，保护他们免受纳粹迫害，最终拯救了1200多名犹太人的生命。
   publishedDate: '2026-06-26'
@@ -181,6 +204,10 @@
   posters:
     - url: https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Inception_poster.jpg/800px-Inception_poster.jpg
       caption: 折叠城市的经典场景
+    - url: https://upload.wikimedia.org/wikipedia/en/7/7f/Inception_ver3.jpg
+      caption: 官方电影海报
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Leonardo_DiCaprio_2014.jpg/800px-Leonardo_DiCaprio_2014.jpg
+      caption: 莱昂纳多·迪卡普里奥饰演柯布
   cast:
     - name: 莱昂纳多·迪卡普里奥
       role: 柯布
@@ -192,7 +219,9 @@
     - text: 你在等火车，一辆能带你去远方的火车。
       speaker: 柯布
     - text: 不要尝试从记忆中重建场景，要想象全新的地方。
-      speaker: 阿丽阿德妮
+      speaker: 阿瑟
+    - text: 一个意念就像病毒一样，具有强大的自我复制能力。
+      speaker: 柯布
   synopsis: 柯布是一名经验丰富的盗梦者，擅长在目标人物睡着时潜入其梦境窃取机密。为了回家与孩子团聚，他接受了一项看似不可能的任务：在目标脑中植入一个想法。
   publishedDate: '2026-06-25'
 
@@ -212,6 +241,10 @@
   posters:
     - url: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Interstellar_film_poster.jpg/800px-Interstellar_film_poster.jpg
       caption: 库珀在玉米地仰望星空
+    - url: https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
+      caption: 官方电影海报
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Matthew_McConaughey_2019.jpg/800px-Matthew_McConaughey_2019.jpg
+      caption: 马修·麦康纳饰演库珀
   cast:
     - name: 马修·麦康纳
       role: 库珀
@@ -224,7 +257,9 @@
       speaker: 布兰德教授
     - text: 爱是唯一可以超越时间与空间的事物。
       speaker: 布兰德博士
-  synopsis: 地球环境恶化，前 NASA 飞行员库珀为了拯救人类，告别儿女，与其他探险家一起穿越虫洞，寻找人类的新家园。
+    - text: 我们曾仰望星空，思索我们在星辰中的位置。现在我们只会俯视大地，担心尘埃中的位置。
+      speaker: 库珀
+  synopsis: 地球环境恶化，前NASA飞行员库珀为了拯救人类，告别儿女，与其他探险家一起穿越虫洞，寻找人类的新家园。
   publishedDate: '2026-06-24'
 
 - id: the-dark-knight
@@ -243,6 +278,10 @@
   posters:
     - url: https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Dark_Knight.jpg/800px-Dark_Knight.jpg
       caption: 小丑的经典形象
+    - url: https://upload.wikimedia.org/wikipedia/en/8/8b/Dark_Knight.jpg
+      caption: 官方电影海报
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Heath_Ledger_2006.jpg/800px-Heath_Ledger_2006.jpg
+      caption: 希斯·莱杰饰演小丑
   cast:
     - name: 克里斯蒂安·贝尔
       role: 蝙蝠侠/布鲁斯·韦恩
@@ -255,5 +294,7 @@
       speaker: 小丑
     - text: 要么作为英雄死去，要么活得够久，看到自己变成恶人。
       speaker: 哈维·丹特
+    - text: 英雄不会放弃。
+      speaker: 蝙蝠侠
   synopsis: 蝙蝠侠与戈登警长、检察官哈维·丹特联手打击犯罪，但神秘的小丑出现，用混乱和恐惧挑战蝙蝠侠的道德底线，迫使他在正义与黑暗之间做出选择。
   publishedDate: '2026-06-23'
