@@ -1,33 +1,49 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MovieCard from '../components/MovieCard.astro';
+import FeaturedCard from '../components/FeaturedCard.astro';
 import { movies } from '../data/movies';
 
 // 获取今日推荐（按 publishedDate 倒序第一本）
 const todayMovie = movies[0];
+
+// 格式化今日日期
+const today = new Date();
+const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 ---
 
 <Layout title="今日电影">
   <main>
-    <header class="hero">
-      <h1>每日一电影</h1>
-      <p>发现经典好电影，每天推荐一部值得观看的影片</p>
-    </header>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+      <a href="/" class="logo">🎬 每日电影</a>
+      <div class="nav-links">
+        <a href="/archive/">归档</a>
+        <a href="/search/">搜索</a>
+      </div>
+    </nav>
 
+    <!-- 日期显示 -->
+    <p class="date-display">📅 {dateStr}</p>
+
+    <!-- 今日推荐 -->
     <section class="today-recommendation">
-      <h2>今日推荐</h2>
       {todayMovie ? (
-        <MovieCard movie={todayMovie} />
+        <FeaturedCard movie={todayMovie} />
       ) : (
         <p class="no-movie">暂无推荐电影</p>
       )}
     </section>
 
-    <section class="movie-list">
-      <h2>电影库</h2>
+    <!-- 电影库 -->
+    <section class="movie-library">
+      <div class="section-header">
+        <h2>电影库</h2>
+        <span class="counter">共 {movies.length} 部</span>
+      </div>
       <div class="movies-grid">
-        {movies.map((movie) => (
-          <MovieCard movie={movie} />
+        {movies.map((movie, idx) => (
+          <MovieCard movie={movie} delay={idx * 0.1} />
         ))}
       </div>
     </section>
@@ -38,55 +54,111 @@ const todayMovie = movies[0];
   main {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0 20px 60px;
   }
 
-  .hero {
+  /* 导航栏 */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary) !important;
+  }
+
+  .logo:hover {
+    color: var(--accent) !important;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 24px;
+  }
+
+  .nav-links a {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover {
+    color: var(--accent) !important;
+  }
+
+  /* 日期显示 */
+  .date-display {
     text-align: center;
-    padding: 60px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 16px;
-    margin-bottom: 40px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 32px;
   }
 
-  .hero h1 {
-    font-size: 3rem;
-    margin-bottom: 16px;
-  }
-
-  .hero p {
-    font-size: 1.2rem;
-    opacity: 0.9;
-  }
-
+  /* 今日推荐 */
   .today-recommendation {
     margin-bottom: 60px;
-  }
-
-  .today-recommendation h2 {
-    font-size: 1.8rem;
-    margin-bottom: 24px;
-    color: #333;
   }
 
   .no-movie {
     text-align: center;
     padding: 40px;
-    background: #f8f9fa;
-    border-radius: 12px;
-    color: #666;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    color: var(--text-secondary);
   }
 
-  .movie-list h2 {
-    font-size: 1.8rem;
+  /* 电影库 */
+  .movie-library {
+    margin-bottom: 60px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 24px;
-    color: #333;
+  }
+
+  .section-header h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .counter {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
   }
 
   .movies-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  /* 响应式 */
+  @media (max-width: 640px) {
+    .movies-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .movies-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 1025px) {
+    .movies-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
   }
 </style>

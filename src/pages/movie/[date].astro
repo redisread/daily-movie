@@ -14,125 +14,199 @@ export async function getStaticPaths() {
 }
 
 const { movie } = Astro.props;
+
+const today = new Date();
+const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 ---
 
 <Layout title={movie.title}>
   <article class="movie-detail">
-    <a href="/" class="back">← 返回首页</a>
+    <!-- 顶部导航 -->
+    <nav class="top-nav">
+      <a href="/" class="back">← 返回首页</a>
+      <span class="date">{movie.publishedDate}</span>
+    </nav>
 
-    <div class="hero" style={`background: ${movie.cover.bg}`}>
-      <img src={movie.cover.url} alt={movie.title} />
-    </div>
-
-    <h1>{movie.title}</h1>
-    {movie.titleOriginal && <p class="original">{movie.titleOriginal}</p>}
-
-    <div class="meta">
-      <span>📅 {movie.year}</span>
-      <span>⏱️ {movie.duration}分钟</span>
-      <span>⭐ {movie.rating}/10</span>
-      <div class="genres">
-        🎭 {movie.genre.join(' / ')}
+    <!-- 主海报 -->
+    <div class="hero-section">
+      <div class="hero-cover" style={`background: ${movie.cover.bg}`}>
+        <img src={movie.cover.url} alt={movie.title} />
+      </div>
+      <div class="hero-info">
+        <h1>{movie.title}</h1>
+        {movie.titleOriginal && <p class="original">{movie.titleOriginal}</p>}
+        <div class="meta">
+          <span class="rating-badge">⭐ {movie.rating}</span>
+          <span class="genre">{movie.genre.join(' / ')}</span>
+          <span class="year">{movie.year}</span>
+          <span class="duration">{movie.duration}分钟</span>
+        </div>
       </div>
     </div>
 
-    <DirectorCard director={movie.director} />
+    <div class="content-sections">
+      <!-- 导演 -->
+      <DirectorCard director={movie.director} />
 
-    <section>
-      <h2>🌟 主演</h2>
-      <CastList cast={movie.cast} />
-    </section>
+      <!-- 主演 -->
+      <section>
+        <h2>🌟 主演</h2>
+        <CastList cast={movie.cast} />
+      </section>
 
-    <section>
-      <h2>📖 剧情简介</h2>
-      <p class="synopsis">{movie.synopsis}</p>
-    </section>
+      <!-- 剧情简介 -->
+      <section>
+        <h2>📖 剧情简介</h2>
+        <p class="synopsis">{movie.synopsis}</p>
+      </section>
 
-    <section>
-      <h2>🎞️ 电影海报</h2>
-      <PosterGallery posters={movie.posters} />
-    </section>
+      <!-- 海报画廊 -->
+      <section>
+        <h2>🎞️ 电影海报</h2>
+        <PosterGallery posters={movie.posters} />
+      </section>
 
-    <section>
-      <h2>💬 经典语录</h2>
-      {movie.quotes.map(q => <QuoteCard quote={q} />)}
-    </section>
+      <!-- 经典语录 -->
+      <section>
+        <h2>💬 经典语录</h2>
+        {movie.quotes.map(q => <QuoteCard quote={q} />)}
+      </section>
+    </div>
   </article>
 </Layout>
 
 <style>
   .movie-detail {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0 20px 60px;
+  }
+
+  /* 顶部导航 */
+  .top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    margin-bottom: 24px;
   }
 
   .back {
-    display: inline-block;
-    margin-bottom: 20px;
-    color: #667eea;
-    text-decoration: none;
+    color: var(--accent) !important;
+    font-size: 0.95rem;
     font-weight: 500;
   }
 
   .back:hover {
-    text-decoration: underline;
+    color: var(--accent-hover) !important;
   }
 
-  .hero {
-    width: 100%;
-    aspect-ratio: 2/3;
-    border-radius: 12px;
+  .date {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+  }
+
+  /* 主海报区 */
+  .hero-section {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 40px;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .hero-cover {
+    flex-shrink: 0;
+    width: 320px;
+    height: 480px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
-    margin-bottom: 24px;
   }
 
-  .hero img {
+  .hero-cover img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
+  .hero-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+  }
+
   h1 {
-    font-size: 2rem;
-    color: #333;
-    margin-bottom: 8px;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
   }
 
   .original {
-    font-size: 1rem;
-    color: #666;
-    margin-bottom: 16px;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
   }
 
   .meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 12px;
     align-items: center;
-    margin-bottom: 24px;
     font-size: 0.95rem;
-    color: #666;
   }
 
-  .genres {
+  .rating-badge {
+    padding: 6px 14px;
+    background: var(--accent);
+    color: var(--bg-primary);
+    font-weight: 600;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+
+  .genre {
+    color: var(--text-secondary);
+  }
+
+  .year, .duration {
+    color: var(--text-secondary);
+  }
+
+  /* 内容区 */
+  .content-sections {
     display: flex;
-    gap: 8px;
-  }
-
-  section {
-    margin-bottom: 32px;
+    flex-direction: column;
+    gap: 32px;
   }
 
   section h2 {
-    font-size: 1.4rem;
-    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
     margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
   }
 
   .synopsis {
     font-size: 1rem;
     line-height: 1.8;
-    color: #444;
+    color: var(--text-secondary);
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+  }
+
+  /* 响应式 */
+  @media (max-width: 768px) {
+    .hero-section {
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .hero-cover {
+      width: 100%;
+      height: 400px;
+    }
   }
 </style>

@@ -5,34 +5,42 @@ interface Props {
 const { director } = Astro.props;
 ---
 <div class="director-card">
-  <h3>导演</h3>
-  <p class="name">{director.name}</p>
-  {director.works && <p class="works">代表作：{director.works}</p>}
+  <div class="director-info">
+    <span class="label">导演</span>
+    <p class="name">{director.name}</p>
+    {director.works && <p class="works">代表作：{director.works}</p>}
+  </div>
 </div>
 
 <style>
   .director-card {
-    padding: 16px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin-bottom: 24px;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    border-left: 3px solid var(--accent);
   }
 
-  h3 {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 8px;
+  .director-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
 
   .name {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 4px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
   }
 
   .works {
     font-size: 0.85rem;
-    color: #666;
+    color: var(--text-secondary);
   }
 </style>

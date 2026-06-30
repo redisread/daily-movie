@@ -8,7 +8,7 @@ const { cast } = Astro.props;
   {cast.map(member => (
     <div class="cast-item">
       {member.avatar && <img src={member.avatar} alt={member.name} class="avatar" />}
-      <div>
+      <div class="cast-info">
         <p class="name">{member.name}</p>
         <p class="role">饰 {member.role}</p>
       </div>
@@ -19,8 +19,8 @@ const { cast } = Astro.props;
 <style>
   .cast-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
   }
 
   .cast-item {
@@ -28,25 +28,38 @@ const { cast } = Astro.props;
     align-items: center;
     gap: 12px;
     padding: 12px;
-    background: #f8f9fa;
-    border-radius: 8px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    transition: transform 0.2s ease;
+  }
+
+  .cast-item:hover {
+    transform: translateY(-2px);
   }
 
   .avatar {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid var(--border);
   }
 
   .name {
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 4px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+    font-size: 0.95rem;
   }
 
   .role {
-    font-size: 0.85rem;
-    color: #666;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  @media (max-width: 640px) {
+    .cast-list {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
   }
 </style>

@@ -22,9 +22,9 @@ const { posters } = Astro.props;
 
   figure {
     margin: 0;
-    border-radius: 8px;
+    border-radius: var(--radius);
     overflow: hidden;
-    background: #f8f9fa;
+    background: var(--bg-secondary);
   }
 
   img {
@@ -32,18 +32,24 @@ const { posters } = Astro.props;
     height: auto;
     display: block;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.3s ease;
   }
 
   img:hover {
-    transform: scale(1.02);
+    transform: scale(1.03);
   }
 
   figcaption {
-    padding: 8px 12px;
+    padding: 10px 12px;
     font-size: 0.85rem;
-    color: #666;
+    color: var(--text-secondary);
     text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .poster-gallery {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
   }
 </style>
 
@@ -58,16 +64,17 @@ const { posters } = Astro.props;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0,0,0,0.9);
+        background: rgba(0,0,0,0.95);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 1000;
         cursor: pointer;
+        animation: fadeIn 0.2s ease;
       `;
       const bigImg = document.createElement('img');
       bigImg.src = (img as HTMLImageElement).src;
-      bigImg.style.cssText = 'max-width: 90%; max-height: 90%; object-fit: contain;';
+      bigImg.style.cssText = 'max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 8px;';
       overlay.appendChild(bigImg);
       overlay.addEventListener('click', () => overlay.remove());
       document.body.appendChild(overlay);

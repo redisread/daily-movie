@@ -5,6 +5,14 @@ import { movies } from '../data/movies';
 
 <Layout title="搜索电影">
   <main>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+      <a href="/" class="logo">🎬 每日电影</a>
+      <div class="nav-links">
+        <a href="/archive/">归档</a>
+      </div>
+    </nav>
+
     <header class="page-header">
       <h1>搜索电影</h1>
       <p>输入关键词搜索电影标题、导演、演员、类型</p>
@@ -22,10 +30,6 @@ import { movies } from '../data/movies';
     <div id="search-results" class="search-results">
       <p class="hint">请输入关键词开始搜索</p>
     </div>
-
-    <nav class="back-nav">
-      <a href="/">← 返回首页</a> | <a href="/archive/">电影归档</a>
-    </nav>
   </main>
 </Layout>
 
@@ -78,7 +82,36 @@ import { movies } from '../data/movies';
   main {
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0 20px 60px;
+  }
+
+  /* 导航栏 */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary) !important;
+  }
+
+  .logo:hover {
+    color: var(--accent) !important;
+  }
+
+  .nav-links a {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+
+  .nav-links a:hover {
+    color: var(--accent) !important;
   }
 
   .page-header {
@@ -87,14 +120,15 @@ import { movies } from '../data/movies';
   }
 
   .page-header h1 {
-    font-size: 2.5rem;
-    color: #333;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
     margin-bottom: 8px;
   }
 
   .page-header p {
-    font-size: 1.1rem;
-    color: #666;
+    font-size: 1rem;
+    color: var(--text-secondary);
   }
 
   .search-box {
@@ -104,15 +138,21 @@ import { movies } from '../data/movies';
   #search-input {
     width: 100%;
     padding: 16px 20px;
-    font-size: 1.1rem;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
+    font-size: 1rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
     outline: none;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
     transition: border-color 0.2s;
   }
 
+  #search-input::placeholder {
+    color: var(--text-secondary);
+  }
+
   #search-input:focus {
-    border-color: #667eea;
+    border-color: var(--accent);
   }
 
   .search-results {
@@ -121,32 +161,32 @@ import { movies } from '../data/movies';
 
   .hint {
     text-align: center;
-    color: #999;
-    font-size: 1.1rem;
+    color: var(--text-secondary);
+    font-size: 1rem;
     padding: 40px;
   }
 
   .no-results {
     text-align: center;
-    color: #666;
-    font-size: 1.1rem;
+    color: var(--text-secondary);
+    font-size: 1rem;
     padding: 40px;
-    background: #f8f9fa;
-    border-radius: 12px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
   }
 
   .result-count {
-    color: #666;
+    color: var(--text-secondary);
     margin-bottom: 16px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   :global(.movie-result) {
     display: block;
     padding: 16px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
     margin-bottom: 12px;
     text-decoration: none;
     color: inherit;
@@ -155,53 +195,38 @@ import { movies } from '../data/movies';
 
   :global(.movie-result:hover) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-hover);
   }
 
   :global(.movie-info h3) {
-    font-size: 1.2rem;
-    color: #333;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
     margin-bottom: 4px;
   }
 
-  :global(.original) {
+  :global(.movie-result .original) {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  :global(.movie-result .meta) {
     font-size: 0.85rem;
-    color: #666;
-    margin-bottom: 8px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
   }
 
-  :global(.meta) {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 8px;
-  }
-
-  :global(.genres) {
+  :global(.movie-result .genres) {
     display: flex;
     gap: 8px;
   }
 
-  :global(.genres span) {
-    background: #f0f0f0;
-    padding: 4px 8px;
+  :global(.movie-result .genres span) {
+    background: var(--bg-secondary);
+    padding: 3px 8px;
     border-radius: 4px;
     font-size: 0.75rem;
-    color: #666;
-  }
-
-  .back-nav {
-    text-align: center;
-    margin-top: 40px;
-    color: #666;
-  }
-
-  .back-nav a {
-    color: #667eea;
-    text-decoration: none;
-    font-weight: 500;
-  }
-
-  .back-nav a:hover {
-    text-decoration: underline;
+    color: var(--text-secondary);
   }
 </style>

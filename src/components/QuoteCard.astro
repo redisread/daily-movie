@@ -15,16 +15,16 @@ const { quote } = Astro.props;
 <style>
   .quote-card {
     padding: 20px;
-    background: #f8f9fa;
-    border-left: 4px solid #667eea;
-    border-radius: 0 8px 8px 0;
-    margin-bottom: 16px;
+    background: var(--bg-secondary);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin-bottom: 12px;
   }
 
   .text {
-    font-size: 1.1rem;
+    font-size: 1rem;
     line-height: 1.6;
-    color: #333;
+    color: var(--text-primary);
     margin-bottom: 8px;
   }
 
@@ -33,7 +33,7 @@ const { quote } = Astro.props;
     justify-content: space-between;
     align-items: center;
     font-size: 0.85rem;
-    color: #666;
+    color: var(--text-secondary);
   }
 
   cite {
@@ -41,8 +41,10 @@ const { quote } = Astro.props;
   }
 
   time {
-    background: #e9ecef;
+    background: var(--bg-card);
     padding: 2px 8px;
     border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.8rem;
   }
 </style>
