@@ -1,5 +1,6 @@
 ---
 import MobileTabBar from '../components/layout/MobileTabBar.astro';
+import Toast from '../components/ui/Toast.astro';
 
 interface Props {
   title: string;
@@ -52,7 +53,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta name="view-transition" content="same-origin" />
   </head>
   <body>
-    <div class="page-wrapper">
+    <a href="#main" class="skip-link">跳到主要内容</a>
+    <div id="main" class="page-wrapper">
       <nav class="global-navbar">
         <a href="/" class="logo">
           <img src="/logo.png" alt="每日电影" width="36" height="36" />
@@ -76,6 +78,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <slot />
       </main>
       <MobileTabBar />
+      <Toast />
       <footer class="global-footer">
         <div class="footer-inner">
           <span>每日电影 © 2026</span>
@@ -88,6 +91,24 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       </footer>
     </div>
   </body>
+  <script>
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Ignore when typing in inputs
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      switch (e.key) {
+        case '/':
+          e.preventDefault();
+          window.location.href = '/search/';
+          break;
+        case 'Escape':
+          // Close any open modals
+          document.querySelectorAll('dialog[open]').forEach(d => d.close());
+          break;
+      }
+    });
+  </script>
 </html>
 
 <style is:global>
