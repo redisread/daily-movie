@@ -88,14 +88,14 @@
   genre: ["剧情", "动作"]
   rating: 9.4
   cover:
-    url: /fallback-poster.svg
+    url: https://upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg
     bg: 'linear-gradient(145deg, #1a2a1a, #2a4a2a, #1a2a1a)'
   posters:
-    - url: /fallback-poster.svg
+    - url: https://upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg
       caption: 官方海报
-    - url: /fallback-poster.svg
+    - url: https://upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg
       caption: 经典画面
-    - url: /fallback-poster.svg
+    - url: https://upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg
       caption: 电影封面
   cast:
     - name: 让·雷诺
@@ -162,14 +162,14 @@
   genre: ["剧情", "历史"]
   rating: 9.5
   cover:
-    url: /fallback-poster.svg
+    url: https://upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg
     bg: 'linear-gradient(145deg, #1a1a1a, #3a3a3a, #1a1a1a)'
   posters:
-    - url: /fallback-poster.svg
+    - url: https://upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg
       caption: 官方海报
-    - url: /fallback-poster.svg
+    - url: https://upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg
       caption: 电影封面
-    - url: /fallback-poster.svg
+    - url: https://upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg
       caption: 经典海报
   cast:
     - name: 连姆·尼森
@@ -199,14 +199,14 @@
   genre: ["剧情", "科幻"]
   rating: 9.3
   cover:
-    url: /fallback-poster.svg
+    url: https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg
     bg: 'linear-gradient(145deg, #1a1a2a, #2a2a4a, #1a1a2a)'
   posters:
-    - url: /fallback-poster.svg
+    - url: https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg
       caption: 官方海报
-    - url: /fallback-poster.svg
+    - url: https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg
       caption: 折叠城市
-    - url: /fallback-poster.svg
+    - url: https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg
       caption: 电影封面
   cast:
     - name: 莱昂纳多·迪卡普里奥
@@ -273,14 +273,14 @@
   genre: ["剧情", "动作"]
   rating: 9.2
   cover:
-    url: /fallback-poster.svg
+    url: https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg
     bg: 'linear-gradient(145deg, #1a1a1a, #3a3a3a, #1a1a1a)'
   posters:
-    - url: /fallback-poster.svg
+    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg
       caption: 官方海报
-    - url: /fallback-poster.svg
+    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg
       caption: 小丑经典形象
-    - url: /fallback-poster.svg
+    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg
       caption: 电影封面
   cast:
     - name: 克里斯蒂安·贝尔
