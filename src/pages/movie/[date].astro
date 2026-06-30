@@ -1,0 +1,138 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import DirectorCard from '../../components/DirectorCard.astro';
+import CastList from '../../components/CastList.astro';
+import PosterGallery from '../../components/PosterGallery.astro';
+import QuoteCard from '../../components/QuoteCard.astro';
+import { movies } from '../../data/movies';
+
+export async function getStaticPaths() {
+  return movies.map(movie => ({
+    params: { date: movie.publishedDate },
+    props: { movie },
+  }));
+}
+
+const { movie } = Astro.props;
+---
+
+<Layout title={movie.title}>
+  <article class="movie-detail">
+    <a href="/" class="back">← 返回首页</a>
+
+    <div class="hero" style={`background: ${movie.cover.bg}`}>
+      <img src={movie.cover.url} alt={movie.title} />
+    </div>
+
+    <h1>{movie.title}</h1>
+    {movie.titleOriginal && <p class="original">{movie.titleOriginal}</p>}
+
+    <div class="meta">
+      <span>📅 {movie.year}</span>
+      <span>⏱️ {movie.duration}分钟</span>
+      <span>⭐ {movie.rating}/10</span>
+      <div class="genres">
+        🎭 {movie.genre.join(' / ')}
+      </div>
+    </div>
+
+    <DirectorCard director={movie.director} />
+
+    <section>
+      <h2>🌟 主演</h2>
+      <CastList cast={movie.cast} />
+    </section>
+
+    <section>
+      <h2>📖 剧情简介</h2>
+      <p class="synopsis">{movie.synopsis}</p>
+    </section>
+
+    <section>
+      <h2>🎞️ 电影海报</h2>
+      <PosterGallery posters={movie.posters} />
+    </section>
+
+    <section>
+      <h2>💬 经典语录</h2>
+      {movie.quotes.map(q => <QuoteCard quote={q} />)}
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .movie-detail {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .back {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .back:hover {
+    text-decoration: underline;
+  }
+
+  .hero {
+    width: 100%;
+    aspect-ratio: 2/3;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  .original {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 16px;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 24px;
+    font-size: 0.95rem;
+    color: #666;
+  }
+
+  .genres {
+    display: flex;
+    gap: 8px;
+  }
+
+  section {
+    margin-bottom: 32px;
+  }
+
+  section h2 {
+    font-size: 1.4rem;
+    color: #333;
+    margin-bottom: 16px;
+  }
+
+  .synopsis {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #444;
+  }
+</style>

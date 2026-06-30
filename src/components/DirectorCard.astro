@@ -1,0 +1,38 @@
+---
+interface Props {
+  director: { name: string; works?: string };
+}
+const { director } = Astro.props;
+---
+<div class="director-card">
+  <h3>导演</h3>
+  <p class="name">{director.name}</p>
+  {director.works && <p class="works">代表作：{director.works}</p>}
+</div>
+
+<style>
+  .director-card {
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
+
+  h3 {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  .name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 4px;
+  }
+
+  .works {
+    font-size: 0.85rem;
+    color: #666;
+  }
+</style>
