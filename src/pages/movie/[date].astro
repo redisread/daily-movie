@@ -17,6 +17,12 @@ const { movie } = Astro.props;
 
 const today = new Date();
 const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+// 相似电影推荐：同类型筛选，按评分排序，排除当前，最多4部
+const similarMovies = movies
+  .filter(m => m.id !== movie.id && m.genre.some(g => movie.genre.includes(g)))
+  .sort((a, b) => b.rating - a.rating)
+  .slice(0, 4);
 ---
 
 <Layout title={movie.title}>
@@ -71,6 +77,26 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
         <h2>💬 经典语录</h2>
         {movie.quotes.map(q => <QuoteCard quote={q} />)}
       </section>
+
+      <!-- 相似电影推荐 -->
+      {similarMovies.length > 0 && (
+        <section class="similar-section">
+          <h2>🎬 相似推荐</h2>
+          <div class="similar-scroll">
+            {similarMovies.map(m => (
+              <a href={`/movie/${m.publishedDate}/`} class="similar-card">
+                <div class="similar-cover" style={`background: ${m.cover.bg}`}>
+                  <img src={m.cover.url} alt={m.title} loading="lazy" onerror="this.src='/fallback-poster.svg'" />
+                </div>
+                <div class="similar-info">
+                  <p class="similar-title">{m.title}</p>
+                  <span class="similar-rating">⭐ {m.rating}</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   </article>
 </Layout>
@@ -195,6 +221,88 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
     padding: 20px;
     background: var(--bg-secondary);
     border-radius: var(--radius);
+  }
+
+  /* 相似电影推荐 */
+  .similar-scroll {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .similar-scroll::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .similar-scroll::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 2px;
+  }
+
+  .similar-scroll::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+
+  .similar-card {
+    flex-shrink: 0;
+    width: 160px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-card);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    scroll-snap-align: start;
+  }
+
+  .similar-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .similar-cover {
+    width: 100%;
+    aspect-ratio: 2/3;
+    overflow: hidden;
+  }
+
+  .similar-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .similar-info {
+    padding: 10px;
+  }
+
+  .similar-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3;
+  }
+
+  .similar-rating {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  @media (min-width: 641px) {
+    .similar-card {
+      width: 180px;
+    }
   }
 
   /* 响应式 */
