@@ -1,0 +1,85 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id = 'toast-container' } = Astro.props;
+---
+
+<div id={id} class="toast-container" aria-live="polite" aria-atomic="true" />
+
+<style>
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .toast {
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-hover);
+    pointer-events: auto;
+    animation: toastIn 0.3s ease;
+    max-width: 320px;
+  }
+
+  .toast.success { border-color: #22c55e; }
+  .toast.error { border-color: #ef4444; }
+  .toast.info { border-color: var(--accent); }
+
+  .toast.removing {
+    animation: toastOut 0.3s ease forwards;
+  }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes toastOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(100%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toast { animation: none; }
+  }
+</style>
+
+<script>
+  // Toast notification system
+  interface ToastOptions {
+    type?: 'info' | 'success' | 'error';
+    duration?: number;
+  }
+
+  function showToast(message: string, options: ToastOptions = {}) {
+    const { type = 'info', duration = 3000 } = options;
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('removing');
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
+  // Expose globally
+  (window as any).showToast = showToast;
+</script>
