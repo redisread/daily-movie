@@ -4,14 +4,15 @@ import { movies } from '../data/movies';
 
 export function GET(context: APIContext) {
   return rss({
-    title: '每日一电影',
-    description: '每日一电影推荐，发现经典好电影',
+    title: '每日电影',
+    description: '每天推荐一部经典电影',
     site: context.site!,
-    items: movies.map((movie) => ({
+    items: movies.map(movie => ({
       title: movie.title,
-      description: movie.synopsis,
       pubDate: new Date(movie.publishedDate),
+      description: movie.synopsis.slice(0, 200),
       link: `/movie/${movie.publishedDate}/`,
     })),
+    customData: '<language>zh-cn</language>',
   });
 }
