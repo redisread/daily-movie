@@ -1,6 +1,6 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
-import { movies } from '../data/schema';
+import { movies } from '../data/movies';
 
 export function GET(context: APIContext) {
   return rss({
@@ -9,9 +9,9 @@ export function GET(context: APIContext) {
     site: context.site!,
     items: movies.map((movie) => ({
       title: movie.title,
-      description: movie.desc,
-      pubDate: movie.publishedDate ? new Date(movie.publishedDate) : new Date(),
-      link: `/movie/${movie.id}/`,
+      description: movie.synopsis,
+      pubDate: new Date(movie.publishedDate),
+      link: `/movie/${movie.publishedDate}/`,
     })),
   });
 }

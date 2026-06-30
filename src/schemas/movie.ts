@@ -1,0 +1,43 @@
+import { z } from "zod";
+
+export const PosterSchema = z.object({
+  url: z.string().url(),
+  caption: z.string().optional(),
+});
+
+export const CastSchema = z.object({
+  name: z.string().min(1),
+  role: z.string().min(1),
+  avatar: z.string().url().optional(),
+});
+
+export const QuoteSchema = z.object({
+  text: z.string().min(1),
+  speaker: z.string().optional(),
+  timestamp: z.string().optional(),  // e.g. "01:23:45"
+});
+
+export const MovieSchema = z.object({
+  id: z.string().regex(/^[a-z0-9-]+$/),  // kebab-case
+  title: z.string().min(1),
+  titleOriginal: z.string().optional(),
+  director: z.object({
+    name: z.string().min(1),
+    works: z.string().optional(),  // 代表作
+  }),
+  year: z.number().int().min(1888).max(2100),
+  duration: z.number().int().min(1),  // 分钟
+  genre: z.array(z.string()).min(1),
+  rating: z.number().min(0).max(10),
+  cover: z.object({
+    url: z.string().url(),
+    bg: z.string(),  // CSS gradient or hex
+  }),
+  posters: z.array(PosterSchema).min(3).max(5),  // 3-5 张
+  cast: z.array(CastSchema).min(3).max(5),  // 3-5 位
+  quotes: z.array(QuoteSchema).min(3).max(10),  // 3-10 条
+  synopsis: z.string().min(1),
+  publishedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
+export type Movie = z.infer<typeof MovieSchema>;

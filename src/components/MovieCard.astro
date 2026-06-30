@@ -1,5 +1,5 @@
 ---
-import type { Movie } from '../data/schema';
+import type { Movie } from '../schemas/movie';
 
 interface Props {
   movie: Movie;
@@ -8,74 +8,95 @@ interface Props {
 const { movie } = Astro.props;
 ---
 
-<article class="movie-card" style={`background: ${movie.coverBg}`}>
-  <div class="movie-info">
-    <h2 class="movie-title">{movie.title}</h2>
-    {movie.titleEn && <p class="movie-title-en">{movie.titleEn}</p>}
-    <p class="movie-director">导演: {movie.director}</p>
-    <p class="movie-meta">
-      <span class="movie-year">{movie.year}</span>
-      <span class="movie-duration">{movie.duration} 分钟</span>
-      <span class="movie-rating">⭐ {movie.rating}</span>
-    </p>
-    <p class="movie-category">{movie.category}</p>
-    <p class="movie-desc">{movie.desc}</p>
+<a href={`/movie/${movie.publishedDate}/`} class="movie-card">
+  <div class="cover" style={`background: ${movie.cover.bg}`}>
+    <img src={movie.cover.url} alt={movie.title} loading="lazy" />
   </div>
-</article>
+  <div class="info">
+    <h3>{movie.title}</h3>
+    {movie.titleOriginal && <p class="original">{movie.titleOriginal}</p>}
+    <p class="meta">
+      导演：{movie.director.name} | {movie.year} | {movie.duration}分钟
+    </p>
+    <div class="genres">
+      {movie.genre.map(g => <span class="genre">{g}</span>)}
+    </div>
+    <p class="rating">⭐ {movie.rating}</p>
+  </div>
+</a>
 
 <style>
   .movie-card {
+    display: block;
     border-radius: 12px;
-    padding: 24px;
-    color: white;
-    transition: transform 0.2s ease;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none;
+    color: inherit;
   }
 
   .movie-card:hover {
     transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   }
 
-  .movie-info {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  .cover {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2/3;
+    overflow: hidden;
   }
 
-  .movie-title {
-    font-size: 1.5rem;
+  .cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .info {
+    padding: 16px;
+  }
+
+  .info h3 {
+    font-size: 1.2rem;
     font-weight: bold;
+    margin-bottom: 4px;
+    color: #333;
   }
 
-  .movie-title-en {
-    font-size: 0.9rem;
-    opacity: 0.8;
-  }
-
-  .movie-director {
-    font-size: 0.9rem;
-    opacity: 0.9;
-  }
-
-  .movie-meta {
-    display: flex;
-    gap: 16px;
+  .original {
     font-size: 0.85rem;
-    opacity: 0.9;
+    color: #666;
+    margin-bottom: 8px;
   }
 
-  .movie-category {
+  .meta {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  .genres {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .genre {
     display: inline-block;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 0.8rem;
-    width: fit-content;
+    background: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #666;
   }
 
-  .movie-desc {
+  .rating {
     font-size: 0.9rem;
-    line-height: 1.5;
-    margin-top: 8px;
-    opacity: 0.9;
+    font-weight: bold;
+    color: #e6a817;
   }
 </style>

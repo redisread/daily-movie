@@ -1,69 +1,39 @@
 # 每日一电影数据
-# 新增/修改电影后，运行 npm run validate:movies 校验
-# publishedDate 格式为 YYYY-MM-DD，未发布为 null
+# 新增/修改电影后，运行 npm run test 验证 schema
+# publishedDate 格式为 YYYY-MM-DD
 
 - id: the-shawshank-redemption
   title: 肖申克的救赎
-  titleEn: The Shawshank Redemption
-  director: 弗兰克·德拉邦特
+  titleOriginal: The Shawshank Redemption
+  director:
+    name: 弗兰克·德拉邦特
+    works: 《肖申克的救赎》《绿里奇迹》
   year: 1994
   duration: 142
+  genre: ["剧情"]
   rating: 9.7
-  category: 剧情
-  desc: 一个被冤枉的银行家在肖申克监狱中用智慧和毅力重获自由的故事。影片展现了希望、友谊和人性的光辉，是影史上最伟大的励志电影之一。
-  coverBg: 'linear-gradient(145deg, #1a2a3a, #2a4a6a, #1a2a3a)'
-  coverTitle: 肖申克的救赎
-  coverDirector: 德拉邦特
-  poster: https://example.com/shawshank.jpg
+  cover:
+    url: https://example.com/shawshank-cover.jpg
+    bg: 'linear-gradient(145deg, #1a2a3a, #2a4a6a, #1a2a3a)'
+  posters:
+    - url: https://example.com/shawshank-poster-1.jpg
+      caption: 安迪在雨中拥抱自由的经典画面
+    - url: https://example.com/shawshank-poster-2.jpg
+    - url: https://example.com/shawshank-poster-3.jpg
   cast:
-    - 蒂姆·罗宾斯
-    - 摩根·弗里曼
+    - name: 蒂姆·罗宾斯
+      role: 安迪·杜佛兰
+    - name: 摩根·弗里曼
+      role: 瑞德
+    - name: 鲍勃·冈顿
+      role: 诺顿典狱长
   quotes:
     - text: 希望是好事，也许是人间至善，而美好的事永不消逝。
-      character: 安迪
+      speaker: 安迪
+      timestamp: "01:23:45"
     - text: 有些鸟儿是关不住的，它们的每一片羽毛都闪耀着自由的光辉。
-      character: 瑞德
-
-- id: forrest-gump
-  title: 阿甘正传
-  titleEn: Forrest Gump
-  director: 罗伯特·泽米吉斯
-  year: 1994
-  duration: 142
-  rating: 9.5
-  category: 剧情
-  desc: 一个智商只有75的傻小子，却凭借单纯、善良和永不放弃的精神，成为了橄榄球明星、战争英雄和商业大亨。影片通过阿甘的传奇人生，展现了美国几十年的历史变迁。
-  coverBg: 'linear-gradient(145deg, #3a2a1a, #6a4a2a, #3a2a1a)'
-  coverTitle: 阿甘正传
-  coverDirector: 泽米吉斯
-  poster: https://example.com/forrest-gump.jpg
-  cast:
-    - 汤姆·汉克斯
-    - 罗宾·怀特
-  quotes:
-    - text: 人生就像一盒巧克力，你永远不知道下一块会是什么味道。
-      character: 阿甘
-    - text: 妈妈说，死亡是生命的一部分，我真希望不是这样。
-      character: 阿甘
-
-- id: inception
-  title: 盗梦空间
-  titleEn: Inception
-  director: 克里斯托弗·诺兰
-  year: 2010
-  duration: 148
-  rating: 9.3
-  category: 科幻
-  desc: 一个专门从别人梦境中窃取秘密的盗梦者，接受了一项几乎不可能完成的任务：在目标的潜意识中植入一个想法。影片融合了科幻、动作和悬疑元素，探讨了梦境与现实的边界。
-  coverBg: 'linear-gradient(145deg, #0a1a2a, #1a3a5a, #0a1a2a)'
-  coverTitle: 盗梦空间
-  coverDirector: 诺兰
-  poster: https://example.com/inception.jpg
-  cast:
-    - 莱昂纳多·迪卡普里奥
-    - 渡边谦
-  quotes:
-    - text: 一个想法就像病毒，既顽强又具有传染性。
-      character: 柯布
-    - text: 我们做梦的时候，梦境是真实的，对吧？
-      character: 阿里阿德涅
+      speaker: 瑞德
+    - text: 监狱的高墙一开始你会恨它，然后你会习惯它，最后你会离不开它。
+      speaker: 瑞德
+  synopsis: 1947年，年轻的银行家安迪·杜佛兰因被指控谋杀妻子及其情夫而含冤入狱，被判无期徒刑。在肖申克监狱中，他凭借金融才能帮助狱警和典狱长处理税务，逐渐获得特殊地位，并结识了黑人囚犯瑞德。27年间，安迪始终怀抱希望，用一把小石锤和一幅海报秘密挖掘通道，最终在一个雨夜成功越狱……
+  publishedDate: '2026-06-30'

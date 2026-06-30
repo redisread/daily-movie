@@ -1,13 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MovieCard from '../components/MovieCard.astro';
-import { movies } from '../data/schema';
+import { movies } from '../data/movies';
 
-// 获取今日推荐（暂时用第一个电影）
+// 获取今日推荐（按 publishedDate 倒序第一本）
 const todayMovie = movies[0];
 ---
 
-<Layout title="首页">
+<Layout title="今日电影">
   <main>
     <header class="hero">
       <h1>每日一电影</h1>
