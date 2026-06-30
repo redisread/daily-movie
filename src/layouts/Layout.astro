@@ -1,4 +1,6 @@
 ---
+import MobileTabBar from '../components/layout/MobileTabBar.astro';
+
 interface Props {
   title: string;
   description?: string;
@@ -73,6 +75,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       <main class="page-content">
         <slot />
       </main>
+      <MobileTabBar />
       <footer class="global-footer">
         <div class="footer-inner">
           <span>每日电影 © 2026</span>
@@ -188,6 +191,13 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
   .page-content {
     flex: 1;
+    padding-bottom: 0;
+  }
+
+  @media (max-width: 640px) {
+    .page-content {
+      padding-bottom: 60px;
+    }
   }
 
   /* Global navbar */
@@ -296,5 +306,18 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       flex-direction: column;
       text-align: center;
     }
+  }
+
+  /* View Transitions */
+  @view-transition {
+    navigation: auto;
+  }
+
+  /* Safe area insets */
+  body {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 </style>

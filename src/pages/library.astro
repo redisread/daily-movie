@@ -75,6 +75,47 @@ filteredMovies = [...filteredMovies].sort((a, b) => {
   </main>
 </Layout>
 
+<script>
+  // Touch swipe + pull-to-refresh for library
+  const moviesGrid = document.getElementById('moviesGrid');
+  if (moviesGrid) {
+    let touchStartY = 0;
+    let isRefreshing = false;
+    let overscroll = 0;
+
+    document.addEventListener('touchstart', (e) => {
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+      const currentY = e.touches[0].clientY;
+      overscroll = currentY - touchStartY;
+
+      if (window.scrollY === 0 && overscroll > 0 && overscroll < 150) {
+        document.body.style.setProperty('--pull-progress', Math.min(overscroll / 80, 1));
+        if (overscroll > 60) {
+          document.body.classList.add('can-refresh');
+        }
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchend', () => {
+      if (window.scrollY === 0 && overscroll > 80 && !isRefreshing) {
+        isRefreshing = true;
+        document.body.classList.add('refreshing');
+        setTimeout(() => {
+          document.body.classList.remove('refreshing', 'can-refresh');
+          isRefreshing = false;
+          location.reload();
+        }, 800);
+      } else {
+        document.body.classList.remove('can-refresh');
+      }
+      overscroll = 0;
+    }, { passive: true });
+  }
+</script>
+
 <style>
   main {
     max-width: 1200px;
@@ -213,5 +254,25 @@ filteredMovies = [...filteredMovies].sort((a, b) => {
     .movies-grid {
       grid-template-columns: repeat(4, 1fr);
     }
+  }
+
+  /* Pull to refresh */
+  body.can-refresh::before {
+    content: '↓ 下拉刷新';
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+    z-index: 9999;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  body.refreshing::before {
+    content: '⟳ 刷新中...';
+    opacity: 1;
   }
 </style>
