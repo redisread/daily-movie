@@ -1,0 +1,72 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MovieCard from '../components/MovieCard.astro';
+import { movies } from '../data/movies';
+
+const sortedMovies = [...movies].sort((a, b) => b.publishedDate.localeCompare(a.publishedDate));
+---
+
+<Layout title="电影库" activeTab="library">
+  <main>
+    <header class="page-header">
+      <h1>电影库</h1>
+      <p>共 {sortedMovies.length} 部电影</p>
+    </header>
+
+    <div class="movies-grid">
+      {sortedMovies.map((movie, idx) => (
+        <MovieCard movie={movie} delay={idx * 0.1} />
+      ))}
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .page-header p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+  }
+
+  .movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  @media (max-width: 640px) {
+    .movies-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .movies-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 1025px) {
+    .movies-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>
