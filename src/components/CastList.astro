@@ -7,7 +7,7 @@ const { cast } = Astro.props;
 <div class="cast-list">
   {cast.map(member => (
     <div class="cast-item">
-      {member.avatar && <img src={member.avatar} alt={member.name} class="avatar" />}
+      {member.avatar && <img src={member.avatar} alt={member.name} class="avatar" onerror="this.style.display='none'" />}
       <div class="cast-info">
         <p class="name">{member.name}</p>
         <p class="role">饰 {member.role}</p>

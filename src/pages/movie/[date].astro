@@ -30,7 +30,7 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
     <!-- 主海报 -->
     <div class="hero-section">
       <div class="hero-cover" style={`background: ${movie.cover.bg}`}>
-        <img src={movie.cover.url} alt={movie.title} />
+        <img src={movie.cover.url} alt={movie.title} onerror="this.src='/fallback-poster.svg'" />
       </div>
       <div class="hero-info">
         <h1>{movie.title}</h1>

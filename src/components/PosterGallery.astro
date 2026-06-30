@@ -7,7 +7,7 @@ const { posters } = Astro.props;
 <div class="poster-gallery">
   {posters.map((poster, idx) => (
     <figure>
-      <img src={poster.url} alt={poster.caption || `海报 ${idx+1}`} loading="lazy" />
+      <img src={poster.url} alt={poster.caption || `海报 ${idx+1}`} loading="lazy" onerror="this.src='/fallback-poster.svg'" />
       {poster.caption && <figcaption>{poster.caption}</figcaption>}
     </figure>
   ))}
