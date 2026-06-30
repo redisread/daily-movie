@@ -37,3 +37,223 @@
       speaker: 瑞德
   synopsis: 1947年，年轻的银行家安迪·杜佛兰因被指控谋杀妻子及其情夫而含冤入狱，被判无期徒刑。在肖申克监狱中，他凭借金融才能帮助狱警和典狱长处理税务，逐渐获得特殊地位，并结识了黑人囚犯瑞德。27年间，安迪始终怀抱希望，用一把小石锤和一幅海报秘密挖掘通道，最终在一个雨夜成功越狱……
   publishedDate: '2026-06-30'
+
+- id: forrest-gump
+  title: 阿甘正传
+  titleOriginal: Forrest Gump
+  director:
+    name: 罗伯特·泽米吉斯
+    works: 《阿甘正传》《回到未来》《荒岛余生》
+  year: 1994
+  duration: 142
+  genre: ["剧情", "爱情"]
+  rating: 9.5
+  cover:
+    url: https://upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
+    bg: 'linear-gradient(145deg, #2a3a4a, #4a6a8a, #2a3a4a)'
+  posters:
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Forrest_Gump_poster.jpg/800px-Forrest_Gump_poster.jpg
+      caption: 阿甘坐在长椅上等待公交车
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Tom_Hanks_2016.jpg/800px-Tom_Hanks_2016.jpg
+  cast:
+    - name: 汤姆·汉克斯
+      role: 阿甘
+    - name: 罗宾·怀特
+      role: 珍妮
+    - name: 加里·西尼斯
+      role: 丹中尉
+  quotes:
+    - text: 生活就像一盒巧克力，你永远不知道下一颗是什么味道。
+      speaker: 阿甘
+    - text: 妈妈说，人生就像一盒巧克力，结果往往出人意料。
+      speaker: 阿甘
+  synopsis: 阿甘是一名智商只有75的低能儿，但在母亲的爱护下，他纯朴善良，凭借专注和执着，在橄榄球、乒乓球、捕虾等多个领域取得成功，并见证了美国历史上的多个重要时刻。
+  publishedDate: '2026-06-29'
+
+- id: leon-the-professional
+  title: 这个杀手不太冷
+  titleOriginal: Léon: The Professional
+  director:
+    name: 吕克·贝松
+    works: 《这个杀手不太冷》《第五元素》《碧海蓝天》
+  year: 1994
+  duration: 110
+  genre: ["剧情", "动作"]
+  rating: 9.4
+  cover:
+    url: https://upload.wikimedia.org/wikipedia/en/2/23/Leon_poster.jpg
+    bg: 'linear-gradient(145deg, #1a2a1a, #2a4a2a, #1a2a1a)'
+  posters:
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Leon_poster.jpg/800px-Leon_poster.jpg
+      caption: 里昂和玛蒂尔达的经典合影
+  cast:
+    - name: 让·雷诺
+      role: 里昂
+    - name: 娜塔莉·波特曼
+      role: 玛蒂尔达
+    - name: 加里·奥德曼
+      role: 史丹菲尔
+  quotes:
+    - text: 人生总是这么苦吗，还是只有童年如此？
+      speaker: 玛蒂尔达
+    - text: 总是如此。
+      speaker: 里昂
+    - text: 我想我爱上你了，莱昂。
+      speaker: 玛蒂尔达
+  synopsis: 12岁的玛蒂尔达全家被恶毒的缉毒警察史丹菲尔杀害，只有外出购物的大女儿幸存。她敲开了邻居——职业杀手里昂的门，请求他教自己杀手技能以报家仇。两人在相处中产生了深厚的感情。
+  publishedDate: '2026-06-28'
+
+- id: the-godfather
+  title: 教父
+  titleOriginal: The Godfather
+  director:
+    name: 弗朗西斯·福特·科波拉
+    works: 《教父》三部曲《现代启示录》
+  year: 1972
+  duration: 175
+  genre: ["剧情", "犯罪"]
+  rating: 9.3
+  cover:
+    url: https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
+    bg: 'linear-gradient(145deg, #0a0a0a, #2a2a2a, #0a0a0a)'
+  posters:
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Godfather_poster.jpg/800px-Godfather_poster.jpg
+      caption: 维托·柯里昂的经典形象
+  cast:
+    - name: 马龙·白兰度
+      role: 维托·柯里昂
+    - name: 阿尔·帕西诺
+      role: 迈克尔·柯里昂
+    - name: 詹姆斯·卡恩
+      role: 桑尼·柯里昂
+  quotes:
+    - text: 我会给他一个他无法拒绝的条件。
+      speaker: 维托·柯里昂
+    - text: 不照顾家人的男人，根本算不上是个男人。
+      speaker: 维托·柯里昂
+  synopsis: 以维托·柯里昂为首的黑帮家族在纽约势力庞大，小儿子迈克尔本不想参与家族生意，但在父亲被暗杀后，他被迫卷入黑帮斗争，最终成为新一代教父。
+  publishedDate: '2026-06-27'
+
+- id: schindlers-list
+  title: 辛德勒的名单
+  titleOriginal: Schindler's List
+  director:
+    name: 史蒂文·斯皮尔伯格
+    works: 《辛德勒的名单》《拯救大兵瑞恩》《E.T.》
+  year: 1993
+  duration: 195
+  genre: ["剧情", "历史"]
+  rating: 9.5
+  cover:
+    url: https://upload.wikimedia.org/wikipedia/en/3/38/SchindlersList_movie.jpg
+    bg: 'linear-gradient(145deg, #1a1a1a, #3a3a3a, #1a1a1a)'
+  posters:
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/SchindlersList_movie.jpg/800px-SchindlersList_movie.jpg
+      caption: 辛德勒与犹太工人的合影
+  cast:
+    - name: 连姆·尼森
+      role: 奥斯卡·辛德勒
+    - name: 拉尔夫·费因斯
+      role: 阿蒙·哥特
+    - name: 本·金斯利
+      role: 伊扎克·斯特恩
+  quotes:
+    - text: 救一个人，就是救全世界。
+      speaker: 伊扎克·斯特恩
+    - text: 这份名单就是生命，名单周围是广阔的深渊。
+      speaker: 辛德勒
+  synopsis: 二战期间，德国商人奥斯卡·辛德勒通过雇佣犹太工人到自己的工厂，保护他们免受纳粹迫害，最终拯救了1200多名犹太人的生命。
+  publishedDate: '2026-06-26'
+
+- id: inception
+  title: 盗梦空间
+  titleOriginal: Inception
+  director:
+    name: 克里斯托弗·诺兰
+    works: 《盗梦空间》《蝙蝠侠》三部曲《星际穿越》
+  year: 2010
+  duration: 148
+  genre: ["剧情", "科幻"]
+  rating: 9.3
+  cover:
+    url: https://upload.wikimedia.org/wikipedia/en/7/7f/Inception_ver3.jpg
+    bg: 'linear-gradient(145deg, #1a1a2a, #2a2a4a, #1a1a2a)'
+  posters:
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Inception_poster.jpg/800px-Inception_poster.jpg
+      caption: 折叠城市的经典场景
+  cast:
+    - name: 莱昂纳多·迪卡普里奥
+      role: 柯布
+    - name: 约瑟夫·高登-莱维特
+      role: 亚瑟
+    - name: 艾伦·佩吉
+      role: 阿丽阿德妮
+  quotes:
+    - text: 你在等火车，一辆能带你去远方的火车。
+      speaker: 柯布
+    - text: 不要尝试从记忆中重建场景，要想象全新的地方。
+      speaker: 阿丽阿德妮
+  synopsis: 柯布是一名经验丰富的盗梦者，擅长在目标人物睡着时潜入其梦境窃取机密。为了回家与孩子团聚，他接受了一项看似不可能的任务：在目标脑中植入一个想法。
+  publishedDate: '2026-06-25'
+
+- id: interstellar
+  title: 星际穿越
+  titleOriginal: Interstellar
+  director:
+    name: 克里斯托弗·诺兰
+    works: 《星际穿越》《盗梦空间》《蝙蝠侠》三部曲
+  year: 2014
+  duration: 169
+  genre: ["剧情", "科幻"]
+  rating: 9.3
+  cover:
+    url: https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
+    bg: 'linear-gradient(145deg, #0a0a1a, #1a1a3a, #0a0a1a)'
+  posters:
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Interstellar_film_poster.jpg/800px-Interstellar_film_poster.jpg
+      caption: 库珀在玉米地仰望星空
+  cast:
+    - name: 马修·麦康纳
+      role: 库珀
+    - name: 安妮·海瑟薇
+      role: 布兰德博士
+    - name: 杰西卡·查斯坦
+      role: 墨菲
+  quotes:
+    - text: 不要温和地走进那个良夜。
+      speaker: 布兰德教授
+    - text: 爱是唯一可以超越时间与空间的事物。
+      speaker: 布兰德博士
+  synopsis: 地球环境恶化，前 NASA 飞行员库珀为了拯救人类，告别儿女，与其他探险家一起穿越虫洞，寻找人类的新家园。
+  publishedDate: '2026-06-24'
+
+- id: the-dark-knight
+  title: 蝙蝠侠：黑暗骑士
+  titleOriginal: The Dark Knight
+  director:
+    name: 克里斯托弗·诺兰
+    works: 《蝙蝠侠》三部曲《盗梦空间》《星际穿越》
+  year: 2008
+  duration: 152
+  genre: ["剧情", "动作"]
+  rating: 9.2
+  cover:
+    url: https://upload.wikimedia.org/wikipedia/en/8/8b/Dark_Knight.jpg
+    bg: 'linear-gradient(145deg, #1a1a1a, #3a3a3a, #1a1a1a)'
+  posters:
+    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Dark_Knight.jpg/800px-Dark_Knight.jpg
+      caption: 小丑的经典形象
+  cast:
+    - name: 克里斯蒂安·贝尔
+      role: 蝙蝠侠/布鲁斯·韦恩
+    - name: 希斯·莱杰
+      role: 小丑
+    - name: 艾伦·艾克哈特
+      role: 哈维·丹特
+  quotes:
+    - text: 为什么这么严肃？
+      speaker: 小丑
+    - text: 要么作为英雄死去，要么活得够久，看到自己变成恶人。
+      speaker: 哈维·丹特
+  synopsis: 蝙蝠侠与戈登警长、检察官哈维·丹特联手打击犯罪，但神秘的小丑出现，用混乱和恐惧挑战蝙蝠侠的道德底线，迫使他在正义与黑暗之间做出选择。
+  publishedDate: '2026-06-23'
