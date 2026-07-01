@@ -15,6 +15,7 @@
   --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
   --radius: 12px;
   --radius-lg: 16px;
+  --radius-sm: 8px;
   --font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 }

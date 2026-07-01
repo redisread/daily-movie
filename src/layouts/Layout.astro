@@ -261,11 +261,21 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 16px 24px;
     max-width: 1200px;
     width: 100%;
     margin: 0 auto;
     border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(245, 244, 239, 0.8);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+  }
+
+  [data-theme="dark"] .global-navbar {
+    background: rgba(26, 26, 26, 0.85);
   }
 
   .global-navbar .logo {
@@ -353,8 +363,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   /* Global footer */
   .global-footer {
     border-top: 1px solid var(--border);
-    padding: 24px 20px;
-    margin-top: 60px;
+    padding: 32px 24px;
+    margin-top: 80px;
   }
 
   .footer-inner {
