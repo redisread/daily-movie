@@ -24,6 +24,7 @@ export const QuoteSchema = z.object({
 
 export const MovieSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/),  // kebab-case
+  type: z.enum(["movie", "tv"]).default("movie"),  // 类型: movie | tv 剧集
   title: z.string().min(1),
   titleOriginal: z.string().optional(),
   director: z.object({

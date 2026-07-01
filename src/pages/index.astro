@@ -67,6 +67,7 @@ const quotesJson = JSON.stringify(todayQuotes);
             <span>⏱ {todayMovie.duration}min</span>
           </div>
           <div class="meta">
+            <span>{todayMovie.type === 'tv' ? '📺 剧集' : '🎬 电影'}</span>
             <span>🎭 {todayMovie.genre.join(' / ')}</span>
             <span>🎬 {todayMovie.director.name}</span>
           </div>

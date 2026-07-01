@@ -9,12 +9,16 @@ const allGenres = [...new Set(movies.flatMap(m => m.genre))].sort();
 
 // 读取 URL 参数（SSR）
 const selectedGenre = Astro.url.searchParams.get('genre') || 'all';
+const selectedType = Astro.url.searchParams.get('type') || 'all';
 const sortBy = Astro.url.searchParams.get('sort') || 'publishedDate';
 
 // 筛选电影
 let filteredMovies = movies;
 if (selectedGenre !== 'all') {
   filteredMovies = movies.filter(m => m.genre.includes(selectedGenre));
+}
+if (selectedType !== 'all') {
+  filteredMovies = movies.filter(m => m.type === selectedType);
 }
 
 // 排序
@@ -42,6 +46,15 @@ filteredMovies = [...filteredMovies].sort((a, b) => {
           {allGenres.map(genre => (
             <a href={`/library/?genre=${genre}`} class:list={[{ 'active': selectedGenre === genre }]} role="button" aria-label={`筛选: ${genre}`}>{genre}</a>
           ))}
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-label">形式</span>
+        <div class="filter-options">
+          <a href={`/library/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}type=all`} class:list={[{ 'active': selectedType === 'all' }]} role="button">全部</a>
+          <a href={`/library/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}type=movie`} class:list={[{ 'active': selectedType === 'movie' }]} role="button">🎬 电影</a>
+          <a href={`/library/?${selectedGenre !== 'all' ? `genre=${selectedGenre}&` : ''}type=tv`} class:list={[{ 'active': selectedType === 'tv' }]} role="button">📺 剧集</a>
         </div>
       </div>
 

@@ -43,6 +43,7 @@ const similarMovies = movies
         {movie.titleOriginal && <p class="original">{movie.titleOriginal}</p>}
         <div class="meta">
           <span class="rating-badge">⭐ {movie.rating}</span>
+          <span class="type-badge">{movie.type === 'tv' ? '📺 剧集' : '🎬 电影'}</span>
           <span class="genre">{movie.genre.join(' / ')}</span>
           <span class="year">{movie.year}</span>
           <span class="duration">{movie.duration}分钟</span>
@@ -192,6 +193,15 @@ const similarMovies = movies
 
   .genre {
     color: var(--text-secondary);
+  }
+
+  .type-badge {
+    padding: 4px 10px;
+    background: var(--accent-hover);
+    color: var(--bg-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 4px;
   }
 
   .year, .duration {
