@@ -15,7 +15,7 @@ const { movie, delay = 0 } = Astro.props;
   style={`animation-delay: ${delay}s`}
 >
   <div class="cover" style={`background: ${movie.cover.bg}`}>
-    <img src={movie.cover.url} alt={movie.title} loading="lazy" onerror="this.src='/fallback-poster.svg'; this.classList.add('loaded')" class="poster-img" />
+    <img src={movie.cover.url} alt={movie.title} loading="lazy" width="300" height="450" onerror="this.src='/fallback-poster.svg'; this.classList.add('loaded')" class="poster-img" />
   </div>
   <div class="info">
     <h3>{movie.title}</h3>
