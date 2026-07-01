@@ -1,0 +1,25 @@
+{
+  "name": "每日电影 - 每日一电影推荐",
+  "short_name": "每日电影",
+  "description": "每日推荐一部经典电影",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1A1A1A",
+  "theme_color": "#D4A800",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["entertainment", "lifestyle"],
+  "lang": "zh-CN"
+}
