@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://daily-movie.pages.dev/sitemap-index.xml
+Sitemap: https://daily-movie.jiahongw.com/sitemap.xml
