@@ -8,6 +8,7 @@ const urlOrPath = z.string().refine(
 export const PosterSchema = z.object({
   url: urlOrPath,
   caption: z.string().optional(),
+  video: urlOrPath.optional(),  // 微动预览视频（可选，3-5 秒）
 });
 
 export const CastSchema = z.object({
@@ -38,6 +39,7 @@ export const MovieSchema = z.object({
   cover: z.object({
     url: urlOrPath,
     bg: z.string(),  // CSS gradient or hex
+    video: urlOrPath.optional(),  // 首屏海报微动预览（可选，3-5 秒）
   }),
   posters: z.array(PosterSchema).min(3).max(5),  // 3-5 张
   cast: z.array(CastSchema).min(3).max(5),  // 3-5 位

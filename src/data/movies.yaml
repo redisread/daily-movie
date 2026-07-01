@@ -17,6 +17,7 @@
   cover:
     url: https://upload.wikimedia.org/wikipedia/en/6/61/Breaking_Bad_title_card.png
     bg: 'linear-gradient(145deg, #1a3a1a, #2a5a2a, #1a3a1a)'
+    video: https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4
   posters:
     - url: https://upload.wikimedia.org/wikipedia/en/6/61/Breaking_Bad_title_card.png
       caption: 标题卡

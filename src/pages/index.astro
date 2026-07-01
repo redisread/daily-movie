@@ -9,6 +9,10 @@ const todayMovie = movies[0];
 const allMovieIds = movies.map(m => m.id);
 const moviesJson = JSON.stringify(movies.map(m => ({ id: m.id, title: m.title, titleOriginal: m.titleOriginal, cover: m.cover, genre: m.genre, rating: m.rating, quotes: m.quotes.slice(0, 3) })));
 
+// 是否启用微动海报（桌面端 + 有视频时）
+// 用 client script 动态判断视口，不在 SSR 阶段假定
+const initialHasVideo = Boolean(todayMovie?.cover.video);
+
 // 格式化今日日期
 const today = new Date();
 const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -29,17 +33,31 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
     </header>
 
     {todayMovie && (
-      <div class="stage" data-movie-id={todayMovie.id}>
-        <!-- 海报 -->
+      <div class="stage" data-movie-id={todayMovie.id} data-has-video={initialHasVideo}>
+        <!-- 海报（支持微动预览视频） -->
         <figure class="poster">
-          <div class="poster-frame">
-            <img
-              src={todayMovie.cover.url}
-              alt={todayMovie.title}
-              class="poster-img"
-              onerror="this.src='/fallback-poster.svg'"
-              fetchpriority="high"
-            />
+          <div class="poster-frame" style={`background: ${todayMovie.cover.bg}`}>
+            {initialHasVideo ? (
+              <video
+                class="poster-video"
+                src={todayMovie.cover.video}
+                poster={todayMovie.cover.url}
+                muted
+                autoplay
+                loop
+                playsinline
+                preload="metadata"
+                aria-label={todayMovie.title}
+              ></video>
+            ) : (
+              <img
+                src={todayMovie.cover.url}
+                alt={todayMovie.title}
+                class="poster-img"
+                onerror="this.src='/fallback-poster.svg'"
+                fetchpriority="high"
+              />
+            )}
           </div>
         </figure>
 
@@ -82,14 +100,61 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
 </Layout>
 
 <script>
-  // 「换一部」逻辑
+  // 「换一部」逻辑 + 视频/图片切换 + 移动端降级
   const stage = document.querySelector('.stage') as HTMLElement | null;
   if (stage) {
     const moviesData = JSON.parse(stage.parentElement!.dataset.movies || '[]');
     const btnNext = document.getElementById('btn-next') as HTMLButtonElement | null;
     const quoteText = document.querySelector('.quote-text') as HTMLElement | null;
-    const movieTitle = stage.querySelector('.poster-img') as HTMLImageElement | null;
     const moviePoster = stage.querySelector('.poster-frame') as HTMLElement | null;
+
+    // 移动端降级：< 768px 不加载视频，节省流量
+    const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+
+    // 替换媒体元素：img <-> video
+    function setMedia(coverUrl: string, videoUrl: string | null) {
+      if (!moviePoster) return;
+      const existing = moviePoster.querySelector('.poster-img, .poster-video');
+      const useVideo = !!videoUrl && !isMobile();
+
+      if (useVideo) {
+        // 已有 video → 换 src
+        if (existing && existing.tagName === 'VIDEO') {
+          (existing as HTMLVideoElement).src = videoUrl;
+          (existing as HTMLVideoElement).poster = coverUrl;
+          (existing as HTMLVideoElement).load();
+          (existing as HTMLVideoElement).play().catch(() => {});
+        } else {
+          // 替换为 video
+          if (existing) existing.remove();
+          const v = document.createElement('video');
+          v.className = 'poster-video';
+          v.src = videoUrl;
+          v.poster = coverUrl;
+          v.muted = true;
+          v.autoplay = true;
+          v.loop = true;
+          v.playsInline = true;
+          v.preload = 'metadata';
+          v.setAttribute('aria-label', stage.querySelector('.cinema-header')?.textContent || '');
+          moviePoster.appendChild(v);
+        }
+      } else {
+        // 切到图片
+        if (existing && existing.tagName === 'IMG') {
+          (existing as HTMLImageElement).src = coverUrl;
+        } else {
+          if (existing) existing.remove();
+          const img = document.createElement('img');
+          img.className = 'poster-img';
+          img.src = coverUrl;
+          img.alt = stage.querySelector('.cinema-footer')?.textContent || '';
+          img.setAttribute('fetchpriority', 'high');
+          img.onerror = () => { img.src = '/fallback-poster.svg'; };
+          moviePoster.appendChild(img);
+        }
+      }
+    }
 
     btnNext?.addEventListener('click', () => {
       // 随机选一部（不是当前的）
@@ -101,13 +166,12 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
 
       // 更新 URL 不刷新（SPA 式切换）
       stage.dataset.movieId = pick.id;
+      stage.dataset.hasVideo = String(Boolean(pick.cover.video));
       if (moviePoster) {
         moviePoster.style.background = pick.cover.bg;
       }
-      if (movieTitle) {
-        movieTitle.src = pick.cover.url;
-        movieTitle.alt = pick.title;
-      }
+      setMedia(pick.cover.url, pick.cover.video || null);
+
       if (quoteText && pick.quotes?.length > 0) {
         const q = pick.quotes[Math.floor(Math.random() * pick.quotes.length)];
         quoteText.textContent = `「${q}」`;
@@ -130,6 +194,20 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
         ctaLink.href = `/movie/${pick.id}/`;
       }
     });
+
+    // 视口变化时响应：跨移动端 ↔ 桌面端时切换媒体类型
+    // 使用 matchMedia 监听，< 768px 强制静态，>= 768px 启用视频
+    const mobileQuery = window.matchMedia('(max-width: 767px)');
+    const handleBreakpoint = (_e: MediaQueryListEvent | MediaQueryList) => {
+      const currentStage = document.querySelector('.stage') as HTMLElement | null;
+      if (!currentStage) return;
+      const currentId = currentStage.dataset.movieId;
+      const current = moviesData.find((m: any) => m.id === currentId);
+      if (!current) return;
+      // 视口跨边界 → 重设媒体
+      setMedia(current.cover.url, current.cover.video || null);
+    };
+    mobileQuery.addEventListener?.('change', handleBreakpoint);
   }
 </script>
 
@@ -240,6 +318,13 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
     object-fit: cover;
     display: block;
     transition: opacity 0.3s ease;
+  }
+
+  .poster-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   /* 金句 */
@@ -372,6 +457,13 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
   }
 
   /* 响应式 */
+  @media (max-width: 767px) {
+    /* 移动端禁用微动视频，节省流量 */
+    .poster-video {
+      display: none;
+    }
+  }
+
   @media (max-width: 640px) {
     .poster {
       width: 200px;
