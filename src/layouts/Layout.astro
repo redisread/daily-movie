@@ -7,13 +7,15 @@ interface Props {
   description?: string;
   image?: string;
   activeTab?: 'home' | 'library' | 'search' | 'archive';
+  fullscreen?: boolean;
 }
 
 const {
   title,
-  description = '每日一电影推荐，发现经典好电影',
+  description = '每日一影院 — 每天一部电影，触发观影欲望',
   image,
   activeTab,
+  fullscreen = false,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -53,17 +55,17 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <script type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      'name': '每日电影',
+      'name': '每日一影院',
       'alternateName': 'Daily Movie',
       'url': 'https://daily-movie.jiahongw.com',
       'description': '每日推荐一部经典电影',
       'inLanguage': 'zh-CN'
     })} />
   </head>
-  <body>
+  <body class:list={[{ 'cinema-mode': fullscreen }]}>
     <a href="#main" class="skip-link">跳到主要内容</a>
     <div id="main" class="page-wrapper">
-      <nav class="global-navbar" role="navigation" aria-label="主导航">
+      <nav class="global-navbar" role="navigation" aria-label="主-navigation">
         <a href="/" class="logo">
           <img src="/logo.png" alt="每日电影" width="36" height="36" />
           <span>每日电影</span>
@@ -112,8 +114,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <div class="footer-inner">
           <span>每日电影 © 2026</span>
           <div class="footer-links">
-            <a href="/rss.xml">RSS 订阅</a>
-            <a href="/archive/">归档</a>
+            <a href="/rss.xml">RSS</a>
             <a href="https://github.com/redisread/daily-movie" target="_blank" rel="noopener">GitHub</a>
           </div>
         </div>
@@ -142,14 +143,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      switch (e.key) {
-        case '/':
-          e.preventDefault();
-          window.location.href = '/search/';
-          break;
-        case 'Escape':
-          document.querySelectorAll('dialog[open]').forEach(d => d.close());
-          break;
+      if (e.key === 'Escape') {
+        document.querySelectorAll('dialog[open]').forEach(d => d.close());
       }
     });
 
@@ -248,6 +243,17 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   .page-content {
     flex: 1;
     padding-bottom: 0;
+  }
+
+  /* Cinema mode: hide chrome */
+  body.cinema-mode .global-navbar,
+  body.cinema-mode .global-footer,
+  body.cinema-mode .mobile-tab-bar {
+    display: none !important;
+  }
+
+  body.cinema-mode .page-content {
+    padding-bottom: 0 !important;
   }
 
   @media (max-width: 640px) {
