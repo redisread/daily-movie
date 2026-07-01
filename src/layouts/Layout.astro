@@ -31,12 +31,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <link rel="apple-touch-icon" href="/logo.png" />
     <link rel="alternate" type="application/rss+xml" title="每日一电影 RSS" href="/rss.xml" />
     <link rel="stylesheet" href="/styles/anthropic-theme.css" />
+    <link rel="preload" href="/logo.png" as="image" />
+    <link rel="preload" href="/fallback-poster.svg" as="image" />
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     {image && <meta property="og:image" content={image} />}
+    <meta property="og:site_name" content="每日一电影" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -46,11 +49,20 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
     <title>{title} | 每日一电影</title>
     <meta name="view-transition" content="same-origin" />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      'name': '每日电影',
+      'alternateName': 'Daily Movie',
+      'url': 'https://daily-movie.jiahongw.com',
+      'description': '每日推荐一部经典电影',
+      'inLanguage': 'zh-CN'
+    })} />
   </head>
   <body>
     <a href="#main" class="skip-link">跳到主要内容</a>
     <div id="main" class="page-wrapper">
-      <nav class="global-navbar">
+      <nav class="global-navbar" role="navigation" aria-label="主导航">
         <a href="/" class="logo">
           <img src="/logo.png" alt="每日电影" width="36" height="36" />
           <span>每日电影</span>
