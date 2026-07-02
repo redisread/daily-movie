@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import WhyThisMovie from '../components/WhyThisMovie.astro';
 import { movies } from '../data/movies';
 
 // 获取今日推荐（按 publishedDate 倒序第一本）
@@ -71,11 +72,16 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
           )}
         </blockquote>
 
+        <!-- Why This Movie (curation) -->
+        {todayMovie.whyThisMovie && (
+          <WhyThisMovie title={todayMovie.title} reason={todayMovie.whyThisMovie} />
+        )}
+
         <!-- CTA -->
         <div class="actions">
           <button type="button" class="btn-primary" id="btn-next">
             <span class="btn-icon">▶</span>
-            <span>换一部</span>
+            <span class="btn-text">换一部</span>
           </button>
           <a
             href={`/movie/${todayMovie.publishedDate}/`}
@@ -100,13 +106,44 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
 </Layout>
 
 <script>
-  // 「换一部」逻辑 + 视频/图片切换 + 移动端降级
+  // 「换一部」逻辑 + 视频/图片切换 + 移动端降级 + Anti-Repeat
+
+  // ── Inline history helpers (from src/lib/history.ts) ──
+  const HISTORY_KEY = "daily-movie-shown-history";
+  const HISTORY_LIMIT = 30;
+  const HISTORY_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+  function getHistory(): { id: string; shownAt: number }[] {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      const cutoff = Date.now() - HISTORY_TTL_MS;
+      return parsed.filter((e: any) => e && typeof e.id === "string" && e.shownAt >= cutoff);
+    } catch { return []; }
+  }
+
+  function getHistoryIds(): Set<string> {
+    return new Set(getHistory().map(e => e.id));
+  }
+
+  function addToHistory(id: string): void {
+    try {
+      const current = getHistory().filter(e => e.id !== id);
+      current.push({ id, shownAt: Date.now() });
+      const trimmed = current.slice(-HISTORY_LIMIT);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
+    } catch { /* ignore */ }
+  }
+
   const stage = document.querySelector('.stage') as HTMLElement | null;
   if (stage) {
     const moviesData = JSON.parse(stage.parentElement!.dataset.movies || '[]');
     const btnNext = document.getElementById('btn-next') as HTMLButtonElement | null;
     const quoteText = document.querySelector('.quote-text') as HTMLElement | null;
     const moviePoster = stage.querySelector('.poster-frame') as HTMLElement | null;
+    const whyEl = document.querySelector('.why-this-movie') as HTMLElement | null;
 
     // 移动端降级：< 768px 不加载视频，节省流量
     const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
@@ -118,14 +155,12 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
       const useVideo = !!videoUrl && !isMobile();
 
       if (useVideo) {
-        // 已有 video → 换 src
         if (existing && existing.tagName === 'VIDEO') {
           (existing as HTMLVideoElement).src = videoUrl;
           (existing as HTMLVideoElement).poster = coverUrl;
           (existing as HTMLVideoElement).load();
           (existing as HTMLVideoElement).play().catch(() => {});
         } else {
-          // 替换为 video
           if (existing) existing.remove();
           const v = document.createElement('video');
           v.className = 'poster-video';
@@ -140,7 +175,6 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
           moviePoster.appendChild(v);
         }
       } else {
-        // 切到图片
         if (existing && existing.tagName === 'IMG') {
           (existing as HTMLImageElement).src = coverUrl;
         } else {
@@ -156,12 +190,26 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
       }
     }
 
-    btnNext?.addEventListener('click', () => {
-      // 随机选一部（不是当前的）
-      const currentId = stage.dataset.movieId;
-      const available = moviesData.filter((m: any) => m.id !== currentId);
-      const pick = available[Math.floor(Math.random() * available.length)];
+    // Anti-Repeat: 选一部不在历史中的电影
+    function pickMovie(): any {
+      const currentId = stage!.dataset.movieId;
+      const seenIds = getHistoryIds();
 
+      // 排除当前 + 历史
+      let available = moviesData.filter((m: any) => m.id !== currentId && !seenIds.has(m.id));
+
+      // 边界：如果全部都在历史中，取最早展示的（重新轮换）
+      if (available.length === 0) {
+        available = moviesData.filter((m: any) => m.id !== currentId);
+      }
+
+      if (available.length === 0) return null;
+
+      return available[Math.floor(Math.random() * available.length)];
+    }
+
+    btnNext?.addEventListener('click', () => {
+      const pick = pickMovie();
       if (!pick) return;
 
       // 更新 URL 不刷新（SPA 式切换）
@@ -177,6 +225,34 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
         quoteText.textContent = `「${q}」`;
       }
 
+      // WhyThisMovie 更新（带淡入 + 折叠状态保持）
+      const whyContent = document.getElementById('why-content');
+      const whyToggle = document.getElementById('why-toggle');
+      if (whyContent && whyToggle) {
+        const wasExpanded = whyToggle.getAttribute('aria-expanded') === 'true';
+        // 先折叠
+        whyContent.style.opacity = '0';
+        setTimeout(() => {
+          whyContent.setAttribute('hidden', '');
+          whyToggle.setAttribute('aria-expanded', 'false');
+          // 更新内容
+          const titleEl = whyContent.querySelector('.why-title');
+          const textEl = whyContent.querySelector('.why-text');
+          if (titleEl) titleEl.textContent = `《${pick.title}》`;
+          if (textEl) textEl.textContent = pick.whyThisMovie || '';
+          // 如果之前是展开的，重新展开
+          if (wasExpanded && pick.whyThisMovie) {
+            whyContent.removeAttribute('hidden');
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                whyContent.style.opacity = '0.75';
+              });
+            });
+            whyToggle.setAttribute('aria-expanded', 'true');
+          }
+        }, 200);
+      }
+
       // 更新 footer 信息
       const footerSpans = document.querySelectorAll('.cinema-footer span');
       if (footerSpans[0]) footerSpans[0].textContent = pick.title;
@@ -190,21 +266,21 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
       // 更新 CTA 链接
       const ctaLink = stage.querySelector('.btn-secondary') as HTMLAnchorElement | null;
       if (ctaLink) {
-        // 同一天的多部电影用 publishedDate 区分
         ctaLink.href = `/movie/${pick.id}/`;
       }
+
+      // Anti-Repeat: 记录到历史
+      addToHistory(pick.id);
     });
 
     // 视口变化时响应：跨移动端 ↔ 桌面端时切换媒体类型
-    // 使用 matchMedia 监听，< 768px 强制静态，>= 768px 启用视频
     const mobileQuery = window.matchMedia('(max-width: 767px)');
-    const handleBreakpoint = (_e: MediaQueryListEvent | MediaQueryList) => {
+    const handleBreakpoint = () => {
       const currentStage = document.querySelector('.stage') as HTMLElement | null;
       if (!currentStage) return;
       const currentId = currentStage.dataset.movieId;
       const current = moviesData.find((m: any) => m.id === currentId);
       if (!current) return;
-      // 视口跨边界 → 重设媒体
       setMedia(current.cover.url, current.cover.video || null);
     };
     mobileQuery.addEventListener?.('change', handleBreakpoint);
@@ -456,11 +532,76 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
     100% { opacity: 1; }
   }
 
-  /* 响应式 */
+  /* ── 减法模式：弱化金句 ── */
+  .quote {
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+  }
+
+  .quote:hover {
+    opacity: 0.85;
+  }
+
+  /* ── Staggered 加载：首屏只有海报+电影名 ── */
+  .quote,
+  .why-this-movie-wrapper,
+  .actions,
+  .cinema-footer {
+    animation: staggerIn 0.5s ease-out both;
+  }
+
+  .quote {
+    animation-delay: 0.3s;
+  }
+
+  .why-this-movie-wrapper {
+    animation-delay: 0.5s;
+  }
+
+  .actions {
+    animation-delay: 0.7s;
+  }
+
+  .cinema-footer {
+    animation-delay: 0.9s;
+  }
+
+  @keyframes staggerIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ── 移动端：换一部图标化 ── */
   @media (max-width: 767px) {
     /* 移动端禁用微动视频，节省流量 */
     .poster-video {
       display: none;
+    }
+
+    /* 换一部 → 图标按钮 */
+    .btn-primary {
+      padding: 0.7rem;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-primary .btn-text {
+      display: none;
+    }
+
+    .btn-primary .btn-icon {
+      font-size: 1.2rem;
+      margin: 0;
     }
   }
 
@@ -473,7 +614,6 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
       font-size: 1rem;
     }
 
-    .btn-primary,
     .btn-secondary {
       padding: 0.8rem 1.4rem;
       font-size: 0.9rem;

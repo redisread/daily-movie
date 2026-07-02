@@ -18,6 +18,7 @@
     url: https://upload.wikimedia.org/wikipedia/en/6/61/Breaking_Bad_title_card.png
     bg: 'linear-gradient(145deg, #1a3a1a, #2a5a2a, #1a3a1a)'
     video: https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4
+  whyThisMovie: 「《绝命毒师》之所以今天该看，是因为老白从化学老师变成毒枭的每一步，都是普通人做过的每一个小妥协。」
   posters:
     - url: https://upload.wikimedia.org/wikipedia/en/6/61/Breaking_Bad_title_card.png
       caption: 标题卡
@@ -52,6 +53,7 @@
   duration: 139
   genre: ["剧情", "动作"]
   rating: 9.0
+  whyThisMovie: 「《搏击俱乐部》之所以今天该看，是因为你迟早要问自己：你买的那些东西，到底是你想要的，还是别人告诉你该想要的。」
   cover:
     url: https://upload.wikimedia.org/wikipedia/en/f/fc/Fight_Club_poster.jpg
     bg: 'linear-gradient(145deg, #2a1a1a, #4a2a2a, #2a1a1a)'
@@ -89,6 +91,7 @@
   duration: 142
   genre: ["剧情"]
   rating: 9.7
+  whyThisMovie: 「《肖申克的救赎》之所以今天该看，是因为安迪用 20 年挖了一条地道，而你只需要 2 小时就能相信：希望是个好东西。」
   cover:
     url: https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
     bg: 'linear-gradient(145deg, #1a2a3a, #2a4a6a, #1a2a3a)'
