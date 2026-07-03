@@ -3,8 +3,10 @@ import Layout from '../layouts/Layout.astro';
 import WhyThisMovie from '../components/WhyThisMovie.astro';
 import { movies } from '../data/movies';
 
-// 获取今日推荐（按 publishedDate 倒序第一本）
-const todayMovie = movies[0];
+// 获取今日推荐（按 publishedDate 匹配今天）
+const today = new Date();
+const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+const todayMovie = movies.find(m => m.publishedDate === dateStr) ?? movies[0];
 
 // 所有电影 ID（用于「换一部」随机切换）
 const allMovieIds = movies.map(m => m.id);
@@ -13,10 +15,6 @@ const moviesJson = JSON.stringify(movies.map(m => ({ id: m.id, title: m.title, t
 // 是否启用微动海报（桌面端 + 有视频时）
 // 用 client script 动态判断视口，不在 SSR 阶段假定
 const initialHasVideo = Boolean(todayMovie?.cover.video);
-
-// 格式化今日日期
-const today = new Date();
-const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 ---
 
 <Layout title={`每日一影院 — ${todayMovie?.title ?? ''}`} fullscreen>
