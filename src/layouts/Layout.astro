@@ -60,39 +60,34 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       'inLanguage': 'zh-CN'
     })} />
   </head>
-  <body>
+  <body class="scanlines">
     <a href="#main" class="skip-link">跳到主要内容</a>
     <div id="main" class="page-wrapper">
-      <nav class="global-navbar" role="navigation" aria-label="主导航">
-        <a href="/" class="logo">
-          <img src="/logo.svg" alt="每日一影院" width="32" height="32" />
+      <nav class="pixel-nav" role="navigation" aria-label="主导航">
+        <a href="/" class="logo pixel-logo">
+          <span class="logo-coin">[▶]</span>
           <span class="logo-text">每日一影院</span>
         </a>
         <div class="nav-links">
           <a href="/" class:list={['nav-link', { 'active': activeTab === 'home' }]} title="首页">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="nav-icon">🏠</span>
             <span class="nav-label">首页</span>
           </a>
           <a href="/library/" class:list={['nav-link', { 'active': activeTab === 'library' }]} title="电影库">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+            <span class="nav-icon">📼</span>
             <span class="nav-label">电影库</span>
           </a>
           <a href="/search/" class:list={['nav-link', { 'active': activeTab === 'search' }]} title="搜索">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span class="nav-icon">🔍</span>
             <span class="nav-label">搜索</span>
           </a>
           <a href="/archive/" class:list={['nav-link', { 'active': activeTab === 'archive' }]} title="归档">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+            <span class="nav-icon">📅</span>
             <span class="nav-label">归档</span>
           </a>
-          <span class="nav-divider" aria-hidden="true"></span>
           <button id="theme-toggle" class="icon-btn" aria-label="切换主题" title="切换日间/暗色模式">
-            <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-            <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <span id="theme-icon">🌙</span>
           </button>
-          <a href="/rss.xml" class="icon-btn" title="订阅 RSS" aria-label="RSS 订阅">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
-          </a>
         </div>
       </nav>
       <main class="page-content">
@@ -100,13 +95,14 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       </main>
       <MobileTabBar />
       <Toast />
-      <footer class="global-footer">
+      <footer class="pixel-footer">
         <div class="footer-inner">
-          <span>每日电影 © 2026</span>
+          <span class="footer-copy">© 2026 每日一影院</span>
           <div class="footer-links">
             <a href="/rss.xml">RSS</a>
             <a href="https://github.com/redisread/daily-movie" target="_blank" rel="noopener">GitHub</a>
           </div>
+          <span class="footer-blink blink">█ INSERT COIN █</span>
         </div>
       </footer>
     </div>
@@ -127,7 +123,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         const next = isDark ? 'light' : 'dark';
         html.setAttribute('data-theme', next);
         localStorage.setItem(THEME_KEY, next);
+        const icon = document.getElementById('theme-icon');
+        if (icon) icon.textContent = next === 'dark' ? '🌙' : '☀️';
       });
+    }
+
+    // Set initial icon
+    const ic = document.getElementById('theme-icon');
+    if (ic) {
+      ic.textContent = current === 'dark' ? '🌙' : '☀️';
     }
 
     // Keyboard shortcuts
@@ -213,8 +217,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   .skeleton {
     background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-secondary) 50%, var(--bg-card) 75%);
     background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: var(--radius);
+    animation: shimmer 1.5s infinite steps(8);
   }
 
   /* Page wrapper */
@@ -229,59 +232,55 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     padding-bottom: 0;
   }
 
-  /* Cinema mode removed — everything uses the ticket design now */
-
   @media (max-width: 640px) {
     .page-content {
       padding-bottom: 60px;
     }
   }
 
-  /* Global navbar */
-  .global-navbar {
+  /* ===== Pixel Nav ===== */
+  .pixel-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 24px;
-    max-width: 1200px;
-    width: 100%;
-    margin: 0 auto;
-    border-bottom: 2px solid var(--border);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    background: rgba(250, 248, 244, 0.85);
+    padding: 8px 16px;
+    border-bottom: 3px solid var(--neon-cyan);
+    background: var(--bg-overlay);
     position: sticky;
     top: 0;
     z-index: 999;
+    image-rendering: pixelated;
   }
 
-  [data-theme="dark"] .global-navbar {
-    background: rgba(19, 16, 13, 0.85);
-  }
-
-  .global-navbar .logo {
+  .pixel-logo {
     display: flex;
     align-items: center;
     gap: 8px;
     text-decoration: none;
-    color: var(--text-primary);
   }
-  .global-navbar .logo img {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-  }
-  .logo-text {
+  .logo-coin {
     font-family: var(--font-display);
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    letter-spacing: 0.02em;
+    font-size: 0.7rem;
+    color: var(--neon-yellow);
+    text-shadow: var(--glow-yellow);
+    animation: spin-coin 2s steps(4) infinite;
   }
+  @keyframes spin-coin {
+    0%, 100% { transform: scaleX(1); }
+    50% { transform: scaleX(0.2); }
+  }
+  .pixel-logo .logo-text {
+    font-family: var(--font-display);
+    font-size: 0.55rem;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .pixel-logo:hover .logo-text { color: var(--neon-cyan); }
 
   .nav-links {
     display: flex;
-    gap: 4px;
+    gap: 2px;
     align-items: center;
   }
 
@@ -289,62 +288,68 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px;
-    border-radius: var(--radius-sm);
+    padding: 6px 10px;
     color: var(--text-secondary);
     text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: color 0.2s, background 0.2s;
+    font-family: var(--font-display);
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    border: 2px solid transparent;
+    transition: none;
   }
   .nav-link:hover {
-    color: var(--accent);
+    color: var(--neon-cyan);
     background: var(--accent-soft);
+    border-color: var(--neon-cyan);
   }
   .nav-link.active {
-    color: var(--accent);
-    background: var(--accent-soft);
-    font-weight: 600;
+    color: var(--neon-yellow);
+    background: transparent;
+    border-color: var(--neon-yellow);
   }
-
-  .nav-divider {
-    width: 1px;
-    height: 20px;
-    background: var(--border-strong);
-    margin: 0 2px;
+  .nav-icon {
+    font-size: 0.9rem;
+    line-height: 1;
+    filter: saturate(1.5);
   }
 
   .icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
-    border-radius: var(--radius-sm);
-    border: 1px solid transparent;
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--border);
     background: transparent;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     cursor: pointer;
-    transition: all 0.2s;
-    padding: 0;
+    font-size: 1rem;
+    transition: none;
   }
   .icon-btn:hover {
-    color: var(--accent);
-    background: var(--accent-soft);
-    border-color: var(--border);
+    border-color: var(--neon-cyan);
+    box-shadow: var(--glow-cyan);
   }
 
-  .icon-btn .icon-sun { display: none; }
-  .icon-btn .icon-moon { display: block; }
+  /* ===== Nav responsive ===== */
+  @media (max-width: 640px) {
+    .nav-link .nav-label { display: none; }
+    .nav-link { padding: 6px 8px; }
+    .pixel-logo .logo-text { font-size: 0.45rem; }
+  }
 
-  [data-theme="dark"] .icon-btn .icon-sun { display: block; }
-  [data-theme="dark"] .icon-btn .icon-moon { display: none; }
+  @media (max-width: 400px) {
+    .pixel-nav { padding: 6px 8px; }
+    .pixel-logo .logo-text { display: none; }
+    .nav-links { gap: 0; }
+  }
 
-  /* Global footer */
-  .global-footer {
-    border-top: 1px solid var(--border);
-    padding: 32px 24px;
-    margin-top: 80px;
+  /* ===== Pixel footer ===== */
+  .pixel-footer {
+    border-top: 3px solid var(--neon-cyan);
+    padding: 16px 24px;
+    margin-top: 60px;
+    background: var(--bg-secondary);
   }
 
   .footer-inner {
@@ -354,31 +359,39 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 16px;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+    gap: 12px;
+    font-family: var(--font-display);
+    font-size: 0.45rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
+
+  .footer-copy { color: var(--text-secondary); }
 
   .footer-links {
     display: flex;
-    gap: 20px;
+    gap: 12px;
   }
 
   .footer-links a {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    transition: color 0.2s;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: none;
   }
 
   .footer-links a:hover {
-    color: var(--accent) !important;
+    color: var(--neon-cyan);
+    text-decoration: underline;
   }
 
-  @media (max-width: 640px) {
-    .footer-inner {
-      flex-direction: column;
-      text-align: center;
-    }
+  .footer-blink {
+    color: var(--neon-yellow);
+    font-size: 0.5rem;
+    text-shadow: var(--glow-yellow);
+  }
+
+  @media (max-width: 720px) {
+    .footer-inner { flex-direction: column; text-align: center; gap: 8px; }
   }
 
   /* View Transitions */
