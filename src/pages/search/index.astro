@@ -1,24 +1,325 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import EmptyState from '../../components/ui/EmptyState.astro';
+import { movies } from '../../data/movies';
+
+const allMovies = movies as any[];
+
+// All unique tags for tag cloud
+const genreCount = new Map<string, number>();
+allMovies.forEach(m => m.genre?.forEach((g: string) => genreCount.set(g, (genreCount.get(g) || 0) + 1)));
+const allGenres = [...genreCount.entries()].sort((a, b) => b[1] - a[1]).map(([g]) => g);
+
+const moviesJson = JSON.stringify(allMovies.map(m => ({
+  id: m.id, title: m.title, titleOriginal: m.titleOriginal,
+  year: m.year, rating: m.rating, genre: m.genre,
+  duration: m.duration, director: m.director, cover: m.cover,
+  publishedDate: m.publishedDate, type: m.type,
+  cast: m.cast?.map((c: any) => c.name) || [],
+  synopsis: m.synopsis?.substring(0, 120) || '',
+  quotes: m.quotes?.map((q: any) => q.text).slice(0, 3) || [],
+})));
+
+const genresJson = JSON.stringify(allGenres);
 ---
 
 <Layout title="搜索" activeTab="search">
-  <main class="page-container">
-    <EmptyState
-      title="搜索即将推出"
-      description="按影片、导演、演员或台词搜索经典。功能开发中，先来看看今天的票根吧。"
-      emoji="🔍"
-      ctaText="回首页"
-      ctaHref="/"
-    />
+  <main class="search-page" data-movies={moviesJson} data-genres={genresJson}>
+    <header class="page-header">
+      <h1>搜索</h1>
+      <p class="page-sub">按影片、导演、演员、台词，找到你想看的电影</p>
+    </header>
+
+    <div class="search-bar">
+      <svg class="search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="search" name="q" id="search-input" placeholder="搜索影片、导演、演员、经典台词..." value="" autocomplete="off" />
+    </div>
+
+    <div class="quick-tags" id="quick-tags">
+      <span class="quick-tags-label">快速：</span>
+      {allGenres.map(g => (
+        <button class="quick-tag" data-genre={g}>{g}</button>
+      ))}
+    </div>
+
+    <p class="result-count" id="result-count">输入关键词开始搜索</p>
+
+    <div class="search-results" id="search-results">
+      <!-- injected by JS -->
+    </div>
   </main>
 </Layout>
 
+<script>
+  const resultsEl = document.getElementById('search-results');
+  const input = document.getElementById('search-input');
+  const countEl = document.getElementById('result-count');
+  const quickTags = document.getElementById('quick-tags');
+
+  let movies = [];
+  try { movies = JSON.parse(document.querySelector('.search-page')?.dataset.movies || '[]'); }
+  catch {}
+
+  function renderCards(results = []) {
+    if (!resultsEl) return;
+    if (!results.length) {
+      resultsEl.innerHTML = `
+        <div class="no-results">
+          <div class="no-emoji">🔍</div>
+          <p>没有匹配的电影</p>
+          <p class="no-hint">试试别的关键词。我们一共只有 ${movies.length} 部。</p>
+        </div>`;
+      return;
+    }
+
+    resultsEl.innerHTML = results.map(m => `
+      <a href="/movie/${m.publishedDate}/" class="search-card">
+        <div class="search-cover" style="background: ${m.cover?.bg || '#333'}">
+          <img src="${m.cover?.url || '/fallback-poster.svg'}" alt="${m.title}" loading="lazy" onerror="this.src='/fallback-poster.svg'" />
+        </div>
+        <div class="search-meta">
+          <h3>${m.title}</h3>
+          ${m.titleOriginal ? `<span class="search-original">${m.titleOriginal}</span>` : ''}
+          <div class="search-line">
+            <span class="search-rating">⭐ ${m.rating}</span>
+            <span>·</span>
+            <span>${m.year}</span>
+            <span>·</span>
+            <span>${(m.genre || []).join(' / ')}</span>
+          </div>
+          <p class="search-excerpt">${m.director?.name ? `导演 ${m.director.name} · ` : ''}${(m.cast || []).slice(0, 2).join('、')}</p>
+        </div>
+      </a>
+    `).join('');
+  }
+
+  function doSearch(q = '') {
+    const query = q.trim().toLowerCase();
+    if (!query) {
+      resultsEl.innerHTML = '';
+      if (countEl) countEl.textContent = '输入关键词开始搜索';
+      return;
+    }
+
+    const scored = movies.map(m => {
+      let score = 0;
+      const title = (m.title || '').toLowerCase();
+      const titleOrig = (m.titleOriginal || '').toLowerCase();
+      const director = (m.director || {}).name?.toLowerCase() || '';
+      const cast = (m.cast || []).join('').toLowerCase();
+      const quotes = (m.quotes || []).join('').toLowerCase();
+      const genres = (m.genre || []).join('').toLowerCase();
+
+      // Exact matches score higher
+      if (title === query || titleOrig === query) score += 100;
+      else if (title.includes(query) || titleOrig.includes(query)) score += 80;
+      if (director.includes(query)) score += 50;
+      if (cast.includes(query)) score += 30;
+      if (quotes.includes(query)) score += 20;
+      if (genres.includes(query)) score += 25;
+
+      return { ...m, score };
+    }).filter(m => m.score > 0).sort((a, b) => b.score - a.score);
+
+    if (countEl) countEl.innerHTML = `找到 <strong>${scored.length}</strong> 部相关电影`;
+    renderCards(scored);
+  }
+
+  input?.addEventListener('input', (e) => {
+    doSearch((e.target as HTMLInputElement).value);
+  });
+
+  input?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') e.preventDefault();
+  });
+
+  quickTags?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('.quick-tag') as HTMLElement | null;
+    if (!btn) return;
+    const genre = btn.dataset.genre || '';
+    if (input) {
+      input.value = genre;
+      doSearch(genre);
+    }
+    // toggle active visual
+    quickTags.querySelectorAll('.quick-tag').forEach(b => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+  });
+
+  // Focus search input on load
+  setTimeout(() => input?.focus(), 300);
+</script>
+
 <style>
-  .page-container {
+  .search-page {
     max-width: 900px;
     margin: 0 auto;
-    padding: 3rem 1.5rem;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .page-header { margin-bottom: 2.5rem; }
+  .page-header h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+  .page-sub { font-size: 1rem; color: var(--text-muted); margin: 0; }
+
+  /* Search bar */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color 0.2s ease;
+    margin-bottom: 1rem;
+  }
+  .search-bar:focus-within {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-soft);
+  }
+  .search-icon { color: var(--text-muted); flex-shrink: 0; }
+  .search-bar input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 1.15rem;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    outline: none;
+  }
+  .search-bar input::placeholder { color: var(--text-muted); }
+
+  /* Quick tags */
+  .quick-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .quick-tags-label { font-size: 0.85rem; color: var(--text-muted); }
+  .quick-tag {
+    padding: 0.3em 0.85em;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: var(--font-body);
+  }
+  .quick-tag:hover { border-color: var(--gold); color: var(--gold); }
+  .quick-tag.is-active { background: var(--gold); color: #1E1A14; border-color: var(--gold); font-weight: 600; }
+
+  /* Result count */
+  .result-count {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+  }
+  .result-count strong { color: var(--accent); font-weight: 700; }
+
+  /* Results list */
+  .search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .search-card {
+    display: flex;
+    gap: 1.25rem;
+    padding: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.25s ease;
+  }
+  .search-card:hover {
+    border-color: var(--gold);
+    box-shadow: var(--shadow-hover);
+    transform: translateX(4px);
+  }
+
+  .search-cover {
+    flex-shrink: 0;
+    width: 90px;
+    height: 135px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .search-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .search-meta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    justify-content: center;
+  }
+  .search-meta h3 {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+  .search-original { font-size: 0.85rem; color: var(--text-muted); font-style: italic; }
+
+  .search-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .search-rating { color: var(--gold); font-weight: 700; }
+
+  .search-excerpt {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0.25rem 0 0;
+    line-height: 1.4;
+  }
+
+  /* No results */
+  .no-results {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--text-secondary);
+  }
+  .no-emoji { font-size: 3rem; margin-bottom: 1rem; opacity: 0.6; }
+  .no-results p { font-size: 1.1rem; margin: 0.5rem 0; }
+  .no-hint { font-size: 0.85rem; color: var(--text-muted); }
+
+  /* Responsive */
+  @media (max-width: 720px) {
+    .search-page { padding: 2rem 1rem 3rem; }
+    .search-bar { padding: 0.75rem 1rem; }
+    .search-bar input { font-size: 1rem; }
+    .search-cover { width: 70px; height: 105px; }
+    .search-meta h3 { font-size: 1rem; }
+    .search-card { gap: 0.75rem; padding: 0.75rem; }
+  }
+
+  @media (max-width: 480px) {
+    .page-header h1 { font-size: 1.6rem; }
+    .search-card { gap: 0.6rem; padding: 0.6rem; }
+    .search-cover { width: 60px; height: 90px; }
+    .search-line { font-size: 0.8rem; }
+    .search-excerpt { font-size: 0.8rem; }
   }
 </style>

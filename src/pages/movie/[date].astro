@@ -4,6 +4,7 @@ import DirectorCard from '../../components/DirectorCard.astro';
 import CastList from '../../components/CastList.astro';
 import PosterGallery from '../../components/PosterGallery.astro';
 import QuoteCard from '../../components/QuoteCard.astro';
+import WhyThisMovie from '../../components/WhyThisMovie.astro';
 import { movies } from '../../data/movies';
 
 export async function getStaticPaths() {
@@ -37,27 +38,57 @@ const similarMovies = movies
       <span class="detail-no">{movie.publishedDate}</span>
     </nav>
 
-    <!-- 主海报 + 票根卡 -->
+    {/* Minified top nav with back link */}
+    <nav class="detail-topbar">
+      <a href="/" class="topbar-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        <span>电影库</span>
+      </a>
+      <span class="topbar-date">{movie.publishedDate}</span>
+    </nav>
+
+    <!-- Hero -->
     <div class="hero-section">
       <div class="hero-cover-wrap">
         <div class="hero-cover" style={`background: ${movie.cover.bg}`}>
           <img src={movie.cover.url} alt={movie.title} onerror="this.src='/fallback-poster.svg'" />
         </div>
-        {/* 票根印章 */}
-        <span class="hero-ticket-no">NO. {movie.publishedDate}</span>
+        <span class="hero-stamp">TODAY</span>
       </div>
       <div class="hero-info">
         <h1>{movie.title}</h1>
         {movie.titleOriginal && <p class="original">{movie.titleOriginal}</p>}
-        <div class="meta">
-          <span class="rating-badge">⭐ {movie.rating}</span>
-          <span class="type-badge">{movie.type === 'tv' ? '电视剧' : '电影'}</span>
-          <span class="genre">{movie.genre.join(' / ')}</span>
-          <span class="year">{movie.year}</span>
-          <span class="duration">{movie.duration}分钟</span>
+        <div class="meta-grid">
+          <span class="meta-pill">
+            <span class="pill-label">评分</span>
+            <span class="pill-value rating-val">{movie.rating}</span>
+          </span>
+          <span class="meta-pill">
+            <span class="pill-label">年份</span>
+            <span class="pill-value">{movie.year}</span>
+          </span>
+          <span class="meta-pill">
+            <span class="pill-label">时长</span>
+            <span class="pill-value">{movie.duration}分钟</span>
+          </span>
+          <span class="meta-pill">
+            <span class="pill-label">类型</span>
+            <span class="pill-value">{movie.type === 'tv' ? '电视剧' : '电影'}</span>
+          </span>
+        </div>
+        <div class="genre-pills">
+          {movie.genre.map(g => <span class="genre-pill">{g}</span>)}
         </div>
       </div>
     </div>
+
+    {/* WhyThisMovie */}
+    {movie.whyThisMovie && (
+      <section class="why-section">
+        <h2 class="section-title">为什么是这部</h2>
+        <WhyThisMovie title={movie.title} reason={movie.whyThisMovie} />
+      </section>
+    )}
 
     <div class="content-sections">
       <!-- 导演 -->
@@ -69,32 +100,34 @@ const similarMovies = movies
         <CastList cast={movie.cast} />
       </section>
 
-      <!-- 剧情简介 -->
-      <section>
-        <h2>📖 剧情简介</h2>
+      {/* Today's Featured line */}
+      <section class="synopsis-section">
+        <h2 class="section-title">剧情简介</h2>
         <p class="synopsis">{movie.synopsis}</p>
       </section>
 
-      <!-- 海报画廊 -->
-      <section>
-        <h2>🎞️ 电影海报</h2>
+      {/* Gallery */}
+      <section class="gallery-section">
+        <h2 class="section-title">电影海报</h2>
         <PosterGallery posters={movie.posters} />
       </section>
 
-      <!-- 经典语录 -->
-      <section>
-        <h2>💬 经典语录</h2>
-        {movie.quotes.map(q => <QuoteCard quote={q} />)}
+      {/* Quotes */}
+      <section class="quotes-section">
+        <h2 class="section-title">经典语录</h2>
+        <div class="quotes-grid">
+          {movie.quotes.map(q => <QuoteCard quote={q} />)}
+        </div>
       </section>
 
-      <!-- 相似电影推荐 -->
+      {/* Similar movies */}
       {similarMovies.length > 0 && (
         <section class="similar-section">
-          <h2>🎬 相似推荐</h2>
+          <h2 class="section-title">相似推荐</h2>
           <div class="similar-scroll">
             {similarMovies.map(m => (
               <a href={`/movie/${m.publishedDate}/`} class="similar-card">
-                <div class="similar-cover" style={`background: ${m.cover.bg}`}>
+                <div class="similar-cover" style={`background: ${m.cover.bg || '#333'}`}>
                   <img src={m.cover.url} alt={m.title} loading="lazy" onerror="this.src='/fallback-poster.svg'" />
                 </div>
                 <div class="similar-info">
@@ -118,33 +151,34 @@ const similarMovies = movies
     font-family: var(--font-body);
   }
 
-  /* 顶部导航 */
-  .top-nav {
+  /* Top nav bar */
+  .detail-topbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 0;
-    margin-bottom: 24px;
+    padding: 14px 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border);
   }
-
-  .back {
-    color: var(--accent) !important;
-    font-size: 0.95rem;
-    font-weight: 500;
+  .topbar-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--text-secondary) !important;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+    text-decoration: none;
   }
+  .topbar-back:hover { color: var(--accent) !important; }
 
-  .back:hover {
-    color: var(--accent-hover) !important;
-  }
-
-  .detail-no {
+  .topbar-date {
     font-family: var(--font-mono);
-    color: var(--text-muted);
     font-size: 0.85rem;
-    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
   }
 
-  /* 主海报区 */
+  /* Hero */
   .hero-section {
     display: flex;
     gap: 32px;
@@ -162,28 +196,31 @@ const similarMovies = movies
     height: 480px;
     border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: 0 12px 40px rgba(60, 30, 15, 0.14), 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 16px 48px rgba(60, 30, 15, 0.15), 0 4px 16px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
   }
+  .hero-cover:hover { transform: translateY(-4px); }
 
   .hero-cover img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
   }
 
-  .hero-ticket-no {
+  .hero-stamp {
     position: absolute;
-    bottom: -12px;
-    right: -12px;
-    padding: 4px 10px;
-    background: var(--accent);
-    color: #FFFFFF;
-    font-family: var(--font-mono);
+    top: 16px;
+    right: 16px;
+    padding: 4px 12px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    font-family: var(--font-display);
     font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.18em;
     border-radius: 0;
-    box-shadow: var(--shadow-stamp);
     transform: rotate(-3deg);
   }
 
@@ -191,57 +228,78 @@ const similarMovies = movies
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 12px;
+    gap: 14px;
   }
 
   h1 {
     font-family: var(--font-display);
-    font-size: clamp(1.6rem, 3vw, 2.6rem);
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
     font-weight: 700;
     color: var(--text-primary);
-    line-height: 1.2;
+    line-height: 1.15;
     letter-spacing: -0.01em;
   }
 
   .original {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: var(--text-muted);
     font-style: italic;
+    margin: 0;
   }
 
-  .meta {
+  /* Meta grid */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+  .meta-pill {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.6rem 0.85rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .pill-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .pill-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .rating-val {
+    color: var(--gold);
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+  }
+
+  /* Genre pills */
+  .genre-pills {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-    font-size: 0.95rem;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
   }
-
-  .rating-badge {
-    padding: 5px 12px;
+  .genre-pill {
+    padding: 0.25em 0.7em;
     background: var(--gold-soft);
     color: var(--gold);
-    font-weight: 700;
-    border-radius: 999px;
-    border: 1px solid rgba(212, 161, 58, 0.25);
-    font-size: 1rem;
-  }
-
-  .genre {
-    color: var(--text-secondary);
-  }
-
-  .type-badge {
-    padding: 4px 10px;
-    background: var(--accent-hover);
-    color: var(--bg-primary);
     font-size: 0.8rem;
     font-weight: 600;
-    border-radius: 4px;
+    border-radius: 999px;
+    border: 1px solid rgba(212, 161, 58, 0.15);
   }
 
-  .year, .duration {
-    color: var(--text-secondary);
+  /* Why section */
+  .why-section {
+    margin-bottom: 2.5rem;
   }
 
   /* 内容区 */
@@ -265,11 +323,18 @@ const similarMovies = movies
 
   .synopsis {
     font-size: 1rem;
-    line-height: 1.8;
-    color: var(--text-secondary);
-    padding: 20px;
-    background: var(--bg-secondary);
-    border-radius: var(--radius);
+    line-height: 1.85;
+    color: var(--text-primary);
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border-left: 4px solid var(--gold);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 0;
+    box-shadow: var(--shadow);
+  }
+
+  .quote-card {
+    font-family: var(--font-display);
   }
 
   /* 相似电影推荐 */

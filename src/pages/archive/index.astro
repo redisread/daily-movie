@@ -1,24 +1,225 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import EmptyState from '../../components/ui/EmptyState.astro';
+import { movies } from '../../data/movies';
+
+const allMovies = movies as any[];
+
+// Group by year-month
+const grouped: Record<string, any[]> = {};
+allMovies.forEach(m => {
+  // Use publishedDate for archive grouping, fallback to year
+  const key = m.publishedDate ? m.publishedDate.substring(0, 7) : String(m.year);
+  if (!grouped[key]) grouped[key] = [];
+  grouped[key].push(m);
+});
+
+// Sort groups desc
+const sortedGroups = Object.entries(grouped).sort(([a], [b]) => b.localeCompare(a));
+
+// Sort movies within group desc by date
+sortedGroups.forEach(([, ms]) => ms.sort((a, b) => b.publishedDate.localeCompare(a.publishedDate)));
+
+// Chinese month label
+function formatMonth(ym: string) {
+  const [y, m] = ym.split('-');
+  return `${y}年${parseInt(m, 10)}月`;
+}
+
+const moviesJson = JSON.stringify(sortedGroups.map(([ym, ms]) => ({
+  label: formatMonth(ym),
+  count: ms.length,
+  movies: ms.map(m => ({
+    id: m.id, title: m.title, titleOriginal: m.titleOriginal,
+    year: m.year, rating: m.rating, genre: m.genre,
+    cover: m.cover, publishedDate: m.publishedDate,
+    duration: m.duration, director: m.director,
+  })),
+})));
 ---
 
 <Layout title="归档" activeTab="archive">
-  <main class="page-container">
-    <EmptyState
-      title="归档即将推出"
-      description="按时间线浏览每日电影。我们正在整理历年票根。"
-      emoji="📚"
-      ctaText="回首页"
-      ctaHref="/"
-    />
+  <main class="archive-page" data-groups={moviesJson}>
+    <header class="page-header">
+      <h1>归档</h1>
+      <p class="page-sub">按月份翻阅，看时间安排过的票根</p>
+    </header>
+
+    <div class="archive-toc">
+      {sortedGroups.map(([ym]) => (
+        <a href={`#month-${ym}`} class="toc-link">{formatMonth(ym)}</a>
+      ))}
+    </div>
+
+    {sortedGroups.map(([ym, ms]) => (
+      <section class="archive-section" id={`month-${ym}`}>
+        <h2 class="archive-month">
+          <span class="month-label">{formatMonth(ym)}</span>
+          <span className="month-count">{ms.length} 部</span>
+        </h2>
+        <div class="archive-grid">
+          {ms.map((m, idx) => (
+            <a href={`/movie/${m.publishedDate}/`} class="archive-card"
+               style={`animation-delay: ${idx * 0.06}s`}>
+              <div class="archive-cover" style={`background: ${m.cover?.bg || '#333'}`}>
+                <img src={m.cover?.url || '/fallback-poster.svg'} alt={m.title}
+                     loading="lazy" onerror="this.src='/fallback-poster.svg'" />
+              </div>
+              <div class="archive-info">
+                <h3 class="archive-title">{m.title}</h3>
+                <span class="archive-meta">⭐ {m.rating} · {m.publishedDate?.slice(5)}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
   </main>
 </Layout>
 
 <style>
-  .page-container {
+  .archive-page {
     max-width: 900px;
     margin: 0 auto;
-    padding: 3rem 1.5rem;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .page-header { margin-bottom: 2.5rem; }
+  .page-header h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+  .page-sub { font-size: 1rem; color: var(--text-muted); margin: 0; }
+
+  /* TOC */
+  .archive-toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 3rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  .toc-link {
+    padding: 0.3em 0.85em;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .toc-link:hover { background: var(--accent-soft); color: var(--accent); }
+
+  /* Section */
+  .archive-section {
+    margin-bottom: 3rem;
+    scroll-margin-top: 80px;
+  }
+  .archive-month {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1.25rem;
+    padding-left: 0.5rem;
+    border-left: 4px solid var(--accent);
+  }
+  .month-count {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+
+  /* Grid */
+  .archive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .archive-card {
+    display: block;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s ease;
+    animation: archiveIn 0.5s ease backwards;
+  }
+  .archive-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--gold);
+  }
+
+  @keyframes archiveIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .archive-cover {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2/3;
+    overflow: hidden;
+  }
+  .archive-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+  .archive-card:hover .archive-cover img { transform: scale(1.05); }
+
+  .archive-info {
+    padding: 0.6rem 0.75rem 0.75rem;
+  }
+  .archive-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .archive-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  /* Responsive */
+  @media (max-width: 720px) {
+    .archive-page { padding: 2rem 1rem 3rem; }
+    .archive-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 0.75rem;
+    }
+    .archive-toc { padding: 0.75rem 1rem; }
+  }
+
+  @media (max-width: 480px) {
+    .archive-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem;
+    }
+    .archive-title { font-size: 0.85rem; }
+    .archive-month { font-size: 1.1rem; }
   }
 </style>
