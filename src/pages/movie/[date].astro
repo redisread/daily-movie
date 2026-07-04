@@ -51,7 +51,7 @@ const similarMovies = movies
     <div class="hero-section">
       <div class="hero-cover-wrap">
         <div class="hero-cover" style={`background: ${movie.cover.bg}`}>
-          <img src={movie.cover.url} alt={movie.title} onerror="this.src='/fallback-poster.svg'" />
+          <img src={movie.cover.url} alt={movie.title} loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.src='/fallback-poster.svg'; this.classList.add('poster-loaded')" />
         </div>
         <span class="hero-stamp">TODAY</span>
       </div>
@@ -128,7 +128,7 @@ const similarMovies = movies
             {similarMovies.map(m => (
               <a href={`/movie/${m.publishedDate}/`} class="similar-card">
                 <div class="similar-cover" style={`background: ${m.cover.bg || '#333'}`}>
-                  <img src={m.cover.url} alt={m.title} loading="lazy" onerror="this.src='/fallback-poster.svg'" />
+                  <img src={m.cover.url} alt={m.title} loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.src='/fallback-poster.svg'; this.classList.add('poster-loaded')" />
                 </div>
                 <div class="similar-info">
                   <p class="similar-title">{m.title}</p>

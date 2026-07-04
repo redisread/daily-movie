@@ -75,7 +75,7 @@ const genresJson = JSON.stringify(allGenres);
     resultsEl.innerHTML = results.map(m => `
       <a href="/movie/${m.publishedDate}/" class="search-card">
         <div class="search-cover" style="background: ${m.cover?.bg || '#333'}">
-          <img src="${m.cover?.url || '/fallback-poster.svg'}" alt="${m.title}" loading="lazy" onerror="this.src='/fallback-poster.svg'" />
+          <img src="${m.cover?.url || '/fallback-poster.svg'}" alt="${m.title}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.src='/fallback-poster.svg'; this.classList.add('poster-loaded')" />
         </div>
         <div class="search-meta">
           <h3>${m.title}</h3>

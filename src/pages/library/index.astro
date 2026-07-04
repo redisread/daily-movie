@@ -84,7 +84,7 @@ const genresJson = JSON.stringify(allGenres);
            data-rating={m.rating} data-date={m.publishedDate}
            style={`animation-delay: ${idx * 0.04}s`}>
           <div class="lib-cover" style={`background: ${m.cover?.bg}`}>
-            <img src={m.cover?.url} alt={m.title} loading="lazy" onerror="this.src='/fallback-poster.svg'" />
+            <img src={m.cover?.url} alt={m.title} loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.src='/fallback-poster.svg'; this.classList.add('poster-loaded')" />
             <span class="lib-rating-badge">{m.rating}</span>
           </div>
           <div class="lib-meta">

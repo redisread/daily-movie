@@ -76,6 +76,8 @@ const issueNumber = String(movies.indexOf(todayMovie) + 1).padStart(3, '0');
               alt={todayMovie.title}
               class="poster-img"
               onerror="this.src='/fallback-poster.svg'; this.classList.add('loaded')"
+              decoding="async"
+              referrerpolicy="no-referrer"
               fetchpriority="high"
               id="ticket-poster-img"
             />
@@ -156,7 +158,7 @@ const issueNumber = String(movies.indexOf(todayMovie) + 1).padStart(3, '0');
           {pastMovies.map((m, idx) => (
             <a href={`/movie/${m.publishedDate}/`} class="past-ticket" style={`animation-delay: ${idx * 0.08}s`}>
               <div class="past-poster" style={`background: ${m.cover.bg}`}>
-                <img src={m.cover.url} alt={m.title} loading="lazy" onerror="this.src='/fallback-poster.svg'" />
+                <img src={m.cover.url} alt={m.title} loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.src='/fallback-poster.svg'; this.classList.add('poster-loaded')" />
               </div>
               <div class="past-info">
                 <p class="past-title">{m.title}</p>

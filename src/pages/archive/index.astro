@@ -60,7 +60,7 @@ const moviesJson = JSON.stringify(sortedGroups.map(([ym, ms]) => ({
                style={`animation-delay: ${idx * 0.06}s`}>
               <div class="archive-cover" style={`background: ${m.cover?.bg || '#333'}`}>
                 <img src={m.cover?.url || '/fallback-poster.svg'} alt={m.title}
-                     loading="lazy" onerror="this.src='/fallback-poster.svg'" />
+                     loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.src='/fallback-poster.svg'; this.classList.add('poster-loaded')" />
               </div>
               <div class="archive-info">
                 <h3 class="archive-title">{m.title}</h3>
