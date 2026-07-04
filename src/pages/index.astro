@@ -803,9 +803,21 @@ const issueNumber = String(movies.indexOf(todayMovie) + 1).padStart(3, '0');
     color: var(--text-muted);
   }
 
-  /* ========== 响应式 ========== */
+  /* ========== 响应式 (tablet) ========== */
+  @media (max-width: 900px) and (min-width: 721px) {
+    .ticket-stub {
+      grid-template-columns: 220px 0 1fr;
+    }
+  }
+
+  /* ========== 响应式 (mobile) ========== */
   @media (max-width: 720px) {
-    .ticket-page { padding: 2rem 1rem 2rem; }
+    .ticket-page { padding: 1.25rem 0.75rem 1.75rem; }
+
+    .site-header {
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.6rem;
+    }
 
     .ticket-stub {
       grid-template-columns: 1fr;
@@ -813,10 +825,11 @@ const issueNumber = String(movies.indexOf(todayMovie) + 1).padStart(3, '0');
     }
 
     .ticket-poster {
-      padding: 1.5rem 1rem 1rem;
+      grid-column: 1;
+      padding: 1.25rem 1rem 0.75rem;
     }
 
-    .poster-frame { max-width: 180px; }
+    .poster-frame { max-width: 160px; }
 
     .tear-line {
       grid-column: 1;
@@ -824,33 +837,71 @@ const issueNumber = String(movies.indexOf(todayMovie) + 1).padStart(3, '0');
       height: 0;
       border-left: none;
       border-bottom: 2px dashed var(--border-strong);
-      margin: 0 2rem;
+      margin: 0 1.5rem;
     }
 
     .ticket-info {
-      padding: 1.25rem 1.25rem 1.5rem;
+      grid-column: 1;
+      padding: 1rem 1.25rem 1.5rem;
     }
 
-    .movie-title { font-size: 1.5rem; }
+    .movie-title { font-size: 1.4rem; }
 
     .brand-name { font-size: 1.1rem; }
 
     .stamp {
       width: 56px;
       height: 56px;
+      top: 0.75rem;
+      right: 1rem;
     }
 
     .stamp-text { font-size: 0.7rem; }
 
-    .ticket-no { font-size: 0.7rem; }
+    .ticket-no {
+      font-size: 0.7rem;
+      top: 0.75rem;
+      left: 1rem;
+    }
 
     .countdown-row {
       flex-direction: column;
       gap: 0.5rem;
       padding: 0.75rem 1rem;
+      font-size: 0.8rem;
     }
 
     .countdown-clock { font-size: 1.1rem; }
+
+    .ticket-actions .btn {
+      padding: 0.7rem 1.2rem;
+      font-size: 0.9rem;
+    }
+
+    .past-ticket { width: 120px; }
+    .section-title { font-size: 1rem; }
+  }
+
+  /* ========== 极小屏 (360px 以下) ========== */
+  @media (max-width: 360px) {
+    .ticket-page { padding: 1rem 0.5rem 1.5rem; }
+    .poster-frame { max-width: 140px; }
+    .movie-title { font-size: 1.25rem; }
+    .ticket-info { padding: 0.75rem 1rem 1.25rem; }
+
+    .ticket-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .ticket-actions .btn {
+      justify-content: center;
+    }
+
+    .brand-name { font-size: 1rem; }
+    .issue-date { font-size: 0.75rem; }
+
+    .stamp { width: 46px; height: 46px; }
+    .stamp-text { font-size: 0.6rem; }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -402,4 +402,37 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     padding-right: env(safe-area-inset-right, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+
+  /* ========== Navbar responsive ========== */
+  @media (max-width: 720px) {
+    .global-navbar {
+      padding: 12px 16px;
+    }
+
+    .nav-links a:not(.rss-link):not(#theme-toggle) {
+      display: none;
+    }
+
+    .nav-links {
+      gap: 12px;
+    }
+
+    .nav-links a.active {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .global-navbar .logo span {
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .global-navbar {
+      padding: 10px 12px;
+    }
+    .nav-links {
+      gap: 8px;
+    }
+  }
 </style>
