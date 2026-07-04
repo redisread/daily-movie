@@ -1,0 +1,24 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import EmptyState from '../../components/ui/EmptyState.astro';
+---
+
+<Layout title="归档" activeTab="archive">
+  <main class="page-container">
+    <EmptyState
+      title="归档即将推出"
+      description="按时间线浏览每日电影。我们正在整理历年票根。"
+      emoji="📚"
+      ctaText="回首页"
+      ctaHref="/"
+    />
+  </main>
+</Layout>
+
+<style>
+  .page-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+  }
+</style>

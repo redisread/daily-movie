@@ -14,18 +14,20 @@ const { quote } = Astro.props;
 
 <style>
   .quote-card {
-    padding: 20px;
-    background: var(--bg-secondary);
-    border-left: 3px solid var(--accent);
+    padding: 1.25rem 1.5rem;
+    background: var(--gold-soft);
+    border-left: 3px solid var(--gold);
     border-radius: 0 var(--radius) var(--radius) 0;
     margin-bottom: 12px;
   }
 
   .text {
-    font-size: 1rem;
-    line-height: 1.6;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-style: italic;
+    line-height: 1.7;
     color: var(--text-primary);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
   footer {

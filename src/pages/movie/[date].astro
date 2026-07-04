@@ -15,8 +15,9 @@ export async function getStaticPaths() {
 
 const { movie } = Astro.props;
 
+// date for reference if needed in template via Today's date in page header
 const today = new Date();
-const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+void today;
 
 // 相似电影推荐：同类型筛选，按评分排序，排除当前，最多4部
 const similarMovies = movies
@@ -29,21 +30,28 @@ const similarMovies = movies
   <article class="movie-detail">
     <!-- 顶部导航 -->
     <nav class="top-nav">
-      <a href="/" class="back">← 返回首页</a>
-      <span class="date">{movie.publishedDate}</span>
+      <a href="/" class="back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:4px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        返回首页
+      </a>
+      <span class="detail-no">{movie.publishedDate}</span>
     </nav>
 
-    <!-- 主海报 -->
+    <!-- 主海报 + 票根卡 -->
     <div class="hero-section">
-      <div class="hero-cover" style={`background: ${movie.cover.bg}`}>
-        <img src={movie.cover.url} alt={movie.title} onerror="this.src='/fallback-poster.svg'" />
+      <div class="hero-cover-wrap">
+        <div class="hero-cover" style={`background: ${movie.cover.bg}`}>
+          <img src={movie.cover.url} alt={movie.title} onerror="this.src='/fallback-poster.svg'" />
+        </div>
+        {/* 票根印章 */}
+        <span class="hero-ticket-no">NO. {movie.publishedDate}</span>
       </div>
       <div class="hero-info">
         <h1>{movie.title}</h1>
         {movie.titleOriginal && <p class="original">{movie.titleOriginal}</p>}
         <div class="meta">
           <span class="rating-badge">⭐ {movie.rating}</span>
-          <span class="type-badge">{movie.type === 'tv' ? '📺 剧集' : '🎬 电影'}</span>
+          <span class="type-badge">{movie.type === 'tv' ? '电视剧' : '电影'}</span>
           <span class="genre">{movie.genre.join(' / ')}</span>
           <span class="year">{movie.year}</span>
           <span class="duration">{movie.duration}分钟</span>
@@ -107,6 +115,7 @@ const similarMovies = movies
     max-width: 900px;
     margin: 0 auto;
     padding: 0 20px 60px;
+    font-family: var(--font-body);
   }
 
   /* 顶部导航 */
@@ -128,9 +137,11 @@ const similarMovies = movies
     color: var(--accent-hover) !important;
   }
 
-  .date {
-    color: var(--text-secondary);
+  .detail-no {
+    font-family: var(--font-mono);
+    color: var(--text-muted);
     font-size: 0.85rem;
+    letter-spacing: 0.1em;
   }
 
   /* 主海报区 */
@@ -141,18 +152,39 @@ const similarMovies = movies
     animation: fadeIn 0.5s ease;
   }
 
-  .hero-cover {
+  .hero-cover-wrap {
+    position: relative;
     flex-shrink: 0;
+  }
+
+  .hero-cover {
     width: 320px;
     height: 480px;
     border-radius: var(--radius-lg);
     overflow: hidden;
+    box-shadow: 0 12px 40px rgba(60, 30, 15, 0.14), 0 2px 8px rgba(0,0,0,0.06);
   }
 
   .hero-cover img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .hero-ticket-no {
+    position: absolute;
+    bottom: -12px;
+    right: -12px;
+    padding: 4px 10px;
+    background: var(--accent);
+    color: #FFFFFF;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    border-radius: 0;
+    box-shadow: var(--shadow-stamp);
+    transform: rotate(-3deg);
   }
 
   .hero-info {
@@ -163,31 +195,35 @@ const similarMovies = movies
   }
 
   h1 {
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3vw, 2.6rem);
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.2;
+    letter-spacing: -0.01em;
   }
 
   .original {
     font-size: 1.1rem;
-    color: var(--text-secondary);
+    color: var(--text-muted);
+    font-style: italic;
   }
 
   .meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
     font-size: 0.95rem;
   }
 
   .rating-badge {
-    padding: 6px 14px;
-    background: var(--accent);
-    color: var(--bg-primary);
-    font-weight: 600;
-    border-radius: 4px;
+    padding: 5px 12px;
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-weight: 700;
+    border-radius: 999px;
+    border: 1px solid rgba(212, 161, 58, 0.25);
     font-size: 1rem;
   }
 
@@ -216,12 +252,15 @@ const similarMovies = movies
   }
 
   section h2 {
+    font-family: var(--font-display);
     font-size: 1.2rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 16px;
     padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
+    padding-left: 0.5rem;
+    border-bottom: none;
+    border-left: 3px solid var(--gold);
   }
 
   .synopsis {

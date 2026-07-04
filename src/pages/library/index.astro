@@ -1,0 +1,24 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import EmptyState from '../../components/ui/EmptyState.astro';
+---
+
+<Layout title="电影库" activeTab="library">
+  <main class="page-container">
+    <EmptyState
+      title="电影库建设中"
+      description="这里将汇聚所有已推荐的电影。票根正在缓慢归档中。"
+      emoji="🎬"
+      ctaText="回首页"
+      ctaHref="/"
+    />
+  </main>
+</Layout>
+
+<style>
+  .page-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+  }
+</style>

@@ -1,43 +1,83 @@
-/* ========== Anthropic Theme System ========== */
+/* ========== Daily Movie · 票根主题系统 ========== */
 
 :root {
-  /* Light mode (default) */
-  --bg-primary: #F5F4EF;
-  --bg-secondary: #EDECE8;
-  --bg-card: #FFFFFF;
-  --text-primary: #1A1A1A;
-  --text-secondary: #6B6B6B;
-  --accent: #D4A800;
-  --accent-hover: #B89200;
-  --link: #2563EB;
-  --border: #E5E5E0;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
-  --radius: 12px;
-  --radius-lg: 16px;
-  --radius-sm: 8px;
-  --font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  /* === Light mode · 暖纸色基底 === */
+  --bg-primary: #FAF8F4;          /* 暖纸色 */
+  --bg-secondary: #F0ECE6;        /* 深纸色 */
+  --bg-card: #FFFFFFF7;           /* 半透明白卡 */
+  --paper-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23FAF8F4'/%3E%3Crect width='1' height='1' x='0' y='0' fill='rgba(0,0,0,0.015)'/%3E%3C/svg%3E");
+
+  /* === 主色 · 朱漆红 === */
+  --accent: #C43E2A;              /* 朱漆红 — 印章、强调、链接 */
+  --accent-hover: #A83220;        /* 深朱红 */
+  --accent-soft: rgba(196, 62, 42, 0.08);
+
+  /* === 辅色 · 票根金 === */
+  --gold: #D4A13A;                /* 票根金 — 徽章、限定装饰 */
+  --gold-hover: #E0B44A;
+  --gold-soft: rgba(212, 161, 58, 0.1);
+
+  /* === 色系补充 === */
+  --link: #C43E2A;
+  --border: #E5DDD2;              /* 墨水褐边线 */
+  --border-strong: #C4B8A6;
+
+  /* === 文字 === */
+  --text-primary: #1E1A14;        /* 墨黑 */
+  --text-secondary: #8A7E6E;      /* 褐灰 */
+  --text-muted: #A89C8A;          /* 浅褐 */
+
+  /* === 阴影 === */
+  --shadow: 0 1px 3px rgba(60, 30, 15, 0.06);
+  --shadow-hover: 0 4px 16px rgba(60, 30, 15, 0.10);
+  --shadow-stamp: 0 2px 8px rgba(196, 62, 42, 0.2);
+
+  /* === 圆角 === */
+  --radius: 6px;
+  --radius-lg: 10px;
+  --radius-sm: 4px;
+
+  /* === 字体 === */
+  --font-family: "Inter", "Noto Sans SC", -apple-system, sans-serif;
+  --font-display: "Playfair Display", "Noto Serif SC", Georgia, serif;
+  --font-body: "Noto Sans SC", -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
-/* Dark mode */
+/* === Dark mode · 深褐近黑 === */
 [data-theme="dark"] {
-  --bg-primary: #1A1A1A;
-  --bg-secondary: #242424;
-  --bg-card: #2A2A2A;
-  --text-primary: #F5F4EF;
-  --text-secondary: #A0A0A0;
-  --accent: #F5C518;
-  --accent-hover: #FFD54F;
-  --link: #60A5FA;
-  --border: #3A3A3A;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --bg-primary: #13100D;
+  --bg-secondary: #1C1814;
+  --bg-card: #201C18F7;
+  --paper-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%2313100D'/%3E%3Crect width='1' height='1' x='0' y='0' fill='rgba(255,255,255,0.02)'/%3E%3C/svg%3E");
+
+  --accent: #E85D4A;              /* 信号红 */
+  --accent-hover: #F07060;
+  --accent-soft: rgba(232, 93, 74, 0.12);
+
+  --gold: #F0C86E;                /* 褪色金 */
+  --gold-hover: #F5D88E;
+  --gold-soft: rgba(240, 200, 110, 0.1);
+
+  --link: #E85D4A;
+  --border: #3A322A;
+  --border-strong: #5A4E3E;
+
+  --text-primary: #F0E8DC;        /* 米色 */
+  --text-secondary: #9A8E7E;
+  --text-muted: #6E6458;
+
+  --shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+  --font-family: "Inter", "Noto Sans SC", -apple-system, sans-serif;
+  --font-display: "Playfair Display", "Noto Serif SC", Georgia, serif;
+  --font-body: "Noto Sans SC", -apple-system, sans-serif;
 }
 
-/* Typography */
+/* === Typography Scale === */
 body {
-  font-family: var(--font-family);
+  font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.6;
   color: var(--text-primary);
@@ -46,13 +86,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Heading hierarchy */
-h1 { font-size: 1.875rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
-h2 { font-size: 1.5rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; }
+h1 { font-family: var(--font-display); font-size: 2rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
+h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; line-height: 1.3; letter-spacing: 0.01em; }
 h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 h4 { font-size: 1rem; font-weight: 600; line-height: 1.5; }
 
-/* Spacing system (4px base unit) */
+/* === Spacing scale === */
 :root {
   --space-1: 4px;
   --space-2: 8px;
@@ -65,13 +104,30 @@ h4 { font-size: 1rem; font-weight: 600; line-height: 1.5; }
   --space-12: 48px;
 }
 
-/* Smooth theme transitions */
+/* === Smooth transitions === */
 body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body {
-    transition: none;
-  }
+  body { transition: none; }
+}
+
+/* === Font Import (Playfair Display + Noto Serif SC for display) === */
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/playfairdisplay/v30/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Noto Serif SC';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/notoserifsc/v22/H4c8BXePl9EnQp2O_VqAhugfRKE.woff2') format('woff2');
+  unicode-range: U+4E00-9FFF;
 }

@@ -7,15 +7,13 @@ interface Props {
   description?: string;
   image?: string;
   activeTab?: 'home' | 'library' | 'search' | 'archive';
-  fullscreen?: boolean;
 }
 
 const {
   title,
-  description = '每日一影院 — 每天一部电影，触发观影欲望',
+  description = '每日一影院 — 每天一张电影票，触发观影欲望',
   image,
   activeTab,
-  fullscreen = false,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -62,7 +60,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       'inLanguage': 'zh-CN'
     })} />
   </head>
-  <body class:list={[{ 'cinema-mode': fullscreen }]}>
+  <body>
     <a href="#main" class="skip-link">跳到主要内容</a>
     <div id="main" class="page-wrapper">
       <nav class="global-navbar" role="navigation" aria-label="主-navigation">
@@ -144,7 +142,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     document.addEventListener('keydown', (e) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (e.key === 'Escape') {
-        document.querySelectorAll('dialog[open]').forEach(d => d.close());
+        document.querySelectorAll('dialog[open]').forEach(d => (d as HTMLDialogElement).close());
       }
     });
 
@@ -165,18 +163,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     box-sizing: border-box;
   }
 
-  body {
-    font-family: var(--font-family);
-    line-height: 1.6;
-    color: var(--text-primary);
-    background-color: var(--bg-primary);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+  /* Links — inherited from CSS variables in theme */
 
   a {
-    color: var(--accent);
+    color: var(--link);
     text-decoration: none;
+    transition: color 0.15s ease;
   }
 
   a:hover {
@@ -245,16 +237,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     padding-bottom: 0;
   }
 
-  /* Cinema mode: hide chrome */
-  body.cinema-mode .global-navbar,
-  body.cinema-mode .global-footer,
-  body.cinema-mode .mobile-tab-bar {
-    display: none !important;
-  }
-
-  body.cinema-mode .page-content {
-    padding-bottom: 0 !important;
-  }
+  /* Cinema mode removed — everything uses the ticket design now */
 
   @media (max-width: 640px) {
     .page-content {
@@ -271,17 +254,17 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     max-width: 1200px;
     width: 100%;
     margin: 0 auto;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 2px solid var(--border);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    background: rgba(245, 244, 239, 0.8);
+    background: rgba(250, 248, 244, 0.85);
     position: sticky;
     top: 0;
     z-index: 999;
   }
 
   [data-theme="dark"] .global-navbar {
-    background: rgba(26, 26, 26, 0.85);
+    background: rgba(19, 16, 13, 0.85);
   }
 
   .global-navbar .logo {

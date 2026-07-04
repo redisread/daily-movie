@@ -4,8 +4,8 @@
   "description": "每日推荐一部经典电影",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1A1A1A",
-  "theme_color": "#D4A800",
+  "background_color": "#13100D",
+  "theme_color": "#C43E2A",
   "orientation": "portrait-primary",
   "icons": [
     {

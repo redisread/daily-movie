@@ -28,15 +28,16 @@ const { id = 'toast-container' } = Astro.props;
     color: var(--text-primary);
     background: var(--bg-card);
     border: 1px solid var(--border);
+    border-left: none;
     box-shadow: var(--shadow-hover);
     pointer-events: auto;
     animation: toastIn 0.3s ease;
     max-width: 320px;
   }
 
-  .toast.success { border-color: #22c55e; }
-  .toast.error { border-color: #ef4444; }
-  .toast.info { border-color: var(--accent); }
+  .toast.info { border-left: 3px solid var(--gold); }
+  .toast.success { border-left: 3px solid #4CAF50; }
+  .toast.error { border-left: 3px solid var(--accent); }
 
   .toast.removing {
     animation: toastOut 0.3s ease forwards;
