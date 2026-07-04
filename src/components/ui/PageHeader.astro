@@ -1,0 +1,65 @@
+---
+/**
+ * PageHeader — 子页面顶部的小标题 + subtitle
+ *
+ * 用法：
+ *   <PageHeader title="电影库" subtitle="在这里翻阅所有已放映的票根" />
+ *   <PageHeader title="归档" align="center" />
+ */
+interface Props {
+  title: string;
+  subtitle?: string;
+  align?: 'left' | 'center';
+}
+
+const { title, subtitle, align = 'left' } = Astro.props;
+---
+
+<div class="page-header" style={`text-align: ${align}`}>
+  <h1 class="page-title">{title}</h1>
+  {subtitle && <p class="page-subtitle">{subtitle}</p>}
+</div>
+
+<style>
+  .page-header {
+    padding: 0.5rem 0 2rem;
+    margin-bottom: 1.5rem;
+  }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin: 0 0 0.4rem;
+    position: relative;
+    display: inline-block;
+  }
+  .page-title::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60%;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .page-header[style*="text-align: center"] .page-title::after {
+    left: 20%;
+  }
+  .page-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin: 0.75rem 0 0;
+  }
+
+  @media (max-width: 720px) {
+    .page-header {
+      padding: 0 0 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .page-title { font-size: 1.4rem; }
+    .page-subtitle { font-size: 0.85rem; }
+  }
+</style>

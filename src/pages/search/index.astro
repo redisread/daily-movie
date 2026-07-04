@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { movies } from '../../data/movies';
+import PageHeader from '../../components/ui/PageHeader.astro';
 
 const allMovies = movies as any[];
 
@@ -24,10 +25,7 @@ const genresJson = JSON.stringify(allGenres);
 
 <Layout title="搜索" activeTab="search">
   <main class="search-page" data-movies={moviesJson} data-genres={genresJson}>
-    <header class="page-header">
-      <h1>搜索</h1>
-      <p class="page-sub">按影片、导演、演员、台词，找到你想看的电影</p>
-    </header>
+    <PageHeader title="搜索" subtitle="按影片、导演、演员、台词，找到你想看的电影" />
 
     <div class="search-bar">
       <svg class="search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -159,16 +157,7 @@ const genresJson = JSON.stringify(allGenres);
     padding: 3rem 1.5rem 4rem;
   }
 
-  .page-header { margin-bottom: 2.5rem; }
-  .page-header h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.8rem, 4vw, 2.5rem);
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1.2;
-    margin-bottom: 0.5rem;
-  }
-  .page-sub { font-size: 1rem; color: var(--text-muted); margin: 0; }
+  /* PageHeader styles in PageHeader.astro */
 
   /* Search bar */
   .search-bar {
