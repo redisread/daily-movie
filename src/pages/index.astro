@@ -2,393 +2,191 @@
 import Layout from '../layouts/Layout.astro';
 import { movies } from '../data/movies';
 
-// 格式化今日日期
+// 今日日期
 const today = new Date();
 const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-// 获取今日推荐（按 publishedDate 匹配今天）
-const todayMovie = movies.find(m => m.publishedDate === dateStr) ?? movies[0];
-
-// 所有电影 ID（用于「换一部」随机切换）
-const allMovieIds = movies.map(m => m.id);
-const moviesJson = JSON.stringify(movies.map(m => ({ id: m.id, title: m.title, titleOriginal: m.titleOriginal, cover: m.cover, genre: m.genre, rating: m.rating, quotes: m.quotes.slice(0, 3) })));
+// 今日推荐（按 publishedDate 匹配今天）
+const todayMovie = movies.find((m) => m.publishedDate === dateStr) ?? movies[0];
+const primaryQuote = todayMovie?.quotes?.[0];
 ---
 
 <Layout title={`每日一影院 — ${todayMovie?.title ?? ''}`} fullscreen>
-  <main class="cinema" data-movies={moviesJson} data-current={todayMovie?.id ?? ''}>
-    <!-- 红幕光晕背景 -->
-    <div class="spotlight" aria-hidden="true"></div>
-
-    <!-- 暗角 -->
-    <div class="vignette" aria-hidden="true"></div>
-
-    <!-- 顶部极简信息 -->
-    <header class="cinema-header">
-      <span class="brand">每日一影院</span>
-      <time class="date">{dateStr}</time>
-    </header>
+  <section class="cinema" aria-labelledby="movie-title">
+    <p class="date-label">
+      <time datetime={dateStr}>{dateStr}</time>
+    </p>
 
     {todayMovie && (
-      <div class="stage" data-movie-id={todayMovie.id}>
-        <!-- 海报 -->
-        <figure class="poster">
-          <div class="poster-frame">
-            <img
-              src={todayMovie.cover.url}
-              alt={todayMovie.title}
-              class="poster-img movie-cover"
-              onerror="this.src='/fallback-poster.svg'"
-              fetchpriority="high"
-            />
-          </div>
-        </figure>
+      <>
+        <h1 id="movie-title" class="movie-title">{todayMovie.title}</h1>
+        {todayMovie.titleOriginal && (
+          <p class="movie-title-original">{todayMovie.titleOriginal}</p>
+        )}
+        <p class="movie-meta">
+          {todayMovie.director.name} · {todayMovie.year} · {todayMovie.duration}min
+        </p>
 
-        <!-- 金句 -->
-        <blockquote class="quote">
-          <p class="quote-text" data-quotes={JSON.stringify(todayMovie.quotes.map(q => q.text).slice(0, 5))}>
-            「{todayMovie.quotes[0]?.text}」
-          </p>
-          {todayMovie.quotes[0]?.speaker && (
-            <cite class="quote-speaker">— {todayMovie.quotes[0].speaker}</cite>
-          )}
-        </blockquote>
+        {primaryQuote && (
+          <blockquote class="stage-quote">
+            <span class="quote-mark quote-open" aria-hidden="true">&ldquo;</span>
+            <span class="quote-text">{primaryQuote.text}</span>
+            <span class="quote-mark quote-close" aria-hidden="true">&rdquo;</span>
+            {primaryQuote.speaker && (
+              <cite class="quote-speaker">—— {primaryQuote.speaker}</cite>
+            )}
+          </blockquote>
+        )}
 
-        <!-- CTA -->
-        <div class="actions">
-          <button type="button" class="btn-primary" id="btn-next">
-            <span class="btn-icon">▶</span>
-            <span>换一部</span>
-          </button>
-          <a
-            href={`/movie/${todayMovie.publishedDate}/`}
-            class="btn-secondary"
-          >
-            <span>去看这部电影</span>
-            <span class="btn-arrow">→</span>
+        <p class="enter">
+          <a href={`/movie/${todayMovie.publishedDate}/`} class="enter-link">
+            入场 &rarr;
           </a>
-        </div>
-      </div>
+        </p>
+      </>
     )}
-
-    <!-- 底部信息（极简） -->
-    <footer class="cinema-footer">
-      <span class="movie-title-minimal">{todayMovie?.title}</span>
-      <span class="divider">·</span>
-      <span>{todayMovie?.rating ? `⭐ ${todayMovie.rating}` : ''}</span>
-      <span class="divider">·</span>
-      <span>{todayMovie?.genre?.join(' / ')}</span>
-    </footer>
-  </main>
+  </section>
 </Layout>
 
-<script>
-  // 「换一部」逻辑
-  const stage = document.querySelector('.stage') as HTMLElement | null;
-  if (stage) {
-    const moviesData = JSON.parse(stage.parentElement!.dataset.movies || '[]');
-    const btnNext = document.getElementById('btn-next') as HTMLButtonElement | null;
-    const quoteText = document.querySelector('.quote-text') as HTMLElement | null;
-    const movieTitle = stage.querySelector('.poster-img') as HTMLImageElement | null;
-    const moviePoster = stage.querySelector('.poster-frame') as HTMLElement | null;
-
-    btnNext?.addEventListener('click', () => {
-      // 随机选一部（不是当前的）
-      const currentId = stage.dataset.movieId;
-      const available = moviesData.filter((m: any) => m.id !== currentId);
-      const pick = available[Math.floor(Math.random() * available.length)];
-
-      if (!pick) return;
-
-      // 更新 URL 不刷新（SPA 式切换）
-      stage.dataset.movieId = pick.id;
-      if (moviePoster) {
-        moviePoster.style.background = pick.cover.bg;
-      }
-      if (movieTitle) {
-        movieTitle.src = pick.cover.url;
-        movieTitle.alt = pick.title;
-      }
-      if (quoteText && pick.quotes?.length > 0) {
-        const q = pick.quotes[Math.floor(Math.random() * pick.quotes.length)];
-        quoteText.textContent = `「${q}」`;
-      }
-
-      // 更新 footer 信息
-      const footerSpans = document.querySelectorAll('.cinema-footer span');
-      if (footerSpans[0]) footerSpans[0].textContent = pick.title;
-      if (footerSpans[2]) footerSpans[2].textContent = pick.rating ? `⭐ ${pick.rating}` : '';
-      if (footerSpans[4]) footerSpans[4].textContent = pick.genre?.join(' / ') || '';
-
-      // 切换动画
-      stage.classList.add('switching');
-      setTimeout(() => stage.classList.remove('switching'), 300);
-
-      // 更新 CTA 链接
-      const ctaLink = stage.querySelector('.btn-secondary') as HTMLAnchorElement | null;
-      if (ctaLink) {
-        // 同一天的多部电影用 publishedDate 区分
-        ctaLink.href = `/movie/${pick.id}/`;
-      }
-    });
-  }
-</script>
-
 <style>
-  /* 全屏电影院模式 — token 化，不再硬编码 */
-  :global(body) {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    overflow: hidden;
-  }
-
   .cinema {
-    position: fixed;
-    inset: 0;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
-  }
-
-  /* 红幕光晕 */
-  .spotlight {
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse at 50% 0%, rgba(139, 0, 0, 0.15) 0%, transparent 60%),
-      radial-gradient(ellipse at 50% 100%, rgba(0, 0, 0, 0.4) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* 暗角 */
-  .vignette {
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.6) 100%);
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  /* 顶部信息 */
-  .cinema-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    z-index: 10;
-    font-size: 0.8rem;
-    opacity: 0.6;
-  }
-
-  .brand {
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: #c8a86e;
-  }
-
-  /* 主舞台 */
-  .stage {
-    position: relative;
-    z-index: 5;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-    max-width: 560px;
-    width: 100%;
+    padding: var(--pad-v) var(--pad-h);
+    gap: 1.5rem;
     text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
   }
 
-  /* 海报 */
-  .poster {
+  /* Fade sequence — 进场仪式（Phase 2 会展开为 3 秒序列，Phase 1 先用简单 fade） */
+  .date-label,
+  .movie-title,
+  .movie-title-original,
+  .movie-meta,
+  .stage-quote,
+  .enter {
+    opacity: 0;
+    animation: v2-fade-in 1.2s ease-out forwards;
+  }
+
+  .date-label { animation-delay: 0.1s; }
+  .movie-title { animation-delay: 0.4s; }
+  .movie-title-original { animation-delay: 0.6s; }
+  .movie-meta { animation-delay: 0.8s; }
+  .stage-quote { animation-delay: 1.2s; }
+  .enter { animation-delay: 1.8s; }
+
+  @keyframes v2-fade-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .date-label {
+    font-size: var(--size-label);
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(10, 10, 10, 0.55);
+    margin-bottom: 1rem;
+  }
+
+  .movie-title {
+    font-family: var(--font-serif);
+    font-size: var(--size-hero);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--ink);
     margin: 0;
-    width: 260px;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow:
-      0 20px 60px rgba(0, 0, 0, 0.6),
-      0 0 0 1px rgba(200, 168, 110, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
-  .poster:hover {
-    transform: scale(1.02);
-    box-shadow:
-      0 25px 80px rgba(0, 0, 0, 0.7),
-      0 0 0 1px rgba(200, 168, 110, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-
-  .poster-frame {
-    width: 100%;
-    aspect-ratio: 2 / 3;
-    border-radius: 12px;
-    overflow: hidden;
-    transition: background 0.5s ease;
-  }
-
-  .poster-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: opacity 0.3s ease;
-  }
-
-  /* 金句 */
-  .quote {
+  .movie-title-original {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-style: italic;
+    font-weight: 400;
+    color: rgba(10, 10, 10, 0.6);
+    letter-spacing: 0.01em;
     margin: 0;
-    padding: 1.5rem 1rem;
-    max-width: 480px;
-    min-height: 80px;
+  }
+
+  .movie-meta {
+    font-family: var(--font-serif);
+    font-size: var(--size-caption);
+    font-weight: 400;
+    color: rgba(10, 10, 10, 0.55);
+    letter-spacing: 0.02em;
+    margin-top: 0.25rem;
+  }
+
+  .stage-quote {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.25rem;
+    line-height: 1.8;
+    color: var(--ink);
+    max-width: 34rem;
+    margin: 3rem auto 0;
+    position: relative;
+    padding: 0 1.5rem;
+  }
+
+  .quote-mark {
+    color: var(--gold);
+    font-size: 2rem;
+    line-height: 1;
+    font-family: var(--font-serif);
+    vertical-align: -0.35em;
+    margin: 0 0.15em;
   }
 
   .quote-text {
-    font-size: 1.2rem;
-    line-height: 1.6;
-    color: #f0e6cc;
-    font-weight: 500;
-    margin: 0 0 0.5rem;
-    font-style: italic;
-    font-family: var(--font-serif, Georgia, 'Times New Roman', serif);
+    display: inline;
   }
 
   .quote-speaker {
-    font-size: 0.85rem;
-    color: #a89070;
+    display: block;
+    margin-top: 1rem;
+    font-size: 0.875rem;
     font-style: normal;
+    color: rgba(10, 10, 10, 0.55);
+    letter-spacing: 0.02em;
   }
 
-  /* 按钮 */
-  .actions {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    justify-content: center;
+  .enter {
+    margin-top: 3rem;
   }
 
-  .btn-primary,
-  .btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.9rem 1.8rem;
-    border-radius: 100px;
+  .enter-link {
+    font-family: var(--font-serif);
     font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    border: none;
+    font-style: italic;
+    color: var(--ink);
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 2px;
+    transition: color 0.3s ease, border-color 0.3s ease;
   }
 
-  .btn-primary {
-    background: linear-gradient(135deg, #c8a86e 0%, #a88a4e 100%);
-    color: #0a0a0a;
-    box-shadow: 0 4px 20px rgba(200, 168, 110, 0.3);
+  .enter-link:hover {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
   }
 
-  .btn-primary:hover {
-    background: linear-gradient(135deg, #dcc08e 0%, #c8a86e 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 30px rgba(200, 168, 110, 0.4);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    color: #e8d5b0;
-    border: 1px solid rgba(200, 168, 110, 0.4);
-  }
-
-  .btn-secondary:hover {
-    background: rgba(200, 168, 110, 0.1);
-    border-color: rgba(200, 168, 110, 0.7);
-    transform: translateY(-2px);
-  }
-
-  .btn-icon {
-    font-size: 0.9rem;
-  }
-
-  .btn-arrow {
-    transition: transform 0.2s ease;
-  }
-
-  .btn-secondary:hover .btn-arrow {
-    transform: translateX(4px);
-  }
-
-  /* 底部极简信息 */
-  .cinema-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 1rem 2rem;
-    z-index: 10;
-    font-size: 0.8rem;
-    opacity: 0.5;
-  }
-
-  .movie-title-minimal {
-    font-weight: 600;
-    color: #c8a86e;
-  }
-
-  .divider {
-    opacity: 0.3;
-  }
-
-  /* 切换动画 */
-  .switching .poster {
-    animation: posterSwitch 0.3s ease;
-  }
-
-  .switching .quote-text {
-    animation: quoteFade 0.3s ease;
-  }
-
-  @keyframes posterSwitch {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(0.95); opacity: 0.8; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  @keyframes quoteFade {
-    0% { opacity: 1; }
-    50% { opacity: 0; }
-    100% { opacity: 1; }
-  }
-
-  /* 响应式 */
-  @media (max-width: 640px) {
-    .poster {
-      width: 200px;
-    }
-
-    .quote-text {
-      font-size: 1rem;
-    }
-
-    .btn-primary,
-    .btn-secondary {
-      padding: 0.8rem 1.4rem;
-      font-size: 0.9rem;
-    }
-
-    .cinema {
-      padding: 1rem;
+  @media (prefers-reduced-motion: reduce) {
+    .date-label,
+    .movie-title,
+    .movie-title-original,
+    .movie-meta,
+    .stage-quote,
+    .enter {
+      opacity: 1;
+      animation: none;
+      transform: none;
     }
   }
 </style>

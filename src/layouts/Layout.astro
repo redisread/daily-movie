@@ -1,20 +1,17 @@
 ---
-import MobileTabBar from '../components/layout/MobileTabBar.astro';
 import Toast from '../components/ui/Toast.astro';
 
 interface Props {
   title: string;
   description?: string;
   image?: string;
-  activeTab?: 'home' | 'library' | 'search' | 'archive';
   fullscreen?: boolean;
 }
 
 const {
   title,
-  description = '每日一影院 — 每天一部电影，触发观影欲望',
+  description = '每日一影院 — 每天一场放映仪式',
   image,
-  activeTab,
   fullscreen = false,
 } = Astro.props;
 
@@ -22,7 +19,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN" data-theme="v2">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,12 +30,21 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <link rel="apple-touch-icon" href="/logo.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="alternate" type="application/rss+xml" title="每日一电影 RSS" href="/rss.xml" />
-    <meta name="theme-color" content="#0B1220" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <meta name="theme-color" content="#F5F1E8" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="/styles/starlight-theme.css" />
+    <link
+      rel="preload"
+      href="/fonts/CormorantGaramond-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/styles/v2-theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500&display=block"
+    />
     <link rel="preload" href="/logo.png" as="image" />
-    <link rel="preload" href="/fallback-poster.svg" as="image" />
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
@@ -65,58 +71,67 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       'inLanguage': 'zh-CN'
     })} />
   </head>
-  <body class:list={[{ 'cinema-mode': fullscreen }]}>
+  <body>
     <a href="#main" class="skip-link">跳到主要内容</a>
-    <div id="main" class="page-wrapper">
-      <nav class="global-navbar" role="navigation" aria-label="主-navigation">
-        <a href="/" class="logo">
-          <img src="/logo.png" alt="每日电影" width="36" height="36" />
-          <span>每日电影</span>
-        </a>
-        <div class="nav-links">
-          <a href="/" class:list={[{ 'active': activeTab === 'home' }]}>首页</a>
-          <a href="/library/" class:list={[{ 'active': activeTab === 'library' }]}>电影库</a>
-          <a href="/search/" class:list={[{ 'active': activeTab === 'search' }]}>搜索</a>
-          <a href="/archive/" class:list={[{ 'active': activeTab === 'archive' }]}>归档</a>
-          <a href="/rss.xml" class="rss-link" title="订阅 RSS" aria-label="RSS 订阅">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 11a9 9 0 0 1 9 9"></path>
-              <path d="M4 4a16 16 0 0 1 16 16"></path>
-              <circle cx="5" cy="19" r="1"></circle>
-            </svg>
-          </a>
-        </div>
-      </nav>
-      <main class="page-content">
-        <slot />
-      </main>
-      <MobileTabBar />
-      <Toast />
-      <footer class="global-footer">
-        <div class="footer-inner">
-          <span>每日电影 © 2026</span>
-          <div class="footer-links">
-            <a href="/rss.xml">RSS</a>
-            <a href="https://github.com/redisread/daily-movie" target="_blank" rel="noopener">GitHub</a>
-          </div>
-        </div>
-      </footer>
+
+    <!-- v2 splash · §5.3 字体加载降级 -->
+    <div id="v2-splash" class="v2-splash" aria-hidden="true" role="status">
+      <span>放映厅准备中...</span>
     </div>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Toast />
   </body>
   <script>
-    // Starlight is dark-only. No theme toggling.
-    // 保留 legacy 用户的 localStorage 键位清理（一次性）：
+    // Font loading gate · §5.3
+    // font-display: block 会让浏览器等字体到位；如果 1.5s 内还没加载完，展示 splash；3s 后放弃 block fallback 到 system
+    (async () => {
+      const splash = document.getElementById('v2-splash');
+      if (!splash) return;
+
+      let shown = false;
+      const showTimer = setTimeout(() => {
+        splash.classList.add('visible');
+        splash.setAttribute('aria-hidden', 'false');
+        shown = true;
+      }, 1500);
+
+      const hide = () => {
+        clearTimeout(showTimer);
+        if (shown) {
+          splash.classList.remove('visible');
+          splash.setAttribute('aria-hidden', 'true');
+        }
+      };
+
+      if ('fonts' in document) {
+        try {
+          // 等 Cormorant 主字体加载完成
+          await Promise.race([
+            (document as any).fonts.load('500 1rem "Cormorant Garamond"'),
+            new Promise((resolve) => setTimeout(resolve, 3000)),
+          ]);
+        } catch { /* noop */ }
+      }
+
+      hide();
+    })();
+
+    // 清理 v1.1 遗留 localStorage
     try { localStorage.removeItem('daily-movie-theme'); } catch { /* noop */ }
 
-    // Keyboard shortcuts
+    // Escape close dialog
     document.addEventListener('keydown', (e) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (e.key === 'Escape') {
-        document.querySelectorAll('dialog[open]').forEach(d => (d as HTMLDialogElement).close());
+        document.querySelectorAll('dialog[open]').forEach((d) => (d as HTMLDialogElement).close());
       }
     });
 
-    // Service Worker registration for PWA
+    // Service Worker (v2 cache generation)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -126,228 +141,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 </html>
 
 <style is:global>
-
   * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  }
-
-  body {
-    font-family: var(--font-family);
-    line-height: 1.6;
-    color: var(--text-primary);
-    background-color: var(--bg-primary);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  a {
-    color: var(--accent);
-    text-decoration: none;
-  }
-
-  a:hover {
-    color: var(--accent-hover);
-  }
-
-  /* Focus visible for accessibility */
-  :focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
-
-  /* Skip to content link */
-  .skip-link {
-    position: absolute;
-    top: -40px;
-    left: 8px;
-    background: var(--accent);
-    color: var(--bg-primary) !important;
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-weight: 600;
-    z-index: 9999;
-    transition: top 0.2s ease;
-  }
-
-  .skip-link:focus {
-    top: 8px;
-  }
-
-  /* Fade-in animation for page load */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Stagger animation for cards */
-  @keyframes staggerIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Skeleton loading animation */
-  @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
-
-  .skeleton {
-    background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-secondary) 50%, var(--bg-card) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: var(--radius);
-  }
-
-  /* Page wrapper */
-  .page-wrapper {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .page-content {
-    flex: 1;
-    padding-bottom: 0;
-  }
-
-  /* Cinema mode: hide chrome */
-  body.cinema-mode .global-navbar,
-  body.cinema-mode .global-footer,
-  body.cinema-mode .mobile-tab-bar {
-    display: none !important;
-  }
-
-  body.cinema-mode .page-content {
-    padding-bottom: 0 !important;
-  }
-
-  @media (max-width: 640px) {
-    .page-content {
-      padding-bottom: 60px;
-    }
-  }
-
-  /* Global navbar */
-  .global-navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-    max-width: 1200px;
-    width: 100%;
-    margin: 0 auto;
-    border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    background: var(--bg-overlay);
-    position: sticky;
-    top: 0;
-    z-index: 999;
-  }
-
-  .global-navbar .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.2rem;
-    font-weight: 500;
-    font-family: var(--font-serif);
-    color: var(--text-primary) !important;
-  }
-
-  .global-navbar .logo img {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-  }
-
-  .global-navbar .logo span {
-    font-size: 1.1rem;
-  }
-
-  .global-navbar .logo:hover {
-    color: var(--accent) !important;
-  }
-
-  .nav-links {
-    display: flex;
-    gap: 24px;
-    align-items: center;
-  }
-
-  .nav-links a {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    transition: color 0.2s;
-  }
-
-  .nav-links a.active {
-    color: var(--accent);
-    border-bottom: 2px solid var(--accent);
-    padding-bottom: 4px;
-  }
-
-  .nav-links a:hover {
-    color: var(--accent) !important;
-  }
-
-  .rss-link {
-    display: flex;
-    align-items: center;
-    color: var(--accent) !important;
-  }
-
-  .rss-link:hover {
-    color: var(--accent-hover) !important;
-  }
-
-  /* Global footer */
-  .global-footer {
-    border-top: 1px solid var(--border);
-    padding: 32px 24px;
-    margin-top: 80px;
-  }
-
-  .footer-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-  }
-
-  .footer-links {
-    display: flex;
-    gap: 20px;
-  }
-
-  .footer-links a {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    transition: color 0.2s;
-  }
-
-  .footer-links a:hover {
-    color: var(--accent) !important;
-  }
-
-  @media (max-width: 640px) {
-    .footer-inner {
-      flex-direction: column;
-      text-align: center;
-    }
-  }
-
-  /* View Transitions */
-  @view-transition {
-    navigation: auto;
   }
 
   /* Safe area insets */
@@ -356,5 +153,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* View Transitions */
+  @view-transition {
+    navigation: auto;
   }
 </style>
