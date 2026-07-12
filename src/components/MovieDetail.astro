@@ -1,106 +1,98 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import DirectorCard from '../../components/DirectorCard.astro';
-import CastList from '../../components/CastList.astro';
-import PosterGallery from '../../components/PosterGallery.astro';
-import QuoteCard from '../../components/QuoteCard.astro';
-import { movies } from '../../data/movies';
+import DirectorCard from './DirectorCard.astro';
+import CastList from './CastList.astro';
+import PosterGallery from './PosterGallery.astro';
+import QuoteCard from './QuoteCard.astro';
+import type { Movie } from '../schemas/movie';
 
-export async function getStaticPaths() {
-  return movies.map(movie => ({
-    params: { date: movie.publishedDate },
-    props: { movie },
-  }));
+interface Props {
+  movie: Movie;
+  allMovies: Movie[];
 }
 
-const { movie } = Astro.props;
-
-const today = new Date();
-const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+const { movie, allMovies } = Astro.props;
 
 // 相似电影推荐：同类型筛选，按评分排序，排除当前，最多4部
-const similarMovies = movies
+const similarMovies = allMovies
   .filter(m => m.id !== movie.id && m.genre.some(g => movie.genre.includes(g)))
   .sort((a, b) => b.rating - a.rating)
   .slice(0, 4);
 ---
 
-<Layout title={movie.title}>
-  <article class="movie-detail">
-    <!-- 顶部导航 -->
-    <nav class="top-nav">
-      <a href="/" class="back">← 返回首页</a>
-      <span class="date">{movie.publishedDate}</span>
-    </nav>
+<article class="movie-detail">
+  <!-- 顶部导航 -->
+  <nav class="top-nav">
+    <a href="#/" class="back" data-spa-link>← 返回首页</a>
+    <span class="date">{movie.publishedDate}</span>
+  </nav>
 
-    <!-- 主海报 -->
-    <div class="hero-section">
-      <div class="hero-cover" style={`background: ${movie.cover.bg}`}>
-        <img src={movie.cover.url} alt={movie.title} onerror="this.src='/fallback-poster.svg'" />
+  <!-- 主海报 -->
+  <div class="hero-section">
+    <div class="hero-cover" style={`background: ${movie.cover.bg}`}>
+      <img src={movie.cover.url} alt={movie.title} onerror="this.src='/fallback-poster.svg'" />
+    </div>
+    <div class="hero-info">
+      <h1>{movie.title}</h1>
+      {movie.titleOriginal && <p class="original">{movie.titleOriginal}</p>}
+      <div class="meta">
+        <span class="rating-badge">⭐ {movie.rating}</span>
+        <span class="type-badge">{movie.type === 'tv' ? '📺 剧集' : '🎬 电影'}</span>
+        <span class="genre">{movie.genre.join(' / ')}</span>
+        <span class="year">{movie.year}</span>
+        <span class="duration">{movie.duration}分钟</span>
       </div>
-      <div class="hero-info">
-        <h1>{movie.title}</h1>
-        {movie.titleOriginal && <p class="original">{movie.titleOriginal}</p>}
-        <div class="meta">
-          <span class="rating-badge">⭐ {movie.rating}</span>
-          <span class="type-badge">{movie.type === 'tv' ? '📺 剧集' : '🎬 电影'}</span>
-          <span class="genre">{movie.genre.join(' / ')}</span>
-          <span class="year">{movie.year}</span>
-          <span class="duration">{movie.duration}分钟</span>
+    </div>
+  </div>
+
+  <div class="content-sections">
+    <!-- 导演 -->
+    <DirectorCard director={movie.director} />
+
+    <!-- 主演 -->
+    <section>
+      <h2>🌟 主演</h2>
+      <CastList cast={movie.cast} />
+    </section>
+
+    <!-- 剧情简介 -->
+    <section>
+      <h2>📖 剧情简介</h2>
+      <p class="synopsis">{movie.synopsis}</p>
+    </section>
+
+    <!-- 海报画廊 -->
+    <section>
+      <h2>🎞️ 电影海报</h2>
+      <PosterGallery posters={movie.posters} />
+    </section>
+
+    <!-- 经典语录 -->
+    <section>
+      <h2>💬 经典语录</h2>
+      {movie.quotes.map(q => <QuoteCard quote={q} />)}
+    </section>
+
+    <!-- 相似电影推荐 -->
+    {similarMovies.length > 0 && (
+      <section class="similar-section">
+        <h2>🎬 相似推荐</h2>
+        <div class="similar-scroll">
+          {similarMovies.map(m => (
+            <a href={`#/movie/${m.publishedDate}`} class="similar-card" data-spa-link>
+              <div class="similar-cover" style={`background: ${m.cover.bg}`}>
+                <img src={m.cover.url} alt={m.title} loading="lazy" onerror="this.src='/fallback-poster.svg'" />
+              </div>
+              <div class="similar-info">
+                <p class="similar-title">{m.title}</p>
+                <span class="similar-rating">⭐ {m.rating}</span>
+              </div>
+            </a>
+          ))}
         </div>
-      </div>
-    </div>
-
-    <div class="content-sections">
-      <!-- 导演 -->
-      <DirectorCard director={movie.director} />
-
-      <!-- 主演 -->
-      <section>
-        <h2>🌟 主演</h2>
-        <CastList cast={movie.cast} />
       </section>
-
-      <!-- 剧情简介 -->
-      <section>
-        <h2>📖 剧情简介</h2>
-        <p class="synopsis">{movie.synopsis}</p>
-      </section>
-
-      <!-- 海报画廊 -->
-      <section>
-        <h2>🎞️ 电影海报</h2>
-        <PosterGallery posters={movie.posters} />
-      </section>
-
-      <!-- 经典语录 -->
-      <section>
-        <h2>💬 经典语录</h2>
-        {movie.quotes.map(q => <QuoteCard quote={q} />)}
-      </section>
-
-      <!-- 相似电影推荐 -->
-      {similarMovies.length > 0 && (
-        <section class="similar-section">
-          <h2>🎬 相似推荐</h2>
-          <div class="similar-scroll">
-            {similarMovies.map(m => (
-              <a href={`/movie/${m.publishedDate}/`} class="similar-card">
-                <div class="similar-cover" style={`background: ${m.cover.bg}`}>
-                  <img src={m.cover.url} alt={m.title} loading="lazy" onerror="this.src='/fallback-poster.svg'" />
-                </div>
-                <div class="similar-info">
-                  <p class="similar-title">{m.title}</p>
-                  <span class="similar-rating">⭐ {m.rating}</span>
-                </div>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
-  </article>
-</Layout>
+    )}
+  </div>
+</article>
 
 <style>
   .movie-detail {
@@ -326,5 +318,10 @@ const similarMovies = movies
       width: 100%;
       height: 400px;
     }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 </style>

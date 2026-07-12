@@ -1,5 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import TodayHero from '../components/TodayHero.astro';
+import MovieList from '../components/MovieList.astro';
+import MovieDetail from '../components/MovieDetail.astro';
 import { movies } from '../data/movies';
 
 // 今日日期
@@ -8,185 +11,50 @@ const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
 
 // 今日推荐（按 publishedDate 匹配今天）
 const todayMovie = movies.find((m) => m.publishedDate === dateStr) ?? movies[0];
-const primaryQuote = todayMovie?.quotes?.[0];
 ---
 
 <Layout title={`每日一影院 — ${todayMovie?.title ?? ''}`} fullscreen>
-  <section class="cinema" aria-labelledby="movie-title">
-    <p class="date-label">
-      <time datetime={dateStr}>{dateStr}</time>
-    </p>
+  <!-- Home View -->
+  <div id="view-home">
+    {todayMovie && <TodayHero movie={todayMovie} dateStr={dateStr} />}
+  </div>
 
-    {todayMovie && (
-      <>
-        <h1 id="movie-title" class="movie-title">{todayMovie.title}</h1>
-        {todayMovie.titleOriginal && (
-          <p class="movie-title-original">{todayMovie.titleOriginal}</p>
-        )}
-        <p class="movie-meta">
-          {todayMovie.director.name} · {todayMovie.year} · {todayMovie.duration}min
-        </p>
+  <!-- Archive View -->
+  <div id="view-archive" hidden style="display: none;">
+    <MovieList movies={movies} />
+  </div>
 
-        {primaryQuote && (
-          <blockquote class="stage-quote">
-            <span class="quote-mark quote-open" aria-hidden="true">&ldquo;</span>
-            <span class="quote-text">{primaryQuote.text}</span>
-            <span class="quote-mark quote-close" aria-hidden="true">&rdquo;</span>
-            {primaryQuote.speaker && (
-              <cite class="quote-speaker">—— {primaryQuote.speaker}</cite>
-            )}
-          </blockquote>
-        )}
-
-        <p class="enter">
-          <a href={`/movie/${todayMovie.publishedDate}/`} class="enter-link">
-            入场 &rarr;
-          </a>
-        </p>
-      </>
-    )}
-  </section>
+  <!-- Movie Detail View -->
+  <div id="view-movie" hidden style="display: none;">
+    {movies.map(movie => (
+      <div data-movie-detail data-movie-date={movie.publishedDate} hidden style="display: none;">
+        <MovieDetail movie={movie} allMovies={movies} />
+      </div>
+    ))}
+  </div>
 </Layout>
 
-<style>
-  .cinema {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: var(--pad-v) var(--pad-h);
-    gap: 1.5rem;
-    text-align: center;
-    max-width: 720px;
-    margin: 0 auto;
-  }
+<script>
+  import { initRouter, onRouteChange, showView } from '../lib/spa';
 
-  /* Fade sequence — 进场仪式（Phase 2 会展开为 3 秒序列，Phase 1 先用简单 fade） */
-  .date-label,
-  .movie-title,
-  .movie-title-original,
-  .movie-meta,
-  .stage-quote,
-  .enter {
-    opacity: 0;
-    animation: v2-fade-in 1.2s ease-out forwards;
-  }
+  initRouter();
 
-  .date-label { animation-delay: 0.1s; }
-  .movie-title { animation-delay: 0.4s; }
-  .movie-title-original { animation-delay: 0.6s; }
-  .movie-meta { animation-delay: 0.8s; }
-  .stage-quote { animation-delay: 1.2s; }
-  .enter { animation-delay: 1.8s; }
-
-  @keyframes v2-fade-in {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .date-label {
-    font-size: var(--size-label);
-    font-weight: 500;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: rgba(10, 10, 10, 0.55);
-    margin-bottom: 1rem;
-  }
-
-  .movie-title {
-    font-family: var(--font-serif);
-    font-size: var(--size-hero);
-    font-weight: 500;
-    line-height: 1.05;
-    letter-spacing: -0.025em;
-    color: var(--ink);
-    margin: 0;
-  }
-
-  .movie-title-original {
-    font-family: var(--font-serif);
-    font-size: 1rem;
-    font-style: italic;
-    font-weight: 400;
-    color: rgba(10, 10, 10, 0.6);
-    letter-spacing: 0.01em;
-    margin: 0;
-  }
-
-  .movie-meta {
-    font-family: var(--font-serif);
-    font-size: var(--size-caption);
-    font-weight: 400;
-    color: rgba(10, 10, 10, 0.55);
-    letter-spacing: 0.02em;
-    margin-top: 0.25rem;
-  }
-
-  .stage-quote {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-weight: 400;
-    font-size: 1.25rem;
-    line-height: 1.8;
-    color: var(--ink);
-    max-width: 34rem;
-    margin: 3rem auto 0;
-    position: relative;
-    padding: 0 1.5rem;
-  }
-
-  .quote-mark {
-    color: var(--gold);
-    font-size: 2rem;
-    line-height: 1;
-    font-family: var(--font-serif);
-    vertical-align: -0.35em;
-    margin: 0 0.15em;
-  }
-
-  .quote-text {
-    display: inline;
-  }
-
-  .quote-speaker {
-    display: block;
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    font-style: normal;
-    color: rgba(10, 10, 10, 0.55);
-    letter-spacing: 0.02em;
-  }
-
-  .enter {
-    margin-top: 3rem;
-  }
-
-  .enter-link {
-    font-family: var(--font-serif);
-    font-size: 1rem;
-    font-style: italic;
-    color: var(--ink);
-    border-bottom: 1px solid var(--gold);
-    padding-bottom: 2px;
-    transition: color 0.3s ease, border-color 0.3s ease;
-  }
-
-  .enter-link:hover {
-    color: var(--gold);
-    border-bottom-color: var(--gold);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .date-label,
-    .movie-title,
-    .movie-title-original,
-    .movie-meta,
-    .stage-quote,
-    .enter {
-      opacity: 1;
-      animation: none;
-      transform: none;
+  onRouteChange((route) => {
+    if (route.name === 'movie') {
+      showView('movie', route.params.date);
+    } else {
+      showView(route.name);
     }
+  });
+
+  // Show initial view
+  const hash = window.location.hash;
+  if (hash.startsWith('#/movie/')) {
+    const date = hash.replace('#/movie/', '').replace(/\/$/, '');
+    showView('movie', date);
+  } else if (hash === '#/archive' || hash === '#/library' || hash === '#/search') {
+    showView('archive');
+  } else {
+    showView('home');
   }
-</style>
+</script>

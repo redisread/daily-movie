@@ -10,7 +10,7 @@ const { movie, delay = 0 } = Astro.props;
 ---
 
 <a
-  href={`/movie/${movie.publishedDate}/`}
+  href={`#/movie/${movie.publishedDate}`}
   class="movie-card"
   style={`animation-delay: ${delay}s`}
 >
