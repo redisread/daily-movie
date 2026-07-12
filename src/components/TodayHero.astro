@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { movie, dateStr } = Astro.props;
-const primaryQuote = movie?.quotes?.[0];
+const topQuotes = movie?.quotes?.slice(0, 3) ?? [];
 ---
 
 <section class="cinema" aria-labelledby="movie-title">
@@ -25,18 +25,18 @@ const primaryQuote = movie?.quotes?.[0];
         {movie.director.name} · {movie.year} · {movie.duration}min
       </p>
 
-      {primaryQuote && (
-        <blockquote class="stage-quote">
+      {topQuotes.map((quote, index) => (
+        <blockquote class="stage-quote" style={`animation-delay: ${1.2 + index * 0.3}s`}>
           <span class="quote-mark quote-open" aria-hidden="true">&ldquo;</span>
-          <span class="quote-text">{primaryQuote.text}</span>
+          <span class="quote-text">{quote.text}</span>
           <span class="quote-mark quote-close" aria-hidden="true">&rdquo;</span>
-          {primaryQuote.speaker && (
-            <cite class="quote-speaker">—— {primaryQuote.speaker}</cite>
+          {quote.speaker && (
+            <cite class="quote-speaker">—— {quote.speaker}</cite>
           )}
         </blockquote>
-      )}
+      ))}
 
-      <p class="enter">
+      <p class="enter" style="animation-delay: 2.2s">
         <a href={`#/movie/${movie.publishedDate}`} class="enter-link" data-spa-link>
           入场 &rarr;
         </a>
@@ -139,6 +139,10 @@ const primaryQuote = movie?.quotes?.[0];
     margin: 3rem auto 0;
     position: relative;
     padding: 0 1.5rem;
+  }
+
+  .stage-quote + .stage-quote {
+    margin-top: 1.5rem;
   }
 
   .quote-mark {
