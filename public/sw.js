@@ -10,15 +10,15 @@ const PRECACHE_URLS = [
 ];
 
 // Install: precache static assets
-self.addEventListener('install', (event: ExtendableEvent) => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
   );
-  (self as any).skipWaiting();
+  self.skipWaiting();
 });
 
 // Activate: clean old caches
-self.addEventListener('activate', (event: ExtendableEvent) => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
@@ -26,12 +26,12 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
       )
     )
   );
-  (self as any).clients.claim();
+  self.clients.claim();
 });
 
 // Fetch: stale-while-revalidate for images, cache-first for static
-self.addEventListener('fetch', (event: FetchEvent) => {
-  const { request } = event;
+self.addEventListener('fetch', (event) => {
+  const request = event.request;
 
   // Skip non-GET requests
   if (request.method !== 'GET') return;
@@ -59,6 +59,6 @@ self.addEventListener('fetch', (event: FetchEvent) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         return response;
       })
-      .catch(() => caches.match(request) as Promise<Response>)
+      .catch(() => caches.match(request))
   );
 });

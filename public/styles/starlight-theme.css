@@ -91,14 +91,16 @@ body {
 /* 电影封面 — 唯一暖色焦点 */
 img.movie-cover,
 .cover img,
-.featured-cover img {
+.featured-cover img,
+.poster-frame .poster-img {
   filter: saturate(0.7);
   transition: filter 180ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .movie-card:hover .cover img,
 .featured-card:hover .featured-cover img,
-img.movie-cover:hover {
+img.movie-cover:hover,
+.poster-frame:hover .poster-img {
   filter: saturate(0.9);
 }
 
