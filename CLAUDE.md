@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-daily-movie 是一个静态站点，每天推荐一部经典电影。基于 Astro + Zod 构建，部署到 Cloudflare Pages。
+daily-movie 是一个静态站点，每天推荐一部经典电影。基于 Astro 6 + Zod 4 构建，部署到 Cloudflare Pages。
 
 **线上地址**：https://daily-movie.jiahongw.com
 
@@ -10,23 +10,26 @@ daily-movie 是一个静态站点，每天推荐一部经典电影。基于 Astr
 
 - **框架**: Astro 6.4
 - **语言**: TypeScript
-- **数据校验**: Zod 4.4
+- **数据校验**: Zod 4
 - **部署**: Cloudflare Pages（自定义域名 daily-movie.jiahongw.com）
-- **测试**: Vitest + Playwright
+- **测试**: Vitest（单测）+ Playwright（E2E）
 
 ## 目录结构
 
 ```
 daily-movie/
 ├── src/
-│   ├── components/     # Astro 组件（MovieCard, FeaturedCard, CastList 等）
-│   ├── data/          # 电影数据（movies.yaml）
-│   ├── layouts/       # 布局模板（Layout.astro）
-│   ├── pages/         # 页面（首页/详情/归档/搜索/RSS/JSON API）
-│   ├── schemas/       # Zod Schema（movie.ts）
-│   └── scripts/       # 客户端脚本（lightbox, poster-swipe）
-├── public/            # 静态资源（favicon, robots.txt）
-├── tests/             # Playwright E2E 测试
+│   ├── components/     # Astro 组件（MovieCard / FeaturedCard / CastList / PosterGallery / QuoteCard / DirectorCard / WhyThisMovie / layout/* / ui/*）
+│   ├── data/           # 电影数据（movies.yaml、movies.ts 加载器）
+│   ├── layouts/        # 布局模板（Layout.astro）
+│   ├── lib/            # 领域工具（history.ts）
+│   ├── pages/          # 页面：index.astro / movie/[date].astro / 404.astro / health.json.ts / movies.json.ts / rss.xml.ts
+│   └── schemas/        # Zod Schema（movie.ts、__tests__）
+├── agents/             # 子 Agent 定义（daily-movie-writer.md）
+├── public/             # 静态资源（styles、logo、favicon、fallback-poster、manifest 等）
+├── tests/e2e/          # Playwright E2E（home.spec.ts）
+├── playwright.config.ts
+├── vitest.config.ts
 └── package.json
 ```
 
@@ -42,22 +45,27 @@ npm run preview
 
 # 代码质量
 npm run lint
-npm run typecheck
+npm run typecheck      # astro check
 npm run test           # Vitest 单测
-npm run test:e2e       # Playwright E2E 测试
-
-# 数据校验
-npm run validate:movies  # 校验 movies.yaml
+npm run test:e2e       # Playwright E2E
+npm run test:e2e:ui    # Playwright UI 模式
 ```
+
+> 目前没有独立的 `validate:movies` 脚本。数据校验通过：
+> 1. `src/data/movies.ts` 在构建时对每条做 `MovieSchema.parse()`（`npm run build` 或 `npm run dev` 会失败）
+> 2. `npm run test` 中的 `src/schemas/__tests__/*.test.ts` 覆盖 Schema
 
 ## 添加电影
 
-1. 编辑 `src/data/movies.yaml`，添加新电影条目
-2. 确保所有必填字段：id, title, director, year, duration, genre, rating, cover, posters, cast, quotes, synopsis, publishedDate
-3. 运行 `npm run validate:movies` 校验数据
-4. 运行 `npm run test` 验证 Schema
-5. 提交并推送到 main 分支
-6. Cloudflare Pages 自动部署
+推荐使用子 Agent `agents/daily-movie-writer.md`（自动遵守 MovieSchema 约束）。
+
+手动流程：
+1. 编辑 `src/data/movies.yaml`，追加新电影条目
+2. 确保必填字段：`id / title / director / year / duration / genre / rating / cover / posters / cast / quotes / synopsis / publishedDate`
+3. 运行 `npm run build` 或 `npm run dev`——Zod 校验会在加载阶段失败给出报错
+4. 运行 `npm run test` 校验 Schema
+5. 提交并推送到 `main` 分支
+6. Cloudflare Pages 自动构建部署
 
 ## 数据格式
 
@@ -93,44 +101,53 @@ npm run validate:movies  # 校验 movies.yaml
 ## 部署
 
 - **生产环境**: https://daily-movie.jiahongw.com
-- **部署方式**: Cloudflare Pages 自动从 main 分支部署
-- **预览环境**: PR 自动生成预览链接（格式：`daily-movie-xxx.pages.dev`）
+- **部署方式**: Cloudflare Pages 直连仓库，`main` 分支合并后自动构建部署
+- **预览环境**: Cloudflare Pages 为每个 PR 生成预览链接（`daily-movie-xxx.pages.dev`）
+
+## 主题与样式
+
+- 主题 CSS 位于 `public/styles/anthropic-theme.css`（由 `Layout.astro` 直接 link）
+- 当前主题：**Anthropic Amber**
+  - Light（默认）：暖米背景 `#F5F4EF` + 文字 `#1A1A1A` + 强调 `#D4A800`
+  - Dark（`[data-theme="dark"]`）：`#1A1A1A` 背景 + 强调 `#F5C518`
+  - 字体：`-apple-system / Segoe UI / Noto Sans SC` 系统字体栈 + `JetBrains Mono`
+  - 无像素字体、无扫描线（scanlines/pixel/neon 已在早期 PR 中移除）
+- 主题切换按钮在 `Layout.astro` 内的 `#theme-toggle`，状态存于 `localStorage: daily-movie-theme`
+- PWA `public/manifest.webmanifest` 的 `theme_color` 需要与当前主题的强调色保持同步
+
+> 视觉规范变更（如 task #34「星夜色」主题重塑）：先看 `notes/daily-movie-*.md` 设计规范再动手，避免破坏现有 token 体系。同时留意 `public/sw.js` 的 `CACHE_NAME` 需要 bump 以让老客户端拿到新样式。
 
 ## 注意事项
 
-1. **域名问题**: `daily-movie.pages.dev` 被他人注册为赌博网站，我们使用自定义域名 `daily-movie.jiahongw.com`
-2. **图片资源**: 使用 Wikimedia Commons 等公开图片源，确保版权合规
-3. **数据校验**: 每次添加电影必须运行 `npm run validate:movies`
-4. **响应式设计**: 所有页面支持移动端（1列）、平板（2列）、桌面（3-4列）
+1. **域名占用**: `daily-movie.pages.dev` 被他人注册为赌博站点，站点必须使用自定义域名 `daily-movie.jiahongw.com`
+2. **图片资源**: 使用 Wikimedia Commons 等公开图源，确保版权合规
+3. **数据校验**: 每次新增电影必须构建通过并跑 `npm run test`
+4. **响应式**: 移动端 1 列、平板 2 列、桌面 3–4 列
 
 ## 开发规范
 
 - 组件使用 `.astro` 后缀
 - TypeScript 严格模式
-- CSS 使用 CSS 变量管理主题（深色主题：#0f0f0f 背景，#f5c518 强调色）
+- CSS 通过 `--bg-*` / `--text-*` / `--font-*` 变量管理，改主题只改 `public/styles/anthropic-theme.css` 的 token
 - 图片使用 `loading="lazy"` 懒加载
-- 所有外部链接使用 `target="_blank"` 和 `rel="noopener noreferrer"`
+- 外部链接统一 `target="_blank"` + `rel="noopener noreferrer"`
 
 ## 故障排查
 
 ### 构建失败
-- 检查 `movies.yaml` 格式是否正确
-- 运行 `npm run validate:movies` 查看详细错误
-- 确保所有必填字段都存在
+- 检查 `src/data/movies.yaml` 格式（缩进、必填字段）
+- Zod 校验错误会指向具体电影 `id` 和字段
 
 ### 部署失败
-- 检查 GitHub Actions 日志
-- 确认 Cloudflare Pages 配置正确
-- 检查自定义域名 DNS 设置
+- 检查 Cloudflare Pages 构建日志（自定义域名 DNS / API Token）
+- 确认 `main` 分支最新提交在 Pages 触发列表里
 
 ### 图片不显示
-- 检查图片 URL 是否可访问
-- 确认图片格式（JPG/PNG/WebP）
-- 检查 CORS 设置
+- 检查 URL 可访问性
+- 确认格式（JPG/PNG/WebP）
+- 检查图源 CORS / Referer
 
-## 团队
+## 相关工具
 
-- **产品**: @Steven
-- **开发**: @Alex
-- **架构/CR**: @Martin
-- **决策**: @Victor
+- **写入子 Agent**: `agents/daily-movie-writer.md`（新增电影条目时优先使用）
+- **视觉规范文档**: `notes/daily-movie-*.md`（如有，主题重塑前必读）
