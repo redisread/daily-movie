@@ -1,8 +1,8 @@
-const CACHE_NAME = 'daily-movie-v1';
+const CACHE_NAME = 'daily-movie-starlight-v2';
 
 const PRECACHE_URLS = [
   '/',
-  '/styles/anthropic-theme.css',
+  '/styles/starlight-theme.css',
   '/logo.png',
   '/favicon.png',
   '/fallback-poster.svg',
