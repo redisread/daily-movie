@@ -10,7 +10,7 @@ const { movie } = Astro.props;
 
 <a href={`/movie/${movie.publishedDate}/`} class="featured-card">
   <div class="featured-cover" style={`background: ${movie.cover.bg}`}>
-    <img src={movie.cover.url} alt={movie.title} loading="lazy" />
+    <img src={movie.cover.url} alt={movie.title} loading="lazy" class="poster-img" onerror="this.src='/fallback-poster.svg'; this.classList.add('loaded')" />
   </div>
   <div class="featured-info">
     <span class="featured-badge">今日推荐</span>
@@ -25,6 +25,18 @@ const { movie } = Astro.props;
     <span class="cta">查看详情 →</span>
   </div>
 </a>
+
+<script>
+  // Image fade-in on load
+  document.querySelectorAll('.featured-card .poster-img').forEach(img => {
+    if (img.complete) {
+      img.classList.add('loaded');
+    } else {
+      img.addEventListener('load', () => img.classList.add('loaded'));
+      img.addEventListener('error', () => img.classList.add('loaded'));
+    }
+  });
+</script>
 
 <style>
   .featured-card {
@@ -57,7 +69,13 @@ const { movie } = Astro.props;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.6s ease;
+    opacity: 0;
+  }
+
+  .featured-cover img.loaded,
+  .featured-cover img[src='/fallback-poster.svg'] {
+    opacity: 1;
   }
 
   .featured-card:hover .featured-cover img {

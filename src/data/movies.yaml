@@ -15,14 +15,14 @@
   genre: ["剧情", "犯罪"]
   rating: 9.6
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/6/61/Breaking_Bad_title_card.png
+    url: https://m.media-amazon.com/images/M/MV5BMTQ0ODYzODc0OV5BMl5BanBnXkFtZTgwMDk3OTcyMDE@._V1_.jpg
     bg: 'linear-gradient(145deg, #1a3a1a, #2a5a2a, #1a3a1a)'
     video: https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4
   whyThisMovie: 「《绝命毒师》之所以今天该看，是因为老白从化学老师变成毒枭的每一步，都是普通人做过的每一个小妥协。」
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/en/6/61/Breaking_Bad_title_card.png
-      caption: 标题卡
-    - url: https://upload.wikimedia.org/commons/3/38/Breaking_Bad_cast.png
+    - url: https://m.media-amazon.com/images/M/MV5BMTQ0ODYzODc0OV5BMl5BanBnXkFtZTgwMDk3OTcyMDE@._V1_.jpg
+      caption: 官方海报
+    - url: https://placehold.co/300x450/1a3a1a/ffffff?text=Breaking+Bad
       caption: 主演阵容
     - url: https://m.media-amazon.com/images/M/MV5BMTQ0ODYzODc0OV5BMl5BanBnXkFtZTgwMDk3OTcyMDE@._V1_.jpg
       caption: 官方海报
@@ -55,14 +55,14 @@
   rating: 9.0
   whyThisMovie: 「《搏击俱乐部》之所以今天该看，是因为你迟早要问自己：你买的那些东西，到底是你想要的，还是别人告诉你该想要的。」
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/f/fc/Fight_Club_poster.jpg
+    url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/f/fc/Fight_Club_poster.jpg
     bg: 'linear-gradient(145deg, #2a1a1a, #4a2a2a, #2a1a1a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/en/f/fc/Fight_Club_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/f/fc/Fight_Club_poster.jpg
       caption: 官方海报
-    - url: https://upload.wikimedia.org/wikipedia/en/f/fc/Fight_Club_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/f/fc/Fight_Club_poster.jpg
       caption: 肥皂经典画面
-    - url: https://upload.wikimedia.org/wikipedia/en/f/fc/Fight_Club_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/f/fc/Fight_Club_poster.jpg
       caption: 电影封面
   cast:
     - name: 布拉德·皮特
@@ -93,14 +93,14 @@
   rating: 9.7
   whyThisMovie: 「《肖申克的救赎》之所以今天该看，是因为安迪用 20 年挖了一条地道，而你只需要 2 小时就能相信：希望是个好东西。」
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
+    url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
     bg: 'linear-gradient(145deg, #1a2a3a, #2a4a6a, #1a2a3a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
       caption: 官方海报
-    - url: https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
       caption: 经典海报
-    - url: https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg
       caption: 电影封面
   cast:
     - name: 蒂姆·罗宾斯
@@ -131,14 +131,14 @@
   genre: ["剧情", "爱情"]
   rating: 9.5
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
+    url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
     bg: 'linear-gradient(145deg, #2a3a4a, #4a6a8a, #2a3a4a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
       caption: 官方海报
-    - url: https://upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
       caption: 电影封面
-    - url: https://upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg
       caption: 经典海报
   cast:
     - name: 汤姆·汉克斯
@@ -168,14 +168,14 @@
   genre: ["剧情", "动作"]
   rating: 9.4
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg
+    url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg
     bg: 'linear-gradient(145deg, #1a2a1a, #2a4a2a, #1a2a1a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg
       caption: 官方海报
-    - url: https://upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg
       caption: 经典画面
-    - url: https://upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/0/03/Leon-poster.jpg
       caption: 电影封面
   cast:
     - name: 让·雷诺
@@ -205,14 +205,14 @@
   genre: ["剧情", "犯罪"]
   rating: 9.3
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
+    url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
     bg: 'linear-gradient(145deg, #0a0a0a, #2a2a2a, #0a0a0a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
       caption: 官方海报
-    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
       caption: 经典封面
-    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg
       caption: 电影海报
   cast:
     - name: 马龙·白兰度
@@ -242,14 +242,14 @@
   genre: ["剧情", "历史"]
   rating: 9.5
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg
+    url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg
     bg: 'linear-gradient(145deg, #1a1a1a, #3a3a3a, #1a1a1a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg
       caption: 官方海报
-    - url: https://upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg
       caption: 电影封面
-    - url: https://upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/3/38/Schindler%27s_List_movie.jpg
       caption: 经典海报
   cast:
     - name: 连姆·尼森
@@ -279,14 +279,14 @@
   genre: ["剧情", "科幻"]
   rating: 9.3
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg
+    url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg
     bg: 'linear-gradient(145deg, #1a1a2a, #2a2a4a, #1a1a2a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg
       caption: 官方海报
-    - url: https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg
       caption: 折叠城市
-    - url: https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg
       caption: 电影封面
   cast:
     - name: 莱昂纳多·迪卡普里奥
@@ -316,14 +316,14 @@
   genre: ["剧情", "科幻"]
   rating: 9.3
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
+    url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
     bg: 'linear-gradient(145deg, #0a0a1a, #1a1a3a, #0a0a1a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
       caption: 官方海报
-    - url: https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
       caption: 电影封面
-    - url: https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg
       caption: 经典海报
   cast:
     - name: 马修·麦康纳
@@ -353,14 +353,14 @@
   genre: ["剧情", "动作"]
   rating: 9.2
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg
+    url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg
     bg: 'linear-gradient(145deg, #1a1a1a, #3a3a3a, #1a1a1a)'
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg
       caption: 官方海报
-    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg
       caption: 小丑经典形象
-    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg
       caption: 电影封面
   cast:
     - name: 克里斯蒂安·贝尔
@@ -391,15 +391,15 @@
   genre: ["西部", "剧情", "冒险"]
   rating: 9.2
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/thumb/1/1c/Lonesome_Dove_Poster.jpg/440px-Lonesome_Dove_Poster.jpg
+    url: https://placehold.co/300x450/4a2c1a/ffffff?text=Lonesome+Dove
     bg: 'linear-gradient(145deg, #4a2c1a, #8b5e3c, #4a2c1a)'
   whyThisMovie: 「《孤鸽镇》之所以今天该看，是因为它告诉你：真正的牛仔不是亡命徒，而是一群在老去之前，最后一次为彼此拼命的老人。」
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/en/thumb/1/1c/Lonesome_Dove_Poster.jpg/440px-Lonesome_Dove_Poster.jpg
+    - url: https://placehold.co/300x450/4a2c1a/ffffff?text=Lonesome+Dove
       caption: 官方海报
-    - url: https://upload.wikimedia.org/wikipedia/en/1/1c/Lonesome_Dove_1989.jpg
+    - url: https://placehold.co/300x450/4a2c1a/ffffff?text=Lonesome+Dove
       caption: 剧集封面
-    - url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Lonesome_Dove.jpg/440px-Lonesome_Dove.jpg
+    - url: https://placehold.co/300x450/4a2c1a/ffffff?text=Lonesome+Dove
       caption: 经典场景
   cast:
     - name: 罗伯特·杜瓦尔
@@ -431,15 +431,15 @@
   genre: ["剧情", "成长"]
   rating: 9.2
   cover:
-    url: https://upload.wikimedia.org/wikipedia/en/8/86/CinemaParadiso.jpg
+    url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/8/86/CinemaParadiso.jpg
     bg: 'linear-gradient(145deg, #2a1a0a, #5a3a1a, #2a1a0a)'
   whyThisMovie: 「《天堂电影院》之所以今天该看，是因为 Alfredo 替你剪掉了生活里所有会被审查掉的吻戏，把它们留作一份迟到的礼物——等你准备好和解的那天，再一起还给你。」
   posters:
-    - url: https://upload.wikimedia.org/wikipedia/en/8/86/CinemaParadiso.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/8/86/CinemaParadiso.jpg
       caption: 意大利院线海报
-    - url: https://upload.wikimedia.org/wikipedia/en/f/f3/Cinema_Paradiso_poster.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/f/f3/Cinema_Paradiso_poster.jpg
       caption: 法国院线海报
-    - url: https://upload.wikimedia.org/wikipedia/en/8/86/CinemaParadiso.jpg
+    - url: https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/en/8/86/CinemaParadiso.jpg
       caption: 放映厅经典剧照
   cast:
     - name: 菲利普·诺瓦雷
