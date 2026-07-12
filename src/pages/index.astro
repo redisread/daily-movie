@@ -36,7 +36,7 @@ const moviesJson = JSON.stringify(movies.map(m => ({ id: m.id, title: m.title, t
             <img
               src={todayMovie.cover.url}
               alt={todayMovie.title}
-              class="poster-img"
+              class="poster-img movie-cover"
               onerror="this.src='/fallback-poster.svg'"
               fetchpriority="high"
             />
@@ -134,10 +134,10 @@ const moviesJson = JSON.stringify(movies.map(m => ({ id: m.id, title: m.title, t
 </script>
 
 <style>
-  /* 全屏电影院模式 */
+  /* 全屏电影院模式 — token 化，不再硬编码 */
   :global(body) {
-    background: #0a0a0a;
-    color: #e8d5b0;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     overflow: hidden;
   }
 
