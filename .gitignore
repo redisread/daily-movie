@@ -21,3 +21,10 @@ Thumbs.db
 
 # Cloudflare
 .wrangler/
+
+# Playwright
+test-results/
+playwright-report/
+
+# Dev artifacts
+tasks/
