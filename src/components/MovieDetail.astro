@@ -29,7 +29,7 @@ const similarMovies = allMovies
   <!-- 主海报 -->
   <div class="hero-section">
     <div class="hero-cover" style={`background: ${movie.cover.bg}`}>
-      <img src={movie.cover.url} alt={movie.title} onerror="this.src='/fallback-poster.svg'" />
+      <img src={movie.cover.url} alt={movie.title} class="poster-img" onerror="this.src='/fallback-poster.svg'; this.classList.add('loaded')" />
     </div>
     <div class="hero-info">
       <h1>{movie.title}</h1>
@@ -80,7 +80,7 @@ const similarMovies = allMovies
           {similarMovies.map(m => (
             <a href={`#/movie/${m.publishedDate}`} class="similar-card" data-spa-link>
               <div class="similar-cover" style={`background: ${m.cover.bg}`}>
-                <img src={m.cover.url} alt={m.title} loading="lazy" onerror="this.src='/fallback-poster.svg'" />
+                <img src={m.cover.url} alt={m.title} loading="lazy" class="poster-img" onerror="this.src='/fallback-poster.svg'; this.classList.add('loaded')" />
               </div>
               <div class="similar-info">
                 <p class="similar-title">{m.title}</p>
@@ -93,6 +93,18 @@ const similarMovies = allMovies
     )}
   </div>
 </article>
+
+<script>
+  // Image fade-in on load
+  document.querySelectorAll('.movie-detail .poster-img').forEach(img => {
+    if (img.complete) {
+      img.classList.add('loaded');
+    } else {
+      img.addEventListener('load', () => img.classList.add('loaded'));
+      img.addEventListener('error', () => img.classList.add('loaded'));
+    }
+  });
+</script>
 
 <style>
   .movie-detail {
@@ -145,6 +157,13 @@ const similarMovies = allMovies
     width: 100%;
     height: 100%;
     object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  .hero-cover img.loaded,
+  .hero-cover img[src='/fallback-poster.svg'] {
+    opacity: 1;
   }
 
   .hero-info {
@@ -277,6 +296,13 @@ const similarMovies = allMovies
     width: 100%;
     height: 100%;
     object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  .similar-cover img.loaded,
+  .similar-cover img[src='/fallback-poster.svg'] {
+    opacity: 1;
   }
 
   .similar-info {
