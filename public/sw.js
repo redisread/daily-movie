@@ -4,7 +4,7 @@ const PRECACHE_URLS = [
   '/',
   '/styles/v2-theme.css',
   '/fonts/CormorantGaramond-Regular.woff2',
-  '/fonts/CormorantGaramond-Medium.woff2',
+  '/fonts/CormorantGaramond-Italic.woff2',
   '/logo.png',
   '/favicon.png',
   '/fallback-poster.svg',
