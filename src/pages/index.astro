@@ -3,30 +3,51 @@ import Layout from '../layouts/Layout.astro';
 import TodayHero from '../components/TodayHero.astro';
 import MovieList from '../components/MovieList.astro';
 import MovieDetail from '../components/MovieDetail.astro';
+import About from '../components/About.astro';
 import { movies } from '../data/movies';
 
 // 今日日期
 const today = new Date();
 const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
+// 按 publishedDate 排序
+const sortedMovies = [...movies].sort((a, b) => a.publishedDate.localeCompare(b.publishedDate));
+
 // 今日推荐（按 publishedDate 匹配今天）
-const todayMovie = movies.find((m) => m.publishedDate === dateStr) ?? movies[0];
+const todayIndex = sortedMovies.findIndex((m) => m.publishedDate === dateStr);
+const todayMovie = todayIndex >= 0 ? sortedMovies[todayIndex] : sortedMovies[0];
+
+// 上下篇
+const prevMovie = todayIndex > 0 ? sortedMovies[todayIndex - 1] : null;
+const nextMovie = todayIndex < sortedMovies.length - 1 ? sortedMovies[todayIndex + 1] : null;
 ---
 
 <Layout title={`每日一影院 — ${todayMovie?.title ?? ''}`} fullscreen>
   <!-- Home View -->
   <div id="view-home">
-    {todayMovie && <TodayHero movie={todayMovie} dateStr={dateStr} />}
+    {todayMovie && (
+      <TodayHero
+        movie={todayMovie}
+        dateStr={dateStr}
+        prevMovie={prevMovie}
+        nextMovie={nextMovie}
+      />
+    )}
   </div>
 
   <!-- Archive View -->
   <div id="view-archive" hidden style="display: none;">
-    <MovieList movies={movies} />
+    <MovieList movies={sortedMovies} />
+  </div>
+
+  <!-- About View -->
+  <div id="view-about" hidden style="display: none;">
+    <About />
   </div>
 
   <!-- Movie Detail View -->
   <div id="view-movie" hidden style="display: none;">
-    {movies.map(movie => (
+    {sortedMovies.map(movie => (
       <div data-movie-detail data-movie-date={movie.publishedDate} hidden style="display: none;">
         <MovieDetail movie={movie} />
       </div>
@@ -52,8 +73,10 @@ const todayMovie = movies.find((m) => m.publishedDate === dateStr) ?? movies[0];
   if (hash.startsWith('#/movie/')) {
     const date = hash.replace('#/movie/', '').replace(/\/$/, '');
     showView('movie', date);
-  } else if (hash === '#/archive' || hash === '#/library' || hash === '#/search') {
+  } else if (hash === '#/archive') {
     showView('archive');
+  } else if (hash === '#/about') {
+    showView('about');
   } else {
     showView('home');
   }

@@ -12,6 +12,7 @@
 export type Route =
   | { name: 'home'; params: Record<string, never> }
   | { name: 'archive'; params: Record<string, never> }
+  | { name: 'about'; params: Record<string, never> }
   | { name: 'movie'; params: { date: string } };
 
 let currentRoute: Route = { name: 'home', params: {} };
@@ -23,8 +24,12 @@ function parseHash(hash: string): Route {
     return { name: 'home', params: {} };
   }
 
-  if (path === 'archive' || path === 'library' || path === 'search') {
+  if (path === 'archive') {
     return { name: 'archive', params: {} };
+  }
+
+  if (path === 'about') {
+    return { name: 'about', params: {} };
   }
 
   const movieMatch = path.match(/^movie\/(\d{4}-\d{2}-\d{2})\/?$/);
@@ -58,6 +63,9 @@ export function navigateTo(name: Route['name'], params?: Record<string, string>)
     case 'movie':
       hash = `#/movie/${params?.date ?? ''}`;
       break;
+    case 'about':
+      hash = '#/about';
+      break;
     default:
       hash = '';
   }
@@ -74,6 +82,7 @@ export function onRouteChange(cb: (route: Route) => void): () => void {
 const VIEW_IDS: Record<Route['name'], string> = {
   home: 'view-home',
   archive: 'view-archive',
+  about: 'view-about',
   movie: 'view-movie',
 };
 

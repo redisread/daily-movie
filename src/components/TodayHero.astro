@@ -4,29 +4,60 @@ import type { Movie } from '../schemas/movie';
 interface Props {
   movie: Movie;
   dateStr: string;
+  prevMovie?: Movie | null;
+  nextMovie?: Movie | null;
 }
 
-const { movie, dateStr } = Astro.props;
+const { movie, dateStr, prevMovie, nextMovie } = Astro.props;
 const topQuotes = movie?.quotes?.slice(0, 3) ?? [];
+
+// Format date for display: e.g. "TUESDAY, JULY 12"
+const dateObj = new Date(dateStr + 'T00:00:00');
+const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+const month = dateObj.toLocaleDateString('en-US', { month: 'long' });
+const day = dateObj.getDate();
+const displayDate = `${weekday.toUpperCase()}, ${month.toUpperCase()} ${day}`;
 ---
 
 <section class="cinema" aria-labelledby="movie-title">
-  <p class="date-label">
-    <time datetime={dateStr}>{dateStr}</time>
+  <!-- 「今日影片」标签 -->
+  <p class="badge-label" style="animation-delay: 0.2s;">「 今 日 影 片 」</p>
+
+  <!-- 日期 -->
+  <p class="date-label" style="animation-delay: 0.3s;">
+    <time datetime={dateStr}>{displayDate}</time>
   </p>
 
   {movie && (
     <>
-      <h1 id="movie-title" class="movie-title">{movie.title}</h1>
+      <h1 id="movie-title" class="movie-title" style="animation-delay: 0.5s;">
+        《{movie.title}》
+      </h1>
       {movie.titleOriginal && (
-        <p class="movie-title-original">{movie.titleOriginal}</p>
+        <p class="movie-title-original" style="animation-delay: 0.7s;">{movie.titleOriginal}</p>
       )}
-      <p class="movie-meta">
-        {movie.director.name} · {movie.year} · {movie.duration}min
+      <p class="movie-meta" style="animation-delay: 0.9s;">
+        {movie.director.name} · {movie.year}
+        {movie.duration && ` · ${movie.duration}min`}
       </p>
 
+      <!-- 封面图 -->
+      {movie.cover?.url && (
+        <div class="cover-wrap" style="animation-delay: 1.2s;">
+          <img
+            src={movie.cover.url}
+            alt={movie.title}
+            class="cover-img"
+            loading="eager"
+            width="480"
+            height="680"
+            onerror="this.style.display='none'"
+          />
+        </div>
+      )}
+
       {topQuotes.map((quote, index) => (
-        <blockquote class="stage-quote" style={`animation-delay: ${1.2 + index * 0.3}s`}>
+        <blockquote class="stage-quote" style={`animation-delay: ${1.8 + index * 0.3}s`}>
           <span class="quote-mark quote-open" aria-hidden="true">&ldquo;</span>
           <span class="quote-text">{quote.text}</span>
           <span class="quote-mark quote-close" aria-hidden="true">&rdquo;</span>
@@ -36,13 +67,28 @@ const topQuotes = movie?.quotes?.slice(0, 3) ?? [];
         </blockquote>
       ))}
 
-      <p class="enter" style="animation-delay: 2.2s">
+      <!-- 上下篇导航 -->
+      <nav class="prev-next-nav" style="animation-delay: 2.4s;" aria-label="上下篇导航">
+        {prevMovie ? (
+          <a href={`#/movie/${prevMovie.publishedDate}`} class="prev-link" data-spa-link>
+            ← 第 {prevMovie.publishedDate} 部
+          </a>
+        ) : <span class="prev-link disabled">← 无</span>}
+        <span class="current-pos">{movie.publishedDate}</span>
+        {nextMovie ? (
+          <a href={`#/movie/${nextMovie.publishedDate}`} class="next-link" data-spa-link>
+            第 {nextMovie.publishedDate} 部 →
+          </a>
+        ) : <span class="next-link disabled">无 →</span>}
+      </nav>
+
+      <p class="enter" style="animation-delay: 2.8s;">
         <a href={`#/movie/${movie.publishedDate}`} class="enter-link" data-spa-link>
-          入场 &rarr;
+          ▽ DETAIL
         </a>
       </p>
 
-      <p class="archive-link">
+      <p class="archive-link" style="animation-delay: 3.0s;">
         <a href="#/archive" class="archive-anchor" data-spa-link>
           浏览历史推荐
         </a>
@@ -65,29 +111,35 @@ const topQuotes = movie?.quotes?.slice(0, 3) ?? [];
     margin: 0 auto;
   }
 
-  /* Fade sequence */
+  /* Fade sequence — all elements animate in */
+  .badge-label,
   .date-label,
   .movie-title,
   .movie-title-original,
   .movie-meta,
+  .cover-wrap,
   .stage-quote,
+  .prev-next-nav,
   .enter,
   .archive-link {
     opacity: 0;
     animation: v2-fade-in 1.2s ease-out forwards;
   }
 
-  .date-label { animation-delay: 0.1s; }
-  .movie-title { animation-delay: 0.4s; }
-  .movie-title-original { animation-delay: 0.6s; }
-  .movie-meta { animation-delay: 0.8s; }
-  .stage-quote { animation-delay: 1.2s; }
-  .enter { animation-delay: 1.8s; }
-  .archive-link { animation-delay: 2.2s; }
-
   @keyframes v2-fade-in {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Badge — 「今日影片」 */
+  .badge-label {
+    font-family: var(--font-serif);
+    font-size: 0.875rem;
+    font-style: italic;
+    font-weight: 400;
+    color: rgba(10, 10, 10, 0.45);
+    letter-spacing: 0.15em;
+    margin-bottom: 0.25rem;
   }
 
   .date-label {
@@ -128,6 +180,23 @@ const topQuotes = movie?.quotes?.slice(0, 3) ?? [];
     margin-top: 0.25rem;
   }
 
+  /* Cover image */
+  .cover-wrap {
+    margin: 1.5rem 0;
+    max-width: 320px;
+    width: 100%;
+    aspect-ratio: 2/3;
+    overflow: hidden;
+  }
+
+  .cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Quotes */
   .stage-quote {
     font-family: var(--font-serif);
     font-style: italic;
@@ -167,8 +236,46 @@ const topQuotes = movie?.quotes?.slice(0, 3) ?? [];
     letter-spacing: 0.02em;
   }
 
+  /* Prev / Next navigation */
+  .prev-next-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    font-family: var(--font-serif);
+    font-size: 0.875rem;
+  }
+
+  .prev-link,
+  .next-link {
+    color: rgba(10, 10, 10, 0.45);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    border-bottom: 1px solid transparent;
+  }
+
+  .prev-link:hover,
+  .next-link:hover {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  .prev-link.disabled,
+  .next-link.disabled {
+    color: rgba(10, 10, 10, 0.2);
+    pointer-events: none;
+  }
+
+  .current-pos {
+    color: rgba(10, 10, 10, 0.35);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* Enter link */
   .enter {
-    margin-top: 3rem;
+    margin-top: 2rem;
   }
 
   .enter-link {
@@ -176,16 +283,16 @@ const topQuotes = movie?.quotes?.slice(0, 3) ?? [];
     font-size: 1rem;
     font-style: italic;
     color: var(--ink);
-    border-bottom: 1px solid var(--gold);
+    border-bottom: 1px solid transparent;
     padding-bottom: 2px;
-    transition: color 0.3s ease, border-color 0.3s ease;
+    transition: border-color 0.3s ease;
   }
 
   .enter-link:hover {
-    color: var(--gold);
-    border-bottom-color: var(--gold);
+    border-bottom-color: var(--ink);
   }
 
+  /* Archive link */
   .archive-link {
     margin-top: 1.5rem;
   }
@@ -202,11 +309,14 @@ const topQuotes = movie?.quotes?.slice(0, 3) ?? [];
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .badge-label,
     .date-label,
     .movie-title,
     .movie-title-original,
     .movie-meta,
+    .cover-wrap,
     .stage-quote,
+    .prev-next-nav,
     .enter,
     .archive-link {
       opacity: 1;

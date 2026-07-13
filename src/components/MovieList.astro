@@ -1,5 +1,4 @@
 ---
-import MovieCard from './MovieCard.astro';
 import type { Movie } from '../schemas/movie';
 
 interface Props {
@@ -7,75 +6,248 @@ interface Props {
 }
 
 const { movies } = Astro.props;
+
+// Group by year, then by month
+const grouped = new Map<number, Map<string, Movie[]>>();
+
+for (const movie of movies) {
+  const date = new Date(movie.publishedDate + 'T00:00:00');
+  const year = date.getFullYear();
+  const monthKey = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+
+  if (!grouped.has(year)) {
+    grouped.set(year, new Map());
+  }
+  const yearMap = grouped.get(year)!;
+  if (!yearMap.has(monthKey)) {
+    yearMap.set(monthKey, []);
+  }
+  yearMap.get(monthKey)!.push(movie);
+}
+
+const sortedYears = Array.from(grouped.keys()).sort((a, b) => b - a);
+
+const monthOrder = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 ---
 
-<section class="archive-view">
+<section class="archive-view" aria-labelledby="archive-title">
   <nav class="top-nav">
     <a href="#/" class="back" data-spa-link>← 返回首页</a>
-    <h1>电影归档</h1>
-    <span class="count">{movies.length} 部</span>
   </nav>
 
-  <div class="movie-grid">
-    {movies.map((movie, i) => (
-      <MovieCard movie={movie} delay={i * 0.05} />
-    ))}
+  <header class="archive-header">
+    <h1 id="archive-title">ALL FILMS</h1>
+    <p class="archive-subtitle">自 {sortedYears[sortedYears.length - 1] ?? ''} 年起</p>
+  </header>
+
+  <div class="timeline">
+    {sortedYears.map(year => {
+      const yearMap = grouped.get(year)!;
+      const sortedMonths = Array.from(yearMap.keys()).sort((a, b) => {
+        const ai = monthOrder.indexOf(a);
+        const bi = monthOrder.indexOf(b);
+        return (bi >= 0 ? bi : 0) - (ai >= 0 ? ai : 0); // descending within year
+      });
+      return (
+        <div class="year-group" key={year}>
+          <span class="year-label">{year}</span>
+          {sortedMonths.map(month => {
+            const monthMovies = yearMap.get(month)!.sort((a, b) =>
+              b.publishedDate.localeCompare(a.publishedDate)
+            );
+            return (
+              <div class="month-group" key={month}>
+                <span class="month-label">{month}</span>
+                <div class="month-line" />
+                <ul class="month-list">
+                  {monthMovies.map(movie => {
+                    const day = new Date(movie.publishedDate + 'T00:00:00').getDate();
+                    return (
+                      <li key={movie.publishedDate}>
+                        <a
+                          href={`#/movie/${movie.publishedDate}`}
+                          class="film-link"
+                          data-spa-link
+                        >
+                          <span class="film-day">{String(day).padStart(2, '0')}</span>
+                          <span class="film-title">《{movie.title}》</span>
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      );
+    })}
   </div>
 </section>
 
 <style>
   .archive-view {
-    max-width: 1200px;
+    max-width: 640px;
     margin: 0 auto;
-    padding: 0 20px 60px;
+    padding: 0 var(--pad-h) 60px;
+    min-height: 100vh;
   }
 
   .top-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 0;
-    margin-bottom: 24px;
-    gap: 16px;
-    flex-wrap: wrap;
+    padding: 24px 0;
   }
 
   .back {
-    color: var(--accent) !important;
+    font-family: var(--font-serif);
     font-size: 0.95rem;
-    font-weight: 500;
-    flex-shrink: 0;
+    color: rgba(10, 10, 10, 0.45);
+    text-decoration: none;
+    transition: color 0.2s ease;
   }
 
-  .top-nav h1 {
-    font-size: clamp(1.5rem, 3vw, 2rem);
-    font-weight: 700;
-    color: var(--text-primary);
-    flex: 1;
+  .back:hover {
+    color: var(--gold);
+  }
+
+  .archive-header {
     text-align: center;
+    padding: 4rem 0 3rem;
   }
 
-  .count {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    flex-shrink: 0;
+  .archive-header h1 {
+    font-family: var(--font-serif);
+    font-size: var(--size-detail);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin: 0;
   }
 
-  .movie-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
+  .archive-subtitle {
+    font-family: var(--font-serif);
+    font-size: var(--size-caption);
+    font-style: italic;
+    font-weight: 400;
+    color: rgba(10, 10, 10, 0.55);
+    letter-spacing: 0.02em;
+    margin-top: 0.75rem;
   }
 
-  @media (max-width: 640px) {
-    .movie-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
 
-    .top-nav h1 {
-      text-align: left;
-      flex: none;
+  .year-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .year-label {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .month-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-left: 1rem;
+  }
+
+  .month-label {
+    font-family: var(--font-serif);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(10, 10, 10, 0.45);
+  }
+
+  .month-line {
+    width: 40px;
+    border: none;
+    border-top: 1px solid rgba(10, 10, 10, 0.15);
+    margin: 0.25rem 0;
+  }
+
+  .month-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .month-list li {
+    margin: 0;
+  }
+
+  .film-link {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s ease;
+  }
+
+  .film-link:hover {
+    color: var(--gold);
+  }
+
+  .film-day {
+    font-family: var(--font-serif);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgba(10, 10, 10, 0.35);
+    min-width: 1.5rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .film-title {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ink);
+  }
+
+  .film-link:hover .film-title {
+    color: var(--gold);
+  }
+
+  /* Fade-in sequence for archive view */
+  .archive-header,
+  .year-group {
+    opacity: 0;
+    animation: v2-fade-in 0.8s ease-out forwards;
+  }
+
+  .archive-header { animation-delay: 0.1s; }
+  .year-group { animation-delay: 0.3s; }
+
+  @keyframes v2-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .archive-header,
+    .year-group {
+      opacity: 1;
+      animation: none;
+      transform: none;
     }
   }
 </style>
