@@ -1,353 +1,228 @@
 ---
-import DirectorCard from './DirectorCard.astro';
-import CastList from './CastList.astro';
-import PosterGallery from './PosterGallery.astro';
-import QuoteCard from './QuoteCard.astro';
 import type { Movie } from '../schemas/movie';
 
 interface Props {
   movie: Movie;
-  allMovies: Movie[];
 }
 
-const { movie, allMovies } = Astro.props;
-
-// 相似电影推荐：同类型筛选，按评分排序，排除当前，最多4部
-const similarMovies = allMovies
-  .filter(m => m.id !== movie.id && m.genre.some(g => movie.genre.includes(g)))
-  .sort((a, b) => b.rating - a.rating)
-  .slice(0, 4);
+const { movie } = Astro.props;
 ---
 
-<article class="movie-detail">
-  <!-- 顶部导航 -->
-  <nav class="top-nav">
-    <a href="#/" class="back" data-spa-link>← 返回首页</a>
-    <span class="date">{movie.publishedDate}</span>
+<article class="movie-detail" aria-labelledby="detail-title">
+  <nav class="back-nav">
+    <a href="#/" class="back-link" data-spa-link>← 返回</a>
   </nav>
 
-  <!-- 主海报 -->
-  <div class="hero-section">
-    <div class="hero-cover" style={`background: ${movie.cover.bg}`}>
-      <img src={movie.cover.url} alt={movie.title} class="poster-img" onerror="this.src='/fallback-poster.svg'; this.classList.add('loaded')" />
-    </div>
-    <div class="hero-info">
-      <h1>{movie.title}</h1>
-      {movie.titleOriginal && <p class="original">{movie.titleOriginal}</p>}
-      <div class="meta">
-        <span class="rating-badge">⭐ {movie.rating}</span>
-        <span class="type-badge">{movie.type === 'tv' ? '📺 剧集' : '🎬 电影'}</span>
-        <span class="genre">{movie.genre.join(' / ')}</span>
-        <span class="year">{movie.year}</span>
-        <span class="duration">{movie.duration}分钟</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="content-sections">
-    <!-- 导演 -->
-    <DirectorCard director={movie.director} />
-
-    <!-- 主演 -->
-    <section>
-      <h2>🌟 主演</h2>
-      <CastList cast={movie.cast} />
-    </section>
-
-    <!-- 剧情简介 -->
-    <section>
-      <h2>📖 剧情简介</h2>
-      <p class="synopsis">{movie.synopsis}</p>
-    </section>
-
-    <!-- 海报画廊 -->
-    <section>
-      <h2>🎞️ 电影海报</h2>
-      <PosterGallery posters={movie.posters} />
-    </section>
-
-    <!-- 经典语录 -->
-    <section>
-      <h2>💬 经典语录</h2>
-      {movie.quotes.map(q => <QuoteCard quote={q} />)}
-    </section>
-
-    <!-- 相似电影推荐 -->
-    {similarMovies.length > 0 && (
-      <section class="similar-section">
-        <h2>🎬 相似推荐</h2>
-        <div class="similar-scroll">
-          {similarMovies.map(m => (
-            <a href={`#/movie/${m.publishedDate}`} class="similar-card" data-spa-link>
-              <div class="similar-cover" style={`background: ${m.cover.bg}`}>
-                <img src={m.cover.url} alt={m.title} loading="lazy" class="poster-img" onerror="this.src='/fallback-poster.svg'; this.classList.add('loaded')" />
-              </div>
-              <div class="similar-info">
-                <p class="similar-title">{m.title}</p>
-                <span class="similar-rating">⭐ {m.rating}</span>
-              </div>
-            </a>
-          ))}
-        </div>
-      </section>
+  <header class="detail-header">
+    <h1 id="detail-title" class="detail-title">{movie.title}</h1>
+    {movie.titleOriginal && (
+      <p class="detail-original">{movie.titleOriginal}</p>
     )}
-  </div>
-</article>
+    <p class="detail-meta">
+      {movie.director.name} · {movie.year}
+      {movie.duration && ` · ${movie.duration}min`}
+    </p>
+  </header>
 
-<script>
-  // Image fade-in on load
-  document.querySelectorAll('.movie-detail .poster-img').forEach(img => {
-    if (img.complete) {
-      img.classList.add('loaded');
-    } else {
-      img.addEventListener('load', () => img.classList.add('loaded'));
-      img.addEventListener('error', () => img.classList.add('loaded'));
-    }
-  });
-</script>
+  <hr class="detail-divider" />
+
+  <section class="detail-synopsis" aria-labelledby="synopsis-heading">
+    <h2 id="synopsis-heading" class="sr-only">剧情简介</h2>
+    <p>{movie.synopsis}</p>
+  </section>
+
+  {movie.quotes.length > 0 && (
+    <section class="detail-quotes" aria-labelledby="quotes-heading">
+      <h2 id="quotes-heading" class="sr-only">经典语录</h2>
+      {movie.quotes.map((quote) => (
+        <blockquote class="detail-quote">
+          <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+          <span class="quote-text">{quote.text}</span>
+          <span class="quote-mark" aria-hidden="true">&rdquo;</span>
+          {quote.speaker && (
+            <cite class="quote-speaker">—— {quote.speaker}</cite>
+          )}
+        </blockquote>
+      ))}
+    </section>
+  )}
+</article>
 
 <style>
   .movie-detail {
-    max-width: 900px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--pad-v) var(--pad-h);
+    max-width: 720px;
     margin: 0 auto;
-    padding: 0 20px 60px;
+    text-align: center;
+    gap: 2.5rem;
   }
 
-  /* 顶部导航 */
-  .top-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 0;
-    margin-bottom: 24px;
-  }
-
-  .back {
-    color: var(--accent) !important;
-    font-size: 0.95rem;
-    font-weight: 500;
-  }
-
-  .back:hover {
-    color: var(--accent-hover) !important;
-  }
-
-  .date {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-  }
-
-  /* 主海报区 */
-  .hero-section {
-    display: flex;
-    gap: 32px;
-    margin-bottom: 40px;
-    animation: fadeIn 0.5s ease;
-  }
-
-  .hero-cover {
-    flex-shrink: 0;
-    width: 320px;
-    height: 480px;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
-
-  .hero-cover img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  /* Fade-in sequence for detail view */
+  .detail-title,
+  .detail-original,
+  .detail-meta,
+  .detail-divider,
+  .detail-synopsis,
+  .detail-quotes {
     opacity: 0;
-    transition: opacity 0.6s ease;
+    animation: v2-fade-in 0.8s ease-out forwards;
   }
 
-  .hero-cover img.loaded,
-  .hero-cover img[src='/fallback-poster.svg'] {
-    opacity: 1;
+  .detail-title   { animation-delay: 0.1s; }
+  .detail-original { animation-delay: 0.25s; }
+  .detail-meta    { animation-delay: 0.4s; }
+  .detail-divider { animation-delay: 0.55s; }
+  .detail-synopsis { animation-delay: 0.7s; }
+  .detail-quotes  { animation-delay: 0.9s; }
+
+  @keyframes v2-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  .hero-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 12px;
+  /* Back nav */
+  .back-nav {
+    align-self: flex-start;
+    margin-bottom: 1rem;
   }
 
-  h1 {
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1.2;
-  }
-
-  .original {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-  }
-
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
-    font-size: 0.95rem;
-  }
-
-  .rating-badge {
-    padding: 6px 14px;
-    background: var(--accent);
-    color: var(--bg-primary);
-    font-weight: 600;
-    border-radius: 4px;
-    font-size: 1rem;
-  }
-
-  .genre {
-    color: var(--text-secondary);
-  }
-
-  .type-badge {
-    padding: 4px 10px;
-    background: var(--accent-hover);
-    color: var(--bg-primary);
-    font-size: 0.8rem;
-    font-weight: 600;
-    border-radius: 4px;
-  }
-
-  .year, .duration {
-    color: var(--text-secondary);
-  }
-
-  /* 内容区 */
-  .content-sections {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-  }
-
-  section h2 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .synopsis {
-    font-size: 1rem;
-    line-height: 1.8;
-    color: var(--text-secondary);
-    padding: 20px;
-    background: var(--bg-secondary);
-    border-radius: var(--radius);
-  }
-
-  /* 相似电影推荐 */
-  .similar-scroll {
-    display: flex;
-    gap: 16px;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .similar-scroll::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  .similar-scroll::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
-    border-radius: 2px;
-  }
-
-  .similar-scroll::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 2px;
-  }
-
-  .similar-card {
-    flex-shrink: 0;
-    width: 160px;
-    border-radius: var(--radius);
-    overflow: hidden;
-    background: var(--bg-card);
-    box-shadow: var(--shadow);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  .back-link {
+    font-family: var(--font-serif);
+    font-size: 0.875rem;
+    color: rgba(10, 10, 10, 0.45);
     text-decoration: none;
-    color: inherit;
-    scroll-snap-align: start;
+    transition: color 0.2s ease;
   }
 
-  .similar-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-hover);
+  .back-link:hover {
+    color: var(--gold);
   }
 
-  .similar-cover {
+  /* Header */
+  .detail-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .detail-title {
+    font-family: var(--font-serif);
+    font-size: var(--size-detail);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  .detail-original {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    font-style: italic;
+    font-weight: 400;
+    color: rgba(10, 10, 10, 0.55);
+    margin: 0;
+  }
+
+  .detail-meta {
+    font-family: var(--font-serif);
+    font-size: var(--size-caption);
+    font-style: italic;
+    font-weight: 400;
+    color: rgba(10, 10, 10, 0.5);
+    letter-spacing: 0.02em;
+    margin: 0.25rem 0 0;
+  }
+
+  /* Divider */
+  .detail-divider {
+    width: 60px;
+    border: none;
+    border-top: 1px solid rgba(10, 10, 10, 0.15);
+    margin: 0;
+  }
+
+  /* Synopsis */
+  .detail-synopsis {
+    font-family: var(--font-serif);
+    font-size: var(--size-body);
+    line-height: 1.8;
+    color: var(--ink);
+    max-width: 540px;
+    text-align: left;
+  }
+
+  .detail-synopsis p {
+    margin: 0;
+  }
+
+  /* Quotes */
+  .detail-quotes {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 540px;
     width: 100%;
-    aspect-ratio: 2/3;
+  }
+
+  .detail-quote {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--ink);
+    margin: 0;
+    padding: 0;
+    position: relative;
+  }
+
+  .quote-mark {
+    color: var(--gold);
+    font-size: 1.75rem;
+    line-height: 1;
+    font-family: var(--font-serif);
+    vertical-align: -0.3em;
+    margin: 0 0.1em;
+  }
+
+  .quote-speaker {
+    display: block;
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    font-style: normal;
+    color: rgba(10, 10, 10, 0.5);
+    letter-spacing: 0.02em;
+  }
+
+  /* Screen reader only */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
     overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
-  .similar-cover img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    transition: opacity 0.6s ease;
-  }
-
-  .similar-cover img.loaded,
-  .similar-cover img[src='/fallback-poster.svg'] {
-    opacity: 1;
-  }
-
-  .similar-info {
-    padding: 10px;
-  }
-
-  .similar-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 4px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    line-height: 1.3;
-  }
-
-  .similar-rating {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--accent);
-  }
-
-  @media (min-width: 641px) {
-    .similar-card {
-      width: 180px;
+  @media (prefers-reduced-motion: reduce) {
+    .detail-title,
+    .detail-original,
+    .detail-meta,
+    .detail-divider,
+    .detail-synopsis,
+    .detail-quotes {
+      opacity: 1;
+      animation: none;
+      transform: none;
     }
-  }
-
-  /* 响应式 */
-  @media (max-width: 768px) {
-    .hero-section {
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .hero-cover {
-      width: 100%;
-      height: 400px;
-    }
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
   }
 </style>

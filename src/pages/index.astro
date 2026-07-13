@@ -28,7 +28,7 @@ const todayMovie = movies.find((m) => m.publishedDate === dateStr) ?? movies[0];
   <div id="view-movie" hidden style="display: none;">
     {movies.map(movie => (
       <div data-movie-detail data-movie-date={movie.publishedDate} hidden style="display: none;">
-        <MovieDetail movie={movie} allMovies={movies} />
+        <MovieDetail movie={movie} />
       </div>
     ))}
   </div>
