@@ -2,3 +2,7 @@
 /library/* / 301
 /search / 301
 /search/* / 301
+/archive / 301
+/archive/* / 301
+/about / 301
+/about/* / 301
