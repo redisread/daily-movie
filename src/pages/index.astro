@@ -1,60 +1,421 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import TodayHero from '../components/TodayHero.astro';
-import MovieList from '../components/MovieList.astro';
-import MovieDetail from '../components/MovieDetail.astro';
+import HeroCinema from '../components/HeroCinema.astro';
 import { movies } from '../data/movies';
 
 // 今日日期
 const today = new Date();
 const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-// 今日推荐（按 publishedDate 匹配今天）
-const todayMovie = movies.find((m) => m.publishedDate === dateStr) ?? movies[0];
+// 按 publishedDate 排序，确保上一部/下一部稳定
+const sortedMovies = [...movies].sort((a, b) =>
+  a.publishedDate.localeCompare(b.publishedDate)
+);
+
+const todayIndex = sortedMovies.findIndex((m) => m.publishedDate === dateStr);
+const todayMovie = todayIndex >= 0 ? sortedMovies[todayIndex] : sortedMovies[sortedMovies.length - 1];
+const actualIndex = todayIndex >= 0 ? todayIndex : sortedMovies.length - 1;
+
+const prevMovie = sortedMovies[actualIndex - 1];
+const nextMovie = sortedMovies[actualIndex + 1];
+
+// archive lite：按年份/月份分组
+const grouped = new Map<string, Movie[]>();
+sortedMovies.forEach((m) => {
+  const [year, month] = m.publishedDate.split('-');
+  const key = `${year}-${month}`;
+  if (!grouped.has(key)) grouped.set(key, []);
+  grouped.get(key)!.push(m);
+});
+const archiveGroups = Array.from(grouped.entries()).sort((a, b) => b[0].localeCompare(a[0]));
+
+const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+function formatMonthYear(key: string) {
+  const [year, month] = key.split('-');
+  const mIdx = parseInt(month, 10) - 1;
+  return { year, month: monthNames[mIdx] ?? month };
+}
+
+const pageTitle = `每日一影院 — ${todayMovie?.title ?? '今日放映'}`;
+const pageDescription = todayMovie
+  ? `${todayMovie.title} · ${todayMovie.director.name} · ${todayMovie.year}`
+  : '每日一影院 — 每天一场放映仪式';
 ---
 
-<Layout title={`每日一影院 — ${todayMovie?.title ?? ''}`} fullscreen>
-  <!-- Home View -->
-  <div id="view-home">
-    {todayMovie && <TodayHero movie={todayMovie} dateStr={dateStr} />}
-  </div>
+<Layout title={pageTitle} description={pageDescription}>
+  {
+    todayMovie && (
+      <>
+        <HeroCinema
+          movie={todayMovie}
+          dateStr={dateStr}
+          mode="home"
+          prevMovie={prevMovie}
+          nextMovie={nextMovie}
+          totalCount={sortedMovies.length}
+          currentIndex={actualIndex}
+        />
 
-  <!-- Archive View -->
-  <div id="view-archive" hidden style="display: none;">
-    <MovieList movies={movies} />
-  </div>
+        <section id="detail" class="detail-section" aria-labelledby="detail-title">
+          <div class="detail-content">
+            <div class="detail-divider" aria-hidden="true"></div>
 
-  <!-- Movie Detail View -->
-  <div id="view-movie" hidden style="display: none;">
-    {movies.map(movie => (
-      <div data-movie-detail data-movie-date={movie.publishedDate} hidden style="display: none;">
-        <MovieDetail movie={movie} allMovies={movies} />
+            <h2 id="detail-title" class="sr-only">影片详情</h2>
+
+            <p class="detail-synopsis">{todayMovie.synopsis}</p>
+
+            {todayMovie.quotes.length > 1 && (
+              <blockquote class="detail-quote">
+                <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+                <span>{todayMovie.quotes[1].text}</span>
+                <span class="quote-mark" aria-hidden="true">&rdquo;</span>
+                {todayMovie.quotes[1].speaker && <cite>— {todayMovie.quotes[1].speaker}</cite>}
+              </blockquote>
+            )}
+
+            <dl class="detail-meta">
+              <div class="meta-item">
+                <dt>类型</dt>
+                <dd>{todayMovie.genre.join(' · ')}</dd>
+              </div>
+              <div class="meta-item">
+                <dt>时长</dt>
+                <dd>{todayMovie.duration} 分钟</dd>
+              </div>
+            </dl>
+
+            <p class="detail-permalink">
+              <a href={`/movie/${todayMovie.publishedDate}/`}>进入当日放映厅 →</a>
+            </p>
+          </div>
+        </section>
+      </>
+    )
+  }
+
+  <section id="archive" class="archive-section" aria-labelledby="archive-title">
+    <div class="archive-content">
+      <p class="archive-eyebrow">ALL FILMS</p>
+      <h2 id="archive-title" class="archive-title">历史放映</h2>
+      <p class="archive-subtitle">自 {sortedMovies[sortedMovies.length - 1]?.year ?? ''} 年起，{sortedMovies.length} 部</p>
+
+      <div class="archive-timeline">
+        {archiveGroups.map(([key, group]) => {
+          const { year, month } = formatMonthYear(key);
+          return (
+            <div class="timeline-group">
+              <div class="timeline-header">
+                <span class="timeline-year">{year}</span>
+                <span class="timeline-month">{month}</span>
+              </div>
+              <ul class="timeline-list">
+                {group
+                  .sort((a, b) => b.publishedDate.localeCompare(a.publishedDate))
+                  .map((m) => (
+                    <li class="timeline-item">
+                      <span class="timeline-day">{m.publishedDate.slice(8)}</span>
+                      <a href={`/movie/${m.publishedDate}/`} class="timeline-title">《{m.title}》</a>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          );
+        })}
       </div>
-    ))}
-  </div>
+    </div>
+  </section>
+
+  <section id="about" class="about-section" aria-labelledby="about-title">
+    <div class="about-content">
+      <p class="about-eyebrow">ABOUT</p>
+      <h2 id="about-title" class="about-title">每日一影院</h2>
+
+      <div class="about-text">
+        <p>每天推荐一部经典电影的小项目。</p>
+        <p>不评分，不社交，不解释。只是每天遇见一部。</p>
+        <p>推开放映厅的门，坐下，灯暗了，银幕亮了。</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p>© {new Date().getFullYear()} 每日一影院 · DAILY MOVIE</p>
+  </footer>
 </Layout>
 
-<script>
-  import { initRouter, onRouteChange, showView } from '../lib/spa';
-
-  initRouter();
-
-  onRouteChange((route) => {
-    if (route.name === 'movie') {
-      showView('movie', route.params.date);
-    } else {
-      showView(route.name);
-    }
-  });
-
-  // Show initial view
-  const hash = window.location.hash;
-  if (hash.startsWith('#/movie/')) {
-    const date = hash.replace('#/movie/', '').replace(/\/$/, '');
-    showView('movie', date);
-  } else if (hash === '#/archive' || hash === '#/library' || hash === '#/search') {
-    showView('archive');
-  } else {
-    showView('home');
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
-</script>
+
+  /* ─── Detail section ─── */
+  .detail-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--pad-v) var(--pad-h);
+    background: var(--paper);
+  }
+
+  .detail-content {
+    max-width: 40rem;
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .detail-divider {
+    width: 4rem;
+    height: 1px;
+    background: rgba(10, 10, 10, 0.15);
+    margin: 0 auto;
+  }
+
+  .detail-synopsis {
+    font-size: var(--size-body);
+    line-height: 1.9;
+    color: var(--ink);
+    text-align: left;
+  }
+
+  .detail-quote {
+    font-size: 1.25rem;
+    font-style: italic;
+    line-height: 1.8;
+    color: var(--ink);
+    padding: 0 1.5rem;
+  }
+
+  .detail-quote cite {
+    display: block;
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    font-style: normal;
+    color: rgba(10, 10, 10, 0.5);
+  }
+
+  .detail-meta {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin: 0;
+  }
+
+  .meta-item {
+    text-align: center;
+  }
+
+  .meta-item dt {
+    font-size: var(--size-label);
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(10, 10, 10, 0.45);
+    margin-bottom: 0.5rem;
+  }
+
+  .meta-item dd {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--ink);
+  }
+
+  .detail-permalink {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    font-style: italic;
+  }
+
+  /* ─── Archive section ─── */
+  .archive-section {
+    min-height: 100vh;
+    padding: var(--pad-v) var(--pad-h);
+    background: var(--paper);
+  }
+
+  .archive-content {
+    max-width: 46rem;
+    margin: 0 auto;
+  }
+
+  .archive-eyebrow {
+    font-size: var(--size-label);
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(10, 10, 10, 0.45);
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .archive-title {
+    font-size: var(--size-detail);
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.1;
+    margin-bottom: 0.75rem;
+  }
+
+  .archive-subtitle {
+    font-size: var(--size-caption);
+    font-style: italic;
+    color: rgba(10, 10, 10, 0.5);
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .archive-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .timeline-group {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: 2rem;
+  }
+
+  .timeline-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    padding-top: 0.25rem;
+  }
+
+  .timeline-year {
+    font-size: var(--size-caption);
+    font-style: italic;
+    color: rgba(10, 10, 10, 0.45);
+  }
+
+  .timeline-month {
+    font-size: 1.125rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+  }
+
+  .timeline-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .timeline-item {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    font-size: 1.125rem;
+  }
+
+  .timeline-day {
+    font-variant-numeric: tabular-nums;
+    font-size: var(--size-caption);
+    color: rgba(10, 10, 10, 0.45);
+    min-width: 1.75rem;
+  }
+
+  .timeline-title {
+    font-style: italic;
+    border-bottom: 1px solid transparent;
+  }
+
+  .timeline-title:hover {
+    border-bottom-color: var(--ink);
+  }
+
+  /* ─── About section ─── */
+  .about-section {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--pad-v) var(--pad-h);
+    background: var(--paper);
+  }
+
+  .about-content {
+    max-width: 36rem;
+    text-align: center;
+  }
+
+  .about-eyebrow {
+    font-size: var(--size-label);
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(10, 10, 10, 0.45);
+    margin-bottom: 1rem;
+  }
+
+  .about-title {
+    font-size: var(--size-detail);
+    font-weight: 500;
+    line-height: 1.1;
+    margin-bottom: 3rem;
+  }
+
+  .about-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    font-size: var(--size-body);
+    line-height: 1.9;
+    color: var(--ink);
+  }
+
+  /* ─── Footer ─── */
+  .site-footer {
+    padding: 3rem var(--pad-h);
+    text-align: center;
+    background: var(--paper);
+  }
+
+  .site-footer p {
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(10, 10, 10, 0.35);
+    margin: 0;
+  }
+
+  @media (max-width: 640px) {
+    .detail-meta {
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .timeline-group {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .timeline-header {
+      align-items: flex-start;
+      flex-direction: row;
+      gap: 0.75rem;
+    }
+
+    .timeline-day {
+      min-width: 1.5rem;
+    }
+  }
+</style>
