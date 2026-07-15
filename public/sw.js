@@ -1,12 +1,14 @@
-const CACHE_NAME = 'daily-movie-v2-skeleton';
+const CACHE_NAME = 'daily-movie-v2';
 
 const PRECACHE_URLS = [
   '/',
   '/styles/v2-theme.css',
   '/fonts/CormorantGaramond-Regular.woff2',
   '/fonts/CormorantGaramond-Italic.woff2',
+  '/fonts/NotoSerifSC-Regular.subset.woff2',
   '/logo.png',
   '/favicon.png',
+  '/favicon.svg',
   '/fallback-poster.svg',
   '/manifest.webmanifest',
 ];
