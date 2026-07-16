@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import HeroCinema from '../components/HeroCinema.astro';
+import MovieDetailRitual from '../components/MovieDetailRitual.astro';
 import { movies } from '../data/movies';
 
 // 今日日期
@@ -57,39 +58,7 @@ const pageDescription = todayMovie
           currentIndex={actualIndex}
         />
 
-        <section id="detail" class="detail-section" aria-labelledby="detail-title">
-          <div class="detail-content">
-            <div class="detail-divider" aria-hidden="true"></div>
-
-            <h2 id="detail-title" class="sr-only">影片详情</h2>
-
-            <p class="detail-synopsis">{todayMovie.synopsis}</p>
-
-            {todayMovie.quotes.length > 1 && (
-              <blockquote class="detail-quote">
-                <span class="quote-mark" aria-hidden="true">&ldquo;</span>
-                <span>{todayMovie.quotes[1].text}</span>
-                <span class="quote-mark" aria-hidden="true">&rdquo;</span>
-                {todayMovie.quotes[1].speaker && <cite>— {todayMovie.quotes[1].speaker}</cite>}
-              </blockquote>
-            )}
-
-            <dl class="detail-meta">
-              <div class="meta-item">
-                <dt>类型</dt>
-                <dd>{todayMovie.genre.join(' · ')}</dd>
-              </div>
-              <div class="meta-item">
-                <dt>时长</dt>
-                <dd>{todayMovie.duration} 分钟</dd>
-              </div>
-            </dl>
-
-            <p class="detail-permalink">
-              <a href={`/movie/${todayMovie.publishedDate}/`}>进入当日放映厅 →</a>
-            </p>
-          </div>
-        </section>
+        <MovieDetailRitual movie={todayMovie} showPermalink />
       </>
     )
   }
@@ -157,87 +126,6 @@ const pageDescription = todayMovie
     border: 0;
   }
 
-  /* ─── Detail section ─── */
-  .detail-section {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--pad-v) var(--pad-h);
-    background: var(--paper);
-  }
-
-  .detail-content {
-    max-width: 40rem;
-    margin: 0 auto;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
-  }
-
-  .detail-divider {
-    width: 4rem;
-    height: 1px;
-    background: rgba(10, 10, 10, 0.15);
-    margin: 0 auto;
-  }
-
-  .detail-synopsis {
-    font-size: var(--size-body);
-    line-height: 1.9;
-    color: var(--ink);
-    text-align: left;
-  }
-
-  .detail-quote {
-    font-size: 1.25rem;
-    font-style: italic;
-    line-height: 1.8;
-    color: var(--ink);
-    padding: 0 1.5rem;
-  }
-
-  .detail-quote cite {
-    display: block;
-    margin-top: 0.75rem;
-    font-size: 0.875rem;
-    font-style: normal;
-    color: rgba(10, 10, 10, 0.5);
-  }
-
-  .detail-meta {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    margin: 0;
-  }
-
-  .meta-item {
-    text-align: center;
-  }
-
-  .meta-item dt {
-    font-size: var(--size-label);
-    font-weight: 500;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: rgba(10, 10, 10, 0.45);
-    margin-bottom: 0.5rem;
-  }
-
-  .meta-item dd {
-    margin: 0;
-    font-size: 1rem;
-    color: var(--ink);
-  }
-
-  .detail-permalink {
-    margin-top: 1rem;
-    font-size: 0.95rem;
-    font-style: italic;
-  }
-
   /* ─── Archive section ─── */
   .archive-section {
     min-height: 100vh;
@@ -255,7 +143,7 @@ const pageDescription = todayMovie
     font-weight: 500;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(10, 10, 10, 0.45);
+    color: rgba(10, 10, 10, 0.6);
     text-align: center;
     margin-bottom: 1rem;
   }
@@ -271,7 +159,7 @@ const pageDescription = todayMovie
   .archive-subtitle {
     font-size: var(--size-caption);
     font-style: italic;
-    color: rgba(10, 10, 10, 0.5);
+    color: rgba(10, 10, 10, 0.6);
     text-align: center;
     margin-bottom: 4rem;
   }
@@ -299,7 +187,7 @@ const pageDescription = todayMovie
   .timeline-year {
     font-size: var(--size-caption);
     font-style: italic;
-    color: rgba(10, 10, 10, 0.45);
+    color: rgba(10, 10, 10, 0.6);
   }
 
   .timeline-month {
@@ -328,7 +216,7 @@ const pageDescription = todayMovie
   .timeline-day {
     font-variant-numeric: tabular-nums;
     font-size: var(--size-caption);
-    color: rgba(10, 10, 10, 0.45);
+    color: rgba(10, 10, 10, 0.6);
     min-width: 1.75rem;
   }
 
@@ -361,7 +249,7 @@ const pageDescription = todayMovie
     font-weight: 500;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(10, 10, 10, 0.45);
+    color: rgba(10, 10, 10, 0.6);
     margin-bottom: 1rem;
   }
 
@@ -393,7 +281,7 @@ const pageDescription = todayMovie
     font-weight: 500;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(10, 10, 10, 0.35);
+    color: rgba(10, 10, 10, 0.6);
     margin: 0;
   }
 

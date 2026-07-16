@@ -1,0 +1,72 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import HeroCinema from '../../components/HeroCinema.astro';
+import MovieDetailRitual from '../../components/MovieDetailRitual.astro';
+import { movies } from '../../data/movies';
+
+export function getStaticPaths() {
+  const sortedMovies = [...movies].sort((a, b) =>
+    a.publishedDate.localeCompare(b.publishedDate)
+  );
+
+  return sortedMovies.map((movie, index) => ({
+    params: { date: movie.publishedDate },
+    props: {
+      movie,
+      prevMovie: sortedMovies[index - 1] ?? null,
+      nextMovie: sortedMovies[index + 1] ?? null,
+      currentIndex: index,
+      totalCount: sortedMovies.length,
+    },
+  }));
+}
+
+interface Props {
+  movie: typeof movies[number];
+  prevMovie: typeof movies[number] | null;
+  nextMovie: typeof movies[number] | null;
+  currentIndex: number;
+  totalCount: number;
+}
+
+const { movie, prevMovie, nextMovie, currentIndex, totalCount } = Astro.props;
+
+const pageTitle = `${movie.title} · 每日一影院`;
+const pageDescription = `${movie.title} · ${movie.director.name} · ${movie.year}`;
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <HeroCinema
+    movie={movie}
+    dateStr={movie.publishedDate}
+    mode="permalink"
+    prevMovie={prevMovie ?? undefined}
+    nextMovie={nextMovie ?? undefined}
+    totalCount={totalCount}
+    currentIndex={currentIndex}
+  />
+
+  <MovieDetailRitual movie={movie} />
+
+  <p class="back-home">
+    <a href="/">← 返回今日放映厅</a>
+  </p>
+</Layout>
+
+<style>
+  .back-home {
+    padding: 0 var(--pad-h) 15vh;
+    text-align: center;
+    font-size: 0.95rem;
+    font-style: italic;
+    background: var(--paper);
+  }
+
+  .back-home a {
+    border-bottom: 1px solid transparent;
+  }
+
+  .back-home a:hover {
+    border-bottom-color: var(--ink);
+  }
+</style>
