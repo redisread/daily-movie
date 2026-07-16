@@ -15,7 +15,7 @@ const {
   fullscreen = false,
 } = Astro.props;
 
-const canonicalURL = new URL('/', Astro.site);
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!DOCTYPE html>
