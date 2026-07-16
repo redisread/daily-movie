@@ -65,9 +65,9 @@ const label = mode === 'home' ? "今日影片" : displayDate;
           <span class="nav-label">上一部</span>
         </a>
       ) : (
-        <span class="nav-link nav-prev is-disabled" aria-disabled="true" aria-label="没有上一部">
+        <button type="button" class="nav-link nav-prev is-disabled" disabled aria-label="没有上一部">
           <span class="nav-arrow" aria-hidden="true">←</span>
-        </span>
+        </button>
       )}
 
       {totalCount !== undefined && currentIndex !== undefined && (
@@ -82,9 +82,9 @@ const label = mode === 'home' ? "今日影片" : displayDate;
           <span class="nav-arrow" aria-hidden="true">→</span>
         </a>
       ) : (
-        <span class="nav-link nav-next is-disabled" aria-disabled="true" aria-label="没有下一部">
+        <button type="button" class="nav-link nav-next is-disabled" disabled aria-label="没有下一部">
           <span class="nav-arrow" aria-hidden="true">→</span>
-        </span>
+        </button>
       )}
     </nav>
 
@@ -220,6 +220,11 @@ const label = mode === 'home' ? "今日影片" : displayDate;
     align-items: center;
     gap: 0.4rem;
     padding: 0.5rem 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
     border-bottom: 1px solid transparent;
     transition: border-color 0.3s ease, color 0.3s ease;
   }
@@ -229,9 +234,11 @@ const label = mode === 'home' ? "今日影片" : displayDate;
     border-bottom-color: var(--ink);
   }
 
-  .nav-link.is-disabled {
+  .nav-link.is-disabled,
+  .nav-link.is-disabled:hover {
     opacity: 0.25;
-    pointer-events: none;
+    cursor: default;
+    border-bottom-color: transparent;
   }
 
   .nav-link.is-disabled .nav-label {
