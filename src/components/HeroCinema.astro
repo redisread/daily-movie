@@ -65,9 +65,8 @@ const label = mode === 'home' ? "今日影片" : displayDate;
           <span class="nav-label">上一部</span>
         </a>
       ) : (
-        <span class="nav-link nav-prev is-disabled" aria-hidden="true">
+        <span class="nav-link nav-prev is-disabled" aria-disabled="true" aria-label="没有上一部">
           <span class="nav-arrow" aria-hidden="true">←</span>
-          <span class="nav-label">上一部</span>
         </span>
       )}
 
@@ -83,8 +82,7 @@ const label = mode === 'home' ? "今日影片" : displayDate;
           <span class="nav-arrow" aria-hidden="true">→</span>
         </a>
       ) : (
-        <span class="nav-link nav-next is-disabled" aria-hidden="true">
-          <span class="nav-label">下一部</span>
+        <span class="nav-link nav-next is-disabled" aria-disabled="true" aria-label="没有下一部">
           <span class="nav-arrow" aria-hidden="true">→</span>
         </span>
       )}
@@ -234,6 +232,10 @@ const label = mode === 'home' ? "今日影片" : displayDate;
   .nav-link.is-disabled {
     opacity: 0.25;
     pointer-events: none;
+  }
+
+  .nav-link.is-disabled .nav-label {
+    display: none;
   }
 
   .nav-counter {
