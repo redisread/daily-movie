@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import HeroCinema from '../components/HeroCinema.astro';
 import MovieDetailRitual from '../components/MovieDetailRitual.astro';
 import { movies } from '../data/movies';
+import type { Movie } from '../schemas/movie';
 
 // 今日日期
 const today = new Date();
@@ -67,13 +68,32 @@ const pageDescription = todayMovie
     <div class="archive-content">
       <p class="archive-eyebrow">ALL FILMS</p>
       <h2 id="archive-title" class="archive-title">历史放映</h2>
-      <p class="archive-subtitle">自 {sortedMovies[sortedMovies.length - 1]?.year ?? ''} 年起，{sortedMovies.length} 部</p>
+      <p class="archive-subtitle">
+        <span>自 {sortedMovies[sortedMovies.length - 1]?.year ?? ''} 年起，{sortedMovies.length} 部</span>
+        {todayMovie && (
+          <span class="archive-current">
+            <a href="#today">今日放映《{todayMovie.title}》</a>
+          </span>
+        )}
+      </p>
+
+      <nav class="archive-index" aria-label="月份索引">
+        {archiveGroups.map(([key]) => {
+          const { year, month } = formatMonthYear(key);
+          return (
+            <a href={`#archive-${key}`}>
+              <span>{month}</span>
+              <span>{year}</span>
+            </a>
+          );
+        })}
+      </nav>
 
       <div class="archive-timeline">
         {archiveGroups.map(([key, group]) => {
           const { year, month } = formatMonthYear(key);
           return (
-            <div class="timeline-group">
+            <div id={`archive-${key}`} class="timeline-group">
               <div class="timeline-header">
                 <span class="timeline-year">{year}</span>
                 <span class="timeline-month">{month}</span>
@@ -82,8 +102,14 @@ const pageDescription = todayMovie
                 {group
                   .sort((a, b) => b.publishedDate.localeCompare(a.publishedDate))
                   .map((m) => (
-                    <li class="timeline-item">
+                    <li
+                      class:list={['timeline-item', { 'is-today': m.publishedDate === todayMovie?.publishedDate }]}
+                      aria-current={m.publishedDate === todayMovie?.publishedDate ? 'date' : undefined}
+                    >
                       <span class="timeline-day">{m.publishedDate.slice(8)}</span>
+                      {m.publishedDate === todayMovie?.publishedDate && (
+                        <span class="timeline-today">今日放映</span>
+                      )}
                       <a href={`/movie/${m.publishedDate}/`} class="timeline-title">《{m.title}》</a>
                     </li>
                   ))}
@@ -109,6 +135,11 @@ const pageDescription = todayMovie
   </section>
 
   <footer class="site-footer">
+    <nav class="footer-nav" aria-label="页面导航">
+      <a href="#today">今日放映</a>
+      <a href="#archive">历史放映</a>
+      <a href="#about">关于</a>
+    </nav>
     <p>© {new Date().getFullYear()} 每日一影院 · DAILY MOVIE</p>
   </footer>
 </Layout>
@@ -161,7 +192,62 @@ const pageDescription = todayMovie
     font-style: italic;
     color: rgba(10, 10, 10, 0.6);
     text-align: center;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .archive-current {
+    font-style: normal;
+  }
+
+  .archive-current a {
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 1px;
+    transition: scale 150ms ease-out, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .archive-current a:hover {
+    color: var(--gold);
+  }
+
+  .archive-current a:active {
+    scale: 0.96;
+  }
+
+  .archive-index {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.25rem;
     margin-bottom: 4rem;
+  }
+
+  .archive-index a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    padding: 0.35rem 0;
+    font-size: var(--size-caption);
+    letter-spacing: 0.08em;
+    color: rgba(10, 10, 10, 0.6);
+    border-bottom: 1px solid transparent;
+    transition: scale 150ms ease-out, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .archive-index a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+
+  .archive-index a:active {
+    scale: 0.96;
+  }
+
+  .archive-index span:first-child {
+    font-weight: 500;
   }
 
   .archive-timeline {
@@ -174,6 +260,7 @@ const pageDescription = todayMovie
     display: grid;
     grid-template-columns: 8rem 1fr;
     gap: 2rem;
+    scroll-margin-top: 2rem;
   }
 
   .timeline-header {
@@ -213,20 +300,36 @@ const pageDescription = todayMovie
     font-size: 1.125rem;
   }
 
+  .timeline-item.is-today .timeline-day {
+    color: var(--gold);
+  }
+
+  .timeline-today {
+    font-size: var(--size-label);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+  }
+
   .timeline-day {
     font-variant-numeric: tabular-nums;
     font-size: var(--size-caption);
     color: rgba(10, 10, 10, 0.6);
-    min-width: 1.75rem;
+    min-width: 1.5rem;
   }
 
   .timeline-title {
     font-style: italic;
     border-bottom: 1px solid transparent;
+    transition: scale 150ms ease-out, border-bottom-color 0.2s ease;
   }
 
   .timeline-title:hover {
     border-bottom-color: var(--ink);
+  }
+
+  .timeline-title:active {
+    scale: 0.96;
   }
 
   /* ─── About section ─── */
@@ -271,9 +374,33 @@ const pageDescription = todayMovie
 
   /* ─── Footer ─── */
   .site-footer {
-    padding: 3rem var(--pad-h);
+    padding: 2.5rem var(--pad-h) 3rem;
     text-align: center;
     background: var(--paper);
+  }
+
+  .footer-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: var(--size-caption);
+    letter-spacing: 0.08em;
+  }
+
+  .footer-nav a {
+    color: rgba(10, 10, 10, 0.6);
+    border-bottom: 1px solid transparent;
+    transition: scale 150ms ease-out, border-bottom-color 0.2s ease, color 0.2s ease;
+  }
+
+  .footer-nav a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+
+  .footer-nav a:active {
+    scale: 0.96;
   }
 
   .site-footer p {
