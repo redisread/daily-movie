@@ -82,7 +82,7 @@ npm run typecheck    # 顺便验证
 任何失败立即定位根因，不允许注释掉报错或 `// @ts-ignore`。
 
 ### 7. 写盘
-用 `Write` 新建 `src/data/movies/{id}.md`，不要修改 `movies.yaml` 迁移备份。
+用 `Write` 新建 `src/data/movies/{id}.md`。
 
 ### 8. 写盘后回归
 - 再跑 `npm run test`，确认全部通过
