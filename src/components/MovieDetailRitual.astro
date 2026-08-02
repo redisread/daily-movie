@@ -1,5 +1,6 @@
 ---
 import type { Movie } from '../schemas/movie';
+import QuoteCard from './QuoteCard.astro';
 
 interface Props {
   movie: Movie;
@@ -17,14 +18,15 @@ const { movie, showPermalink = false } = Astro.props;
 
     <p class="detail-synopsis">{movie.synopsis}</p>
 
-    {movie.quotes.length > 1 && (
-      <blockquote class="detail-quote">
-        <span class="quote-mark" aria-hidden="true">&ldquo;</span>
-        <span>{movie.quotes[1].text}</span>
-        <span class="quote-mark" aria-hidden="true">&rdquo;</span>
-        {movie.quotes[1].speaker && <cite>— {movie.quotes[1].speaker}</cite>}
-      </blockquote>
-    )}
+    <section class="quotes-section" aria-labelledby="quotes-title">
+      <div class="quotes-heading">
+        <h3 id="quotes-title">电影语录</h3>
+        <span>{movie.quotes.length} 条</span>
+      </div>
+      <div class="quote-grid">
+        {movie.quotes.map((quote, index) => <QuoteCard quote={quote} index={index + 1} />)}
+      </div>
+    </section>
 
     <dl class="detail-meta">
       <div class="meta-item">
@@ -90,21 +92,11 @@ const { movie, showPermalink = false } = Astro.props;
     text-align: left;
   }
 
-  .detail-quote {
-    font-size: 1.25rem;
-    font-style: italic;
-    line-height: 1.8;
-    color: var(--ink);
-    padding: 0 1.5rem;
-  }
-
-  .detail-quote cite {
-    display: block;
-    margin-top: 0.75rem;
-    font-size: 0.875rem;
-    font-style: normal;
-    color: rgba(10, 10, 10, 0.6);
-  }
+  .quotes-section { width: min(100%, 52rem); text-align: start; }
+  .quotes-heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+  .quotes-heading h3 { font-size: 1.5rem; }
+  .quotes-heading span { color: rgba(10, 10, 10, 0.6); font-size: 0.8rem; }
+  .quote-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 
   .detail-meta {
     display: flex;
@@ -155,6 +147,10 @@ const { movie, showPermalink = false } = Astro.props;
     .detail-meta {
       flex-direction: column;
       gap: 1.5rem;
+    }
+
+    .quote-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>

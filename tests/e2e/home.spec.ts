@@ -2,40 +2,58 @@ import { test, expect } from '@playwright/test';
 
 test('home page shows today movie', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.hero-title').first()).toBeVisible();
-  await expect(page.locator('.hero-detail-cta')).toBeVisible();
+  await expect(page.locator('.movie-title').first()).toBeVisible();
 });
 
 test('archive view shows all movies', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.archive-section')).toBeVisible();
-  const count = await page.locator('.timeline-item').count();
+  await page.goto('/#/archive', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.movie-card').first()).toBeVisible();
+  const count = await page.locator('.movie-card').count();
   expect(count).toBeGreaterThan(0);
 });
 
-test('archive marks the current screening', async ({ page }) => {
+test('SPA navigation to archive and back', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.timeline-item.is-today')).toBeVisible();
-  await expect(page.locator('.timeline-item.is-today .timeline-today')).toHaveText('今日放映');
+  await page.click('a[href="#/archive"]');
+  await expect(page.locator('.movie-grid')).toBeVisible();
+  await expect(page.locator('.movie-card').first()).toBeVisible();
+
+  // Click the visible "返回首页" link
+  await page.locator('a[href="#/"]:visible').click();
+  await expect(page.locator('.cinema')).toBeVisible();
 });
 
-test('movie detail page loads via permalink', async ({ page }) => {
-  await page.goto('/movie/2026-07-01/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.hero-title').first()).toContainText('搏击俱乐部');
-  await expect(page.locator('.detail-section').first()).toBeVisible();
+test('movie detail view loads via hash', async ({ page }) => {
+  await page.goto('/#/movie/2026-07-01', { waitUntil: 'domcontentloaded' });
+  // Wait for the specific detail wrapper to become visible
+  await expect(page.locator('[data-movie-date="2026-07-01"]').first()).toBeVisible();
+  await expect(page.locator('[data-movie-date="2026-07-01"]:visible h1')).toContainText('搏击俱乐部');
 });
 
-test('prev and next navigation works', async ({ page }) => {
-  await page.goto('/movie/2026-07-01/', { waitUntil: 'domcontentloaded' });
-  await page.locator('a[aria-label^="下一部"]').click();
-  await expect(page.locator('.hero-title').first()).toContainText('绝命毒师');
-
-  await page.locator('a[aria-label^="上一部"]').click();
-  await expect(page.locator('.hero-title').first()).toContainText('搏击俱乐部');
+test('clicking movie card opens detail view', async ({ page }) => {
+  await page.goto('/#/archive', { waitUntil: 'domcontentloaded' });
+  await page.click('.movie-card');
+  // Wait for any visible movie detail to appear
+  await expect(page.locator('[data-movie-detail]:visible').first()).toBeVisible();
 });
 
-test('footer navigation returns to archive', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await page.locator('.footer-nav a[href="#archive"]').click();
-  await expect(page.locator('.archive-section')).toBeVisible();
+test('back navigation from detail works', async ({ page }) => {
+  await page.goto('/#/archive', { waitUntil: 'domcontentloaded' });
+  await page.click('.movie-card');
+  await expect(page.locator('[data-movie-detail]:visible').first()).toBeVisible();
+
+  await page.locator('a[href="#/"]:visible').click();
+  await expect(page.locator('.cinema')).toBeVisible();
+});
+
+test('movie detail renders every quote from its markdown document', async ({ page }) => {
+  await page.goto('/#/movie/2026-07-05', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('[data-movie-detail]:visible .quote-card')).toHaveCount(4);
+});
+
+test('movie library search filters cards without navigation', async ({ page }) => {
+  await page.goto('/#/archive', { waitUntil: 'domcontentloaded' });
+  await page.locator('[data-movie-search]').fill('天堂');
+  await expect(page.locator('.movie-card:visible')).toHaveCount(1);
+  await expect(page).toHaveURL(/#\/archive$/);
 });

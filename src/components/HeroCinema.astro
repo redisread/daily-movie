@@ -24,7 +24,7 @@ const topQuote = movie.quotes[0];
 const label = mode === 'home' ? "今日影片" : displayDate;
 ---
 
-<section id="today" class="hero-cinema" aria-labelledby="hero-title">
+<section class="hero-cinema" aria-labelledby="hero-title">
   <div class="hero-content">
     <p class="hero-label">{label}</p>
 
@@ -38,6 +38,15 @@ const label = mode === 'home' ? "今日影片" : displayDate;
       {movie.director.name} · {movie.year}
     </p>
 
+    {topQuote && (
+      <blockquote class="hero-quote">
+        <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+        <span class="quote-text">{topQuote.text}</span>
+        <span class="quote-mark" aria-hidden="true">&rdquo;</span>
+        {topQuote.speaker && <cite class="quote-speaker">— {topQuote.speaker}</cite>}
+      </blockquote>
+    )}
+
     {movie.cover?.url && (
       <div class="hero-cover">
         <img
@@ -49,15 +58,6 @@ const label = mode === 'home' ? "今日影片" : displayDate;
       </div>
     )}
 
-    {topQuote && (
-      <blockquote class="hero-quote">
-        <span class="quote-mark" aria-hidden="true">&ldquo;</span>
-        <span class="quote-text">{topQuote.text}</span>
-        <span class="quote-mark" aria-hidden="true">&rdquo;</span>
-        {topQuote.speaker && <cite class="quote-speaker">— {topQuote.speaker}</cite>}
-      </blockquote>
-    )}
-
     <nav class="hero-nav" aria-label="上下篇导航">
       {prevMovie ? (
         <a href={`/movie/${prevMovie.publishedDate}/`} class="nav-link nav-prev" aria-label={`上一部：${prevMovie.title}`}>
@@ -65,9 +65,9 @@ const label = mode === 'home' ? "今日影片" : displayDate;
           <span class="nav-label">上一部</span>
         </a>
       ) : (
-        <button type="button" class="nav-link nav-prev is-disabled" disabled aria-label="没有上一部">
+        <span class="nav-link nav-prev is-disabled" aria-disabled="true" aria-label="没有上一部">
           <span class="nav-arrow" aria-hidden="true">←</span>
-        </button>
+        </span>
       )}
 
       {totalCount !== undefined && currentIndex !== undefined && (
@@ -82,9 +82,9 @@ const label = mode === 'home' ? "今日影片" : displayDate;
           <span class="nav-arrow" aria-hidden="true">→</span>
         </a>
       ) : (
-        <button type="button" class="nav-link nav-next is-disabled" disabled aria-label="没有下一部">
+        <span class="nav-link nav-next is-disabled" aria-disabled="true" aria-label="没有下一部">
           <span class="nav-arrow" aria-hidden="true">→</span>
-        </button>
+        </span>
       )}
     </nav>
 
@@ -106,8 +106,7 @@ const label = mode === 'home' ? "今日影片" : displayDate;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: min(9vh, 7rem) var(--pad-h);
-    padding-bottom: min(7vh, 5.5rem);
+    padding: var(--pad-v) var(--pad-h);
     text-align: center;
     background: var(--paper);
   }
@@ -118,7 +117,7 @@ const label = mode === 'home' ? "今日影片" : displayDate;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1.25rem;
   }
 
   .hero-content > * {
@@ -142,8 +141,6 @@ const label = mode === 'home' ? "今日影片" : displayDate;
     letter-spacing: -0.03em;
     color: var(--ink);
     margin: 0;
-    max-width: 16ch;
-    text-wrap: balance;
   }
 
   .hero-original {
@@ -161,13 +158,13 @@ const label = mode === 'home' ? "今日影片" : displayDate;
   }
 
   .hero-quote {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     font-style: italic;
-    line-height: 1.7;
+    line-height: 1.8;
     color: var(--ink);
     max-width: 34rem;
-    margin: 0;
-    padding: 0 1rem;
+    margin: 2rem 0 0;
+    padding: 0 1.5rem;
     position: relative;
   }
 
@@ -188,8 +185,8 @@ const label = mode === 'home' ? "今日影片" : displayDate;
   }
 
   .hero-cover {
-    margin-top: 1.25rem;
-    width: min(220px, 54vw);
+    margin-top: 2.5rem;
+    width: min(280px, 60vw);
     aspect-ratio: 2 / 3;
     overflow: hidden;
   }
@@ -209,11 +206,11 @@ const label = mode === 'home' ? "今日影片" : displayDate;
   }
 
   .hero-nav {
-    margin-top: 1.5rem;
+    margin-top: 3rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1.25rem;
+    gap: 1.5rem;
     font-size: 0.875rem;
     color: rgba(10, 10, 10, 0.6);
   }
@@ -223,13 +220,8 @@ const label = mode === 'home' ? "今日影片" : displayDate;
     align-items: center;
     gap: 0.4rem;
     padding: 0.5rem 0;
-    border: none;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
     border-bottom: 1px solid transparent;
-    transition: scale 150ms ease-out, border-color 0.3s ease, color 0.3s ease;
+    transition: border-color 0.3s ease, color 0.3s ease;
   }
 
   .nav-link:hover {
@@ -237,15 +229,9 @@ const label = mode === 'home' ? "今日影片" : displayDate;
     border-bottom-color: var(--ink);
   }
 
-  .nav-link:active {
-    scale: 0.96;
-  }
-
-  .nav-link.is-disabled,
-  .nav-link.is-disabled:hover {
+  .nav-link.is-disabled {
     opacity: 0.25;
-    cursor: default;
-    border-bottom-color: transparent;
+    pointer-events: none;
   }
 
   .nav-link.is-disabled .nav-label {
@@ -258,7 +244,7 @@ const label = mode === 'home' ? "今日影片" : displayDate;
   }
 
   .hero-detail-cta {
-    margin-top: 1rem;
+    margin-top: 2rem;
     font-size: 0.875rem;
     font-style: italic;
     letter-spacing: 0.1em;
@@ -267,26 +253,21 @@ const label = mode === 'home' ? "今日影片" : displayDate;
   .detail-anchor {
     border-bottom: 1px solid var(--gold);
     padding-bottom: 2px;
-    transition: scale 150ms ease-out, border-color 0.3s ease, color 0.3s ease;
   }
 
   .detail-anchor:hover {
     color: var(--gold);
   }
 
-  .detail-anchor:active {
-    scale: 0.96;
-  }
-
   /* Entry sequence delays (total ~3s) */
-  .hero-label    { animation-delay: 0.15s; }
-  .hero-title    { animation-delay: 0.4s; }
-  .hero-original { animation-delay: 0.6s; }
-  .hero-meta     { animation-delay: 0.8s; }
-  .hero-cover    { animation-delay: 0.9s; }
-  .hero-quote    { animation-delay: 1.3s; }
-  .hero-nav      { animation-delay: 1.7s; }
-  .hero-detail-cta { animation-delay: 2s; }
+  .hero-label    { animation-delay: 0.2s; }
+  .hero-title    { animation-delay: 0.5s; }
+  .hero-original { animation-delay: 0.7s; }
+  .hero-meta     { animation-delay: 0.9s; }
+  .hero-quote    { animation-delay: 1.2s; }
+  .hero-cover    { animation-delay: 0.8s; }
+  .hero-nav      { animation-delay: 1.8s; }
+  .hero-detail-cta { animation-delay: 2.2s; }
 
   @keyframes v2-rise {
     from { opacity: 0; transform: translateY(10px); }
@@ -296,21 +277,6 @@ const label = mode === 'home' ? "今日影片" : displayDate;
   @keyframes v2-fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
-  }
-
-  @media (max-width: 640px) {
-    .hero-cinema {
-      padding-left: 1.25rem;
-      padding-right: 1.25rem;
-    }
-
-    .hero-cover {
-      width: min(200px, 52vw);
-    }
-
-    .hero-nav {
-      gap: 1rem;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -325,9 +291,8 @@ const label = mode === 'home' ? "今日影片" : displayDate;
 
 <script>
   // Mark loaded images so fallback doesn't flash
-  document.querySelectorAll('.hero-cover img').forEach(img => {
-    const image = img as HTMLImageElement;
-    if (image.complete) image.classList.add('loaded');
-    else image.addEventListener('load', () => image.classList.add('loaded'));
+  document.querySelectorAll<HTMLImageElement>('.hero-cover img').forEach(img => {
+    if (img.complete) img.classList.add('loaded');
+    else img.addEventListener('load', () => img.classList.add('loaded'));
   });
 </script>

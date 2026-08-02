@@ -20,7 +20,7 @@ daily-movie 是一个静态站点，每天推荐一部经典电影。基于 Astr
 daily-movie/
 ├── src/
 │   ├── components/     # Astro 组件（MovieCard / FeaturedCard / CastList / PosterGallery / QuoteCard / DirectorCard / WhyThisMovie / layout/* / ui/*）
-│   ├── data/           # 电影数据（movies.yaml、movies.ts 加载器）
+│   ├── data/           # 电影数据（movies/*.md、movies.ts 加载器；movies.yaml 为迁移备份）
 │   ├── layouts/        # 布局模板（Layout.astro）
 │   ├── lib/            # 领域工具（history.ts）
 │   ├── pages/          # 页面：index.astro / movie/[date].astro / 404.astro / health.json.ts / movies.json.ts / rss.xml.ts
@@ -60,10 +60,11 @@ npm run test:e2e:ui    # Playwright UI 模式
 推荐使用子 Agent `agents/daily-movie-writer.md`（自动遵守 MovieSchema 约束）。
 
 手动流程：
-1. 编辑 `src/data/movies.yaml`，追加新电影条目
+1. 在 `src/data/movies/` 新增一篇 `{id}.md`，使用 frontmatter 写入电影字段，正文写策展备注
 2. 确保必填字段：`id / title / director / year / duration / genre / rating / cover / posters / cast / quotes / synopsis / publishedDate`
-3. 运行 `npm run build` 或 `npm run dev`——Zod 校验会在加载阶段失败给出报错
-4. 运行 `npm run test` 校验 Schema
+3. `quotes` 支持 3–10 条语录，全部会在单页详情中展示
+4. 运行 `npm run build` 或 `npm run dev`——Zod 校验会在加载阶段失败给出报错
+5. 运行 `npm run test` 校验 Schema
 5. 提交并推送到 `main` 分支
 6. Cloudflare Pages 自动构建部署
 
@@ -135,7 +136,7 @@ npm run test:e2e:ui    # Playwright UI 模式
 ## 故障排查
 
 ### 构建失败
-- 检查 `src/data/movies.yaml` 格式（缩进、必填字段）
+- 检查 `src/data/movies/*.md` frontmatter 格式（缩进、必填字段）
 - Zod 校验错误会指向具体电影 `id` 和字段
 
 ### 部署失败

@@ -1,436 +1,141 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import HeroCinema from '../components/HeroCinema.astro';
-import MovieDetailRitual from '../components/MovieDetailRitual.astro';
+import TodayHero from '../components/TodayHero.astro';
+import MovieList from '../components/MovieList.astro';
+import MovieDetail from '../components/MovieDetail.astro';
 import { movies } from '../data/movies';
-import type { Movie } from '../schemas/movie';
 
-// 今日日期
-const today = new Date();
-const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
-// 按 publishedDate 排序，确保上一部/下一部稳定
-const sortedMovies = [...movies].sort((a, b) =>
-  a.publishedDate.localeCompare(b.publishedDate)
-);
-
-const todayIndex = sortedMovies.findIndex((m) => m.publishedDate === dateStr);
-const todayMovie = todayIndex >= 0 ? sortedMovies[todayIndex] : sortedMovies[sortedMovies.length - 1];
-const actualIndex = todayIndex >= 0 ? todayIndex : sortedMovies.length - 1;
-
-const prevMovie = sortedMovies[actualIndex - 1];
-const nextMovie = sortedMovies[actualIndex + 1];
-
-// archive lite：按年份/月份分组
-const grouped = new Map<string, Movie[]>();
-sortedMovies.forEach((m) => {
-  const [year, month] = m.publishedDate.split('-');
-  const key = `${year}-${month}`;
-  if (!grouped.has(key)) grouped.set(key, []);
-  grouped.get(key)!.push(m);
-});
-const archiveGroups = Array.from(grouped.entries()).sort((a, b) => b[0].localeCompare(a[0]));
-
-const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-
-function formatMonthYear(key: string) {
-  const [year, month] = key.split('-');
-  const mIdx = parseInt(month, 10) - 1;
-  return { year, month: monthNames[mIdx] ?? month };
-}
-
+const sortedMovies = [...movies].sort((a, b) => a.publishedDate.localeCompare(b.publishedDate));
+const now = new Date();
+const todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+const todayIndex = sortedMovies.findIndex((movie) => movie.publishedDate === todayDate);
+const currentIndex = todayIndex >= 0 ? todayIndex : sortedMovies.length - 1;
+const todayMovie = sortedMovies[currentIndex];
 const pageTitle = `每日一影院 — ${todayMovie?.title ?? '今日放映'}`;
-const pageDescription = todayMovie
-  ? `${todayMovie.title} · ${todayMovie.director.name} · ${todayMovie.year}`
-  : '每日一影院 — 每天一场放映仪式';
+const pageDescription = todayMovie ? `${todayMovie.title} · ${todayMovie.director.name} · ${todayMovie.year}` : '每日一影院 — 每天一场放映仪式';
 ---
 
-<Layout title={pageTitle} description={pageDescription}>
-  {
-    todayMovie && (
-      <>
-        <HeroCinema
-          movie={todayMovie}
-          dateStr={dateStr}
-          mode="home"
-          prevMovie={prevMovie}
-          nextMovie={nextMovie}
-          totalCount={sortedMovies.length}
-          currentIndex={actualIndex}
-        />
-
-        <MovieDetailRitual movie={todayMovie} showPermalink />
-      </>
-    )
-  }
-
-  <section id="archive" class="archive-section" aria-labelledby="archive-title">
-    <div class="archive-content">
-      <p class="archive-eyebrow">ALL FILMS</p>
-      <h2 id="archive-title" class="archive-title">历史放映</h2>
-      <p class="archive-subtitle">
-        <span>自 {sortedMovies[sortedMovies.length - 1]?.year ?? ''} 年起，{sortedMovies.length} 部</span>
-        {todayMovie && (
-          <span class="archive-current">
-            <a href="#today">今日放映《{todayMovie.title}》</a>
-          </span>
-        )}
-      </p>
-
-      <nav class="archive-index" aria-label="月份索引">
-        {archiveGroups.map(([key]) => {
-          const { year, month } = formatMonthYear(key);
-          return (
-            <a href={`#archive-${key}`}>
-              <span>{month}</span>
-              <span>{year}</span>
-            </a>
-          );
-        })}
-      </nav>
-
-      <div class="archive-timeline">
-        {archiveGroups.map(([key, group]) => {
-          const { year, month } = formatMonthYear(key);
-          return (
-            <div id={`archive-${key}`} class="timeline-group">
-              <div class="timeline-header">
-                <span class="timeline-year">{year}</span>
-                <span class="timeline-month">{month}</span>
-              </div>
-              <ul class="timeline-list">
-                {group
-                  .sort((a, b) => b.publishedDate.localeCompare(a.publishedDate))
-                  .map((m) => (
-                    <li
-                      class:list={['timeline-item', { 'is-today': m.publishedDate === todayMovie?.publishedDate }]}
-                      aria-current={m.publishedDate === todayMovie?.publishedDate ? 'date' : undefined}
-                    >
-                      <span class="timeline-day">{m.publishedDate.slice(8)}</span>
-                      {m.publishedDate === todayMovie?.publishedDate && (
-                        <span class="timeline-today">今日放映</span>
-                      )}
-                      <a href={`/movie/${m.publishedDate}/`} class="timeline-title">《{m.title}》</a>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  </section>
-
-  <section id="about" class="about-section" aria-labelledby="about-title">
-    <div class="about-content">
-      <p class="about-eyebrow">ABOUT</p>
-      <h2 id="about-title" class="about-title">每日一影院</h2>
-
-      <div class="about-text">
-        <p>每天推荐一部经典电影的小项目。</p>
-        <p>不评分，不社交，不解释。只是每天遇见一部。</p>
-        <p>推开放映厅的门，坐下，灯暗了，银幕亮了。</p>
-      </div>
-    </div>
-  </section>
-
-  <footer class="site-footer">
-    <nav class="footer-nav" aria-label="页面导航">
-      <a href="#today">今日放映</a>
-      <a href="#archive">历史放映</a>
-      <a href="#about">关于</a>
+<Layout title={pageTitle} description={pageDescription} image={todayMovie?.cover.url}>
+  <header class="app-header">
+    <a class="brand" href="#" aria-label="返回今日放映">
+      <span class="brand-mark" aria-hidden="true">◒</span>
+      <span><strong>每日一影院</strong><small>DAILY MOVIE</small></span>
+    </a>
+    <nav class="app-nav" aria-label="主导航">
+      <a href="#/" data-nav="home">今日放映</a>
+      <a href="#/archive" data-nav="archive">电影库</a>
+      <a href="#/about" data-nav="about">关于</a>
     </nav>
-    <p>© {new Date().getFullYear()} 每日一影院 · DAILY MOVIE</p>
+    <span class="header-count">{String(sortedMovies.length).padStart(2, '0')} FILMS</span>
+  </header>
+
+  <div class="spa-frame">
+    {todayMovie && <TodayHero movie={todayMovie} dateStr={todayMovie.publishedDate} prevMovie={sortedMovies[currentIndex - 1]} nextMovie={sortedMovies[currentIndex + 1]} totalCount={sortedMovies.length} currentIndex={currentIndex} />}
+    <MovieList movies={sortedMovies} />
+
+    {sortedMovies.map((movie, index) => (
+      <MovieDetail movie={movie} prevMovie={sortedMovies[index - 1]} nextMovie={sortedMovies[index + 1]} />
+    ))}
+
+    <section class="about-view" data-view="about" hidden aria-labelledby="about-title">
+      <div class="about-copy">
+        <p class="eyebrow">ABOUT THE PROJECT</p>
+        <h1 id="about-title">每天遇见一部。</h1>
+        <p>每日一影院是一个安静的电影收藏。没有评分，没有社交，也不急着解释——只是在每天的某个时刻，推开放映厅的门，坐下，等银幕亮起来。</p>
+        <p>每部电影对应一篇 Markdown 文档。标题、海报、简介和多条语录都在同一个文件里，新增一部电影，就新增一篇文档。</p>
+        <a class="about-back" href="#/">回到今日放映 →</a>
+      </div>
+    </section>
+  </div>
+
+  <footer class="app-footer">
+    <span>© {new Date().getFullYear()} DAILY MOVIE</span>
+    <span>一部电影，一次放映</span>
   </footer>
 </Layout>
 
+<script>
+  const views = [...document.querySelectorAll<HTMLElement>('[data-view]')];
+  const navLinks = [...document.querySelectorAll<HTMLAnchorElement>('[data-nav]')];
+  const search = document.querySelector<HTMLInputElement>('[data-movie-search]');
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-movie-card]')];
+  const resultCount = document.querySelector<HTMLElement>('[data-archive-count]');
+  const noResults = document.querySelector<HTMLElement>('[data-no-results]');
+
+  function getRoute() {
+    const hash = window.location.hash.replace(/^#/, '') || '/';
+    return hash.startsWith('/') ? hash : `/${hash}`;
+  }
+
+  function renderRoute() {
+    const route = getRoute();
+    const detailDate = route.startsWith('/movie/') ? route.slice('/movie/'.length).replace(/\/$/, '') : '';
+    const routeName = detailDate ? 'detail' : route === '/archive' ? 'archive' : route === '/about' ? 'about' : 'home';
+
+    views.forEach((view) => {
+      const isDetail = view.dataset.view === 'detail';
+      const active = isDetail ? view.dataset.movieDate === detailDate : view.dataset.view === routeName;
+      view.hidden = !active;
+    });
+
+    navLinks.forEach((link) => {
+      const active = link.dataset.nav === routeName || (routeName === 'detail' && link.dataset.nav === 'archive');
+      link.toggleAttribute('aria-current', active);
+      link.hidden = routeName === 'detail' && link.dataset.nav === 'home';
+    });
+
+    document.title = routeName === 'archive' ? '电影库 — 每日一影院' : routeName === 'about' ? '关于 — 每日一影院' : document.title;
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+
+  function filterMovies() {
+    const query = search?.value.trim().toLocaleLowerCase() ?? '';
+    let visible = 0;
+    cards.forEach((card) => {
+      const matches = !query || (card.dataset.searchText ?? '').toLocaleLowerCase().includes(query);
+      card.hidden = !matches;
+      if (matches) visible += 1;
+    });
+    if (resultCount) resultCount.textContent = String(visible);
+    if (noResults) noResults.hidden = visible > 0;
+  }
+
+  window.addEventListener('hashchange', renderRoute);
+  search?.addEventListener('input', filterMovies);
+  renderRoute();
+</script>
+
 <style>
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
+  :global(:root) { --page-gutter: clamp(1.15rem, 4vw, 4rem); }
+  :global(body) { overflow-x: hidden; }
+  .app-header { position: sticky; top: 0; z-index: 10; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 2rem; min-height: 5.5rem; padding: 0 var(--page-gutter); border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--paper) 94%, transparent); backdrop-filter: blur(12px); }
+  .brand { display: inline-flex; align-items: center; gap: 0.7rem; justify-self: start; color: var(--ink); }
+  .brand:hover { border-bottom-color: transparent; }
+  .brand-mark { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; color: var(--gold); font-size: 1.45rem; }
+  .brand span:last-child { display: grid; gap: 0.1rem; }
+  .brand strong { font-size: 1rem; font-weight: 500; }
+  .brand small { color: var(--text-muted); font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.16em; }
+  .app-nav { display: flex; align-items: center; gap: clamp(1rem, 3vw, 2.5rem); }
+  .app-nav a { position: relative; padding: 0.8rem 0; color: var(--text-muted); font-size: 0.83rem; }
+  .app-nav a:hover, .app-nav a[aria-current] { color: var(--ink); border-bottom-color: transparent; }
+  .app-nav a[aria-current]::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 1px; background: var(--gold); content: ''; }
+  .header-count { justify-self: end; color: var(--text-muted); font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.08em; }
+  .spa-frame { min-height: calc(100vh - 5.5rem); }
+  .about-view { display: grid; place-items: center; min-height: calc(100vh - 11rem); padding: 5rem var(--page-gutter); }
+  .about-copy { max-width: 42rem; }
+  .eyebrow { margin: 0; color: var(--gold); font-size: var(--size-label); letter-spacing: 0.15em; }
+  .about-copy h1 { margin-top: 1rem; font-size: clamp(3.5rem, 9vw, 8rem); line-height: 0.95; letter-spacing: -0.06em; }
+  .about-copy p:not(.eyebrow) { max-width: 34rem; margin: 2rem 0 0; color: var(--text-muted); font-size: 1.08rem; line-height: 2; }
+  .about-back { display: inline-block; margin-top: 2.5rem; color: var(--ink); }
+  .about-back:hover { color: var(--gold); }
+  .app-footer { display: flex; justify-content: space-between; gap: 1rem; max-width: 76rem; margin: 0 auto; padding: 1.2rem var(--page-gutter) 2rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.05em; }
+  :global([hidden]) { display: none !important; }
 
-  /* ─── Archive section ─── */
-  .archive-section {
-    min-height: 100vh;
-    padding: var(--pad-v) var(--pad-h);
-    background: var(--paper);
-  }
-
-  .archive-content {
-    max-width: 46rem;
-    margin: 0 auto;
-  }
-
-  .archive-eyebrow {
-    font-size: var(--size-label);
-    font-weight: 500;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(10, 10, 10, 0.6);
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-
-  .archive-title {
-    font-size: var(--size-detail);
-    font-weight: 500;
-    text-align: center;
-    line-height: 1.1;
-    margin-bottom: 0.75rem;
-  }
-
-  .archive-subtitle {
-    font-size: var(--size-caption);
-    font-style: italic;
-    color: rgba(10, 10, 10, 0.6);
-    text-align: center;
-    margin-bottom: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .archive-current {
-    font-style: normal;
-  }
-
-  .archive-current a {
-    border-bottom: 1px solid var(--gold);
-    padding-bottom: 1px;
-    transition: scale 150ms ease-out, border-color 0.2s ease, color 0.2s ease;
-  }
-
-  .archive-current a:hover {
-    color: var(--gold);
-  }
-
-  .archive-current a:active {
-    scale: 0.96;
-  }
-
-  .archive-index {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1.25rem;
-    margin-bottom: 4rem;
-  }
-
-  .archive-index a {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.45rem;
-    padding: 0.35rem 0;
-    font-size: var(--size-caption);
-    letter-spacing: 0.08em;
-    color: rgba(10, 10, 10, 0.6);
-    border-bottom: 1px solid transparent;
-    transition: scale 150ms ease-out, border-color 0.2s ease, color 0.2s ease;
-  }
-
-  .archive-index a:hover {
-    color: var(--ink);
-    border-bottom-color: var(--ink);
-  }
-
-  .archive-index a:active {
-    scale: 0.96;
-  }
-
-  .archive-index span:first-child {
-    font-weight: 500;
-  }
-
-  .archive-timeline {
-    display: flex;
-    flex-direction: column;
-    gap: 3rem;
-  }
-
-  .timeline-group {
-    display: grid;
-    grid-template-columns: 8rem 1fr;
-    gap: 2rem;
-    scroll-margin-top: 2rem;
-  }
-
-  .timeline-header {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.25rem;
-    padding-top: 0.25rem;
-  }
-
-  .timeline-year {
-    font-size: var(--size-caption);
-    font-style: italic;
-    color: rgba(10, 10, 10, 0.6);
-  }
-
-  .timeline-month {
-    font-size: 1.125rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    color: var(--ink);
-  }
-
-  .timeline-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .timeline-item {
-    display: flex;
-    align-items: baseline;
-    gap: 1rem;
-    font-size: 1.125rem;
-  }
-
-  .timeline-item.is-today .timeline-day {
-    color: var(--gold);
-  }
-
-  .timeline-today {
-    font-size: var(--size-label);
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    color: var(--gold);
-  }
-
-  .timeline-day {
-    font-variant-numeric: tabular-nums;
-    font-size: var(--size-caption);
-    color: rgba(10, 10, 10, 0.6);
-    min-width: 1.5rem;
-  }
-
-  .timeline-title {
-    font-style: italic;
-    border-bottom: 1px solid transparent;
-    transition: scale 150ms ease-out, border-bottom-color 0.2s ease;
-  }
-
-  .timeline-title:hover {
-    border-bottom-color: var(--ink);
-  }
-
-  .timeline-title:active {
-    scale: 0.96;
-  }
-
-  /* ─── About section ─── */
-  .about-section {
-    min-height: 80vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--pad-v) var(--pad-h);
-    background: var(--paper);
-  }
-
-  .about-content {
-    max-width: 36rem;
-    text-align: center;
-  }
-
-  .about-eyebrow {
-    font-size: var(--size-label);
-    font-weight: 500;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(10, 10, 10, 0.6);
-    margin-bottom: 1rem;
-  }
-
-  .about-title {
-    font-size: var(--size-detail);
-    font-weight: 500;
-    line-height: 1.1;
-    margin-bottom: 3rem;
-  }
-
-  .about-text {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    font-size: var(--size-body);
-    line-height: 1.9;
-    color: var(--ink);
-  }
-
-  /* ─── Footer ─── */
-  .site-footer {
-    padding: 2.5rem var(--pad-h) 3rem;
-    text-align: center;
-    background: var(--paper);
-  }
-
-  .footer-nav {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-    font-size: var(--size-caption);
-    letter-spacing: 0.08em;
-  }
-
-  .footer-nav a {
-    color: rgba(10, 10, 10, 0.6);
-    border-bottom: 1px solid transparent;
-    transition: scale 150ms ease-out, border-bottom-color 0.2s ease, color 0.2s ease;
-  }
-
-  .footer-nav a:hover {
-    color: var(--ink);
-    border-bottom-color: var(--ink);
-  }
-
-  .footer-nav a:active {
-    scale: 0.96;
-  }
-
-  .site-footer p {
-    font-size: 0.625rem;
-    font-weight: 500;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(10, 10, 10, 0.6);
-    margin: 0;
-  }
-
-  @media (max-width: 640px) {
-    .detail-meta {
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    .timeline-group {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .timeline-header {
-      align-items: flex-start;
-      flex-direction: row;
-      gap: 0.75rem;
-    }
-
-    .timeline-day {
-      min-width: 1.5rem;
-    }
+  @media (max-width: 700px) {
+    .app-header { grid-template-columns: 1fr auto; min-height: 4.6rem; }
+    .app-nav { grid-column: 1 / -1; grid-row: 2; justify-content: space-between; width: 100%; margin-top: -0.5rem; }
+    .header-count { display: none; }
+    .app-header:has(.app-nav) { padding-bottom: 0.4rem; }
+    .app-footer { flex-direction: column; }
   }
 </style>

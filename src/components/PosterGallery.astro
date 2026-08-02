@@ -61,18 +61,17 @@ const { posters } = Astro.props;
 
 <script>
   // Image fade-in on load
-  document.querySelectorAll('.poster-gallery .poster-img').forEach(img => {
-    const image = img as HTMLImageElement;
-    if (image.complete) {
-      image.classList.add('loaded');
+  document.querySelectorAll<HTMLImageElement>('.poster-gallery .poster-img').forEach(img => {
+    if (img.complete) {
+      img.classList.add('loaded');
     } else {
-      image.addEventListener('load', () => image.classList.add('loaded'));
-      image.addEventListener('error', () => image.classList.add('loaded'));
+      img.addEventListener('load', () => img.classList.add('loaded'));
+      img.addEventListener('error', () => img.classList.add('loaded'));
     }
   });
 
   // 海报点击放大（灯箱效果）
-  document.querySelectorAll('.poster-gallery img').forEach(img => {
+  document.querySelectorAll<HTMLImageElement>('.poster-gallery img').forEach(img => {
     img.addEventListener('click', () => {
       const src = (img as HTMLImageElement).src;
       if (src.includes('fallback-poster.svg')) return;
