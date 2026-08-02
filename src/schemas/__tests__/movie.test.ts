@@ -9,6 +9,12 @@ describe('MovieSchema', () => {
     }
   });
 
+  it('provides a real cover image for every movie', () => {
+    for (const movie of movies) {
+      expect(movie.cover.url).not.toContain('placehold.co');
+    }
+  });
+
   it('rejects invalid movie with bad id', () => {
     expect(() => MovieSchema.parse({ id: 'INVALID!' })).toThrow();
   });
