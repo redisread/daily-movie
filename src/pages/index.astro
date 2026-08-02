@@ -174,7 +174,7 @@ const pageDescription = todayMovie
     font-weight: 500;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(10, 10, 10, 0.6);
+    color: var(--text-muted);
     text-align: center;
     margin-bottom: 1rem;
   }
@@ -190,7 +190,7 @@ const pageDescription = todayMovie
   .archive-subtitle {
     font-size: var(--size-caption);
     font-style: italic;
-    color: rgba(10, 10, 10, 0.6);
+    color: var(--text-muted);
     text-align: center;
     margin-bottom: 1.5rem;
     display: flex;
@@ -204,13 +204,13 @@ const pageDescription = todayMovie
   }
 
   .archive-current a {
-    border-bottom: 1px solid var(--gold);
+    border-bottom: 1px solid var(--gold-deep);
     padding-bottom: 1px;
     transition: scale 150ms ease-out, border-color 0.2s ease, color 0.2s ease;
   }
 
   .archive-current a:hover {
-    color: var(--gold);
+    color: var(--gold-deep);
   }
 
   .archive-current a:active {
@@ -232,7 +232,7 @@ const pageDescription = todayMovie
     padding: 0.35rem 0;
     font-size: var(--size-caption);
     letter-spacing: 0.08em;
-    color: rgba(10, 10, 10, 0.6);
+    color: var(--text-muted);
     border-bottom: 1px solid transparent;
     transition: scale 150ms ease-out, border-color 0.2s ease, color 0.2s ease;
   }
@@ -274,7 +274,7 @@ const pageDescription = todayMovie
   .timeline-year {
     font-size: var(--size-caption);
     font-style: italic;
-    color: rgba(10, 10, 10, 0.6);
+    color: var(--text-muted);
   }
 
   .timeline-month {
@@ -301,20 +301,20 @@ const pageDescription = todayMovie
   }
 
   .timeline-item.is-today .timeline-day {
-    color: var(--gold);
+    color: var(--gold-deep);
   }
 
   .timeline-today {
     font-size: var(--size-label);
     font-weight: 500;
     letter-spacing: 0.1em;
-    color: var(--gold);
+    color: var(--gold-deep);
   }
 
   .timeline-day {
     font-variant-numeric: tabular-nums;
     font-size: var(--size-caption);
-    color: rgba(10, 10, 10, 0.6);
+    color: var(--text-muted);
     min-width: 1.5rem;
   }
 
@@ -352,7 +352,7 @@ const pageDescription = todayMovie
     font-weight: 500;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(10, 10, 10, 0.6);
+    color: var(--text-muted);
     margin-bottom: 1rem;
   }
 
@@ -389,7 +389,7 @@ const pageDescription = todayMovie
   }
 
   .footer-nav a {
-    color: rgba(10, 10, 10, 0.6);
+    color: var(--text-muted);
     border-bottom: 1px solid transparent;
     transition: scale 150ms ease-out, border-bottom-color 0.2s ease, color 0.2s ease;
   }
@@ -408,7 +408,7 @@ const pageDescription = todayMovie
     font-weight: 500;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(10, 10, 10, 0.6);
+    color: var(--text-muted);
     margin: 0;
   }
 

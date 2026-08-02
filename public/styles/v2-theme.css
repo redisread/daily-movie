@@ -61,6 +61,8 @@
   --paper: #F5F1E8;
   --ink: #0A0A0A;
   --gold: #B8985A;
+  --gold-deep: #7A5B22;
+  --gold-deep-hover: #5D4216;
 
   /* 单字体家族 */
   --font-serif: "Cormorant Garamond", "Noto Serif SC", "Songti SC", Georgia, serif;
@@ -81,8 +83,8 @@
   --bg-secondary: var(--paper);
   --bg-card: var(--paper);
   --text-primary: var(--ink);
-  --text-secondary: var(--ink);
-  --text-muted: rgba(10, 10, 10, 0.55);
+  --text-secondary: var(--text-muted);
+  --text-muted: rgba(10, 10, 10, 0.62);
   --accent: var(--gold);
   --accent-hover: var(--gold);
   --border: rgba(10, 10, 10, 0.12);
@@ -155,7 +157,7 @@ a:hover {
 blockquote::before,
 blockquote::after,
 .quote-mark {
-  color: var(--gold);
+  color: var(--gold-deep);
 }
 
 /* Splash — §5.3 降级提示，字体加载失败/超时时展示 */
@@ -171,8 +173,16 @@ blockquote::after,
   font-family: Georgia, "Songti SC", serif;
   font-style: italic;
   font-size: 0.95rem;
-  color: rgba(10, 10, 10, 0.55);
+  color: var(--text-muted);
   letter-spacing: 0.02em;
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --text-muted: rgba(10, 10, 10, 0.72);
+    --gold-deep: #5D4216;
+    --gold-deep-hover: #4A3410;
+  }
 }
 
 .v2-splash.visible {

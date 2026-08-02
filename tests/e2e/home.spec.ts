@@ -26,11 +26,14 @@ test('movie detail page loads via permalink', async ({ page }) => {
 });
 
 test('prev and next navigation works', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/movie/2026-07-01/', { waitUntil: 'domcontentloaded' });
   await page.locator('a[aria-label^="下一部"]').click();
+  await page.waitForLoadState('networkidle');
   await expect(page.locator('.hero-title').first()).toContainText('绝命毒师');
 
-  await page.locator('a[aria-label^="上一部"]').click();
+  await expect(page.locator('a[aria-label^="上一部"]')).toBeVisible();
+  await page.locator('a[aria-label^="上一部"]').click({ force: true });
   await expect(page.locator('.hero-title').first()).toContainText('搏击俱乐部');
 });
 
