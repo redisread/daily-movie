@@ -48,8 +48,8 @@ daily-movie/
 
 项目通过 GitHub Actions 自动部署到 Cloudflare Pages。
 
-- **生产环境**: daily-movie.pages.dev
-- **预览环境**: PR 自动生成预览链接
+- **生产环境**: https://daily-movie.jiahongw.com
+- **注意**: `daily-movie.pages.dev` 已被第三方占用，请勿使用
 
 ## 许可证
 

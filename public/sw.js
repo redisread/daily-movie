@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daily-movie-v2';
+const CACHE_NAME = 'daily-movie-v2-ui';
 
 const PRECACHE_URLS = [
   '/',
