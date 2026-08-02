@@ -64,9 +64,14 @@ const pageDescription = `${movie.title} · ${movie.director.name} · ${movie.yea
 
   .back-home a {
     border-bottom: 1px solid transparent;
+    transition: scale 150ms ease-out, border-bottom-color 0.2s ease;
   }
 
   .back-home a:hover {
     border-bottom-color: var(--ink);
+  }
+
+  .back-home a:active {
+    scale: 0.96;
   }
 </style>

@@ -116,6 +116,11 @@ body {
   margin: 0;
 }
 
+img {
+  outline: 1px solid oklch(0 0 0 / 0.1);
+  outline-offset: -1px;
+}
+
 /* Headings — 单字体，尺寸 + 字重分层 */
 
 h1, h2, h3, h4, h5, h6 {
@@ -213,5 +218,6 @@ blockquote::after,
   * {
     transition: none !important;
     animation: none !important;
+    scale: none !important;
   }
 }

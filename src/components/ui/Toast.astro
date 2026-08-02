@@ -81,5 +81,5 @@ const { id = 'toast-container' } = Astro.props;
   }
 
   // Expose globally
-  (window as any).showToast = showToast;
+  (window as unknown as { showToast: typeof showToast }).showToast = showToast;
 </script>
