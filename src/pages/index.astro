@@ -5,7 +5,7 @@ import MovieList from '../components/MovieList.astro';
 import MovieDetail from '../components/MovieDetail.astro';
 import { movies } from '../data/movies';
 
-const sortedMovies = [...movies].sort((a, b) => a.publishedDate.localeCompare(b.publishedDate));
+const sortedMovies = movies;
 const now = new Date();
 const todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 const todayIndex = sortedMovies.findIndex((movie) => movie.publishedDate === todayDate);

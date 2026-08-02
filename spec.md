@@ -29,15 +29,11 @@ src/
     MovieDetail.astro      # Movie detail view component
     MovieList.astro        # Movie list/grid view
     TodayHero.astro        # Today's movie hero section
-    ui/                    # existing UI components
   data/
     movies.ts              # Markdown frontmatter loader
     movies/*.md            # one Markdown document per movie
   layouts/
     Layout.astro           # shell layout (updated for SPA)
-  lib/
-    history.ts             # existing history module
-    spa.ts                 # SPA router and state manager (new)
   pages/
     index.astro            # SPA entry point — all views in one page
     movies.json.ts         # JSON API (kept for external consumers)
@@ -49,7 +45,7 @@ src/
 tests/
   e2e/
     home.spec.ts           # updated e2e tests
-  unit/                    # (moved from src/schemas/__tests__)
+  src/schemas/__tests__/   # Schema 与 Agent 文档测试
 ```
 
 ## Code Style
@@ -61,7 +57,7 @@ tests/
 
 ## Testing Strategy
 - **Unit tests:** Vitest — Zod schema validation (existing, unchanged)
-- **E2E tests:** Playwright — test SPA navigation, view switching, history browsing
+- **E2E tests:** Playwright — test SPA navigation, view switching, search and quote rendering
 - Tests must pass before commit
 
 ## Boundaries
@@ -71,15 +67,14 @@ tests/
 
 ## Success Criteria
 - [x] One HTML page (`index.html`) serves all views
-- [ ] Today's movie displays on load (hero section)
-- [ ] History list is browsable without page reload
-- [ ] Movie detail is viewable without page reload
-- [ ] Browser back/forward buttons work (URL hash or history API)
-- [ ] Responsive design maintained (mobile + desktop)
-- [ ] `npm test` passes
-- [ ] `npm run build` succeeds with static output
-- [ ] Existing JSON API and RSS endpoints still work
-- [ ] No new runtime dependencies added
+- [x] Today's movie displays on load (hero section)
+- [x] Movie detail is viewable without page reload
+- [x] Browser back/forward buttons work (URL hash or history API)
+- [x] Responsive design maintained (mobile + desktop)
+- [x] `npm test` passes
+- [x] `npm run build` succeeds with static output
+- [x] Existing JSON API and RSS endpoints still work
+- [x] No new runtime dependencies added
 
 ## Open Questions
 None — requirements are clear.

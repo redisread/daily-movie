@@ -363,7 +363,7 @@ CJK:  Noto Serif SC（衬线，作 Latin 字体家族的中文兄弟）
 - [ ] `pages/movie/[date].astro`：重写为深度仪式结构（参考 §2.2）
 - [ ] `pages/archive/index.astro`：替代 library/search，单列时间线（参考 §2.3）
 - [ ] `pages/about.astro`：新建极简 3 段关于页（参考 §2.4）
-- [ ] 删除：`PosterGallery.astro` `WhyThisMovie.astro` `CastList.astro` `DirectorCard.astro`
+- [x] 删除：`PosterGallery.astro` `WhyThisMovie.astro` `CastList.astro` `DirectorCard.astro`
 - [ ] 删除：`pages/library/index.astro` `pages/search/index.astro`
 - [ ] 迁移：被砍页面加 `<link rel="canonical" href="/">` + 自定义 404 页面指向首页（避免 SEO 404）
 - [ ] 删除：nav 中 emoji

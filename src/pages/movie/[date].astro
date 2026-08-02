@@ -5,9 +5,7 @@ import MovieDetailRitual from '../../components/MovieDetailRitual.astro';
 import { movies } from '../../data/movies';
 
 export function getStaticPaths() {
-  const sortedMovies = [...movies].sort((a, b) =>
-    a.publishedDate.localeCompare(b.publishedDate)
-  );
+  const sortedMovies = movies;
 
   return sortedMovies.map((movie, index) => ({
     params: { date: movie.publishedDate },
