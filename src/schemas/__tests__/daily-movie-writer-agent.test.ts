@@ -28,7 +28,7 @@ describe('daily-movie-writer agent', () => {
     const raw = readFileSync(AGENT_PATH, 'utf-8');
     const fm = raw.slice(4, raw.indexOf('\n---\n', 4));
     const descLine = fm.split('\n').find((l) => l.startsWith('description:')) ?? '';
-    const hits = ['daily-movie', 'movies.yaml', 'MovieSchema'].filter((k) =>
+    const hits = ['daily-movie', 'movies/', 'MovieSchema'].filter((k) =>
       descLine.includes(k)
     );
     expect(hits.length).toBeGreaterThanOrEqual(2);

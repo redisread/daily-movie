@@ -64,6 +64,12 @@ const { id = 'toast-container' } = Astro.props;
     duration?: number;
   }
 
+  declare global {
+    interface Window {
+      showToast?: (message: string, options?: ToastOptions) => void;
+    }
+  }
+
   function showToast(message: string, options: ToastOptions = {}) {
     const { type = 'info', duration = 3000 } = options;
     const container = document.getElementById('toast-container');
@@ -81,5 +87,5 @@ const { id = 'toast-container' } = Astro.props;
   }
 
   // Expose globally
-  (window as any).showToast = showToast;
+  window.showToast = showToast;
 </script>

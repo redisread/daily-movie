@@ -7,7 +7,7 @@ Convert the daily-movie multi-page static site into a single-page application (S
 - Astro ^6.4.8 (retained — static build output for Cloudflare Pages)
 - TypeScript ^6.0.3
 - Zod ^4.4.3 (data validation, unchanged)
-- YAML ^2.9.0 (data source, unchanged)
+- YAML ^2.9.0 (Markdown frontmatter parser)
 - Vitest ^4.1.9 (unit tests)
 - Playwright ^1.61.0 (e2e tests)
 
@@ -25,14 +25,14 @@ lint:    npm run lint
 ```
 src/
   components/
-    MovieCard.astro        # Movie card component (updated)
-    MovieDetail.astro      # Movie detail view component (new)
-    MovieList.astro        # Movie list/grid view (new)
-    TodayHero.astro        # Today's movie hero section (new, extracted from index)
+    MovieCard.astro        # Movie card component
+    MovieDetail.astro      # Movie detail view component
+    MovieList.astro        # Movie list/grid view
+    TodayHero.astro        # Today's movie hero section
     ui/                    # existing UI components
   data/
-    movies.ts              # data loader (unchanged)
-    movies.yaml            # source data (unchanged)
+    movies.ts              # Markdown frontmatter loader
+    movies/*.md            # one Markdown document per movie
   layouts/
     Layout.astro           # shell layout (updated for SPA)
   lib/
@@ -67,10 +67,10 @@ tests/
 ## Boundaries
 - **Always:** Run `npm test` and `npm run build` after changes
 - **Ask first:** Adding new npm dependencies, changing CI config
-- **Never:** Break existing Zod schemas, abandon movies.yaml as source, remove Cloudflare Pages deployability
+- **Never:** Break existing Zod schemas, bypass Markdown movie documents, remove Cloudflare Pages deployability
 
 ## Success Criteria
-- [ ] One HTML page (`index.html`) serves all views
+- [x] One HTML page (`index.html`) serves all views
 - [ ] Today's movie displays on load (hero section)
 - [ ] History list is browsable without page reload
 - [ ] Movie detail is viewable without page reload

@@ -1,0 +1,119 @@
+---
+import type { Movie } from '../schemas/movie';
+
+interface Props {
+  movie: Movie;
+  dateStr: string;
+  prevMovie?: Movie;
+  nextMovie?: Movie;
+  totalCount: number;
+  currentIndex: number;
+}
+
+const { movie, dateStr, prevMovie, nextMovie, totalCount, currentIndex } = Astro.props;
+const quote = movie.quotes[0];
+const displayDate = new Date(`${dateStr}T00:00:00`).toLocaleDateString('zh-CN', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long',
+});
+---
+
+<section class="cinema" data-view="home" aria-labelledby="today-title">
+  <div class="hero-shell">
+    <div class="hero-copy">
+      <p class="eyebrow">DAILY SCREENING · {displayDate}</p>
+      <p class="hero-kicker">今日放映</p>
+      <h1 id="today-title" class="movie-title">{movie.title}</h1>
+      {movie.titleOriginal && <p class="hero-original">{movie.titleOriginal}</p>}
+      <p class="hero-meta">{movie.director.name} · {movie.year} · {movie.genre.join(' / ')}</p>
+
+      <blockquote class="hero-quote">
+        <span class="quote-mark" aria-hidden="true">“</span>
+        <span>{quote.text}</span>
+        <span class="quote-mark" aria-hidden="true">”</span>
+        {quote.speaker && <cite>— {quote.speaker}</cite>}
+      </blockquote>
+
+      <div class="hero-actions">
+        <a class="action-primary" href={`#/movie/${movie.publishedDate}`}>进入放映厅 <span aria-hidden="true">↗</span></a>
+        <a class="action-secondary" href="#/archive">浏览 {totalCount} 部电影</a>
+      </div>
+    </div>
+
+    <div class="hero-poster-wrap">
+      <div class="hero-poster" style={`background: ${movie.cover.bg}`}>
+        <img src={movie.cover.url} alt={`《${movie.title}》电影海报`} width="600" height="900" fetchpriority="high" onerror="this.src='/fallback-poster.svg'; this.classList.add('loaded')" />
+      </div>
+      <div class="poster-caption">
+        <span>{String(currentIndex + 1).padStart(2, '0')} / {String(totalCount).padStart(2, '0')}</span>
+        <span>{movie.quotes.length} 条语录 · {movie.duration} 分钟</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sequence-nav" aria-label="影片顺序">
+    {prevMovie ? <a href={`#/movie/${prevMovie.publishedDate}`} aria-label={`上一部：${prevMovie.title}`}><span aria-hidden="true">←</span> 上一部</a> : <span class="is-disabled">← 上一部</span>}
+    <span class="sequence-note">按放映日期排列</span>
+    {nextMovie ? <a href={`#/movie/${nextMovie.publishedDate}`} aria-label={`下一部：${nextMovie.title}`}>下一部 <span aria-hidden="true">→</span></a> : <span class="is-disabled">下一部 →</span>}
+  </nav>
+</section>
+
+<style>
+  .cinema {
+    min-height: calc(100dvh - 5.5rem);
+    display: grid;
+    align-content: center;
+    max-width: 76rem;
+    margin: 0 auto;
+    padding: clamp(3rem, 8vw, 7rem) var(--page-gutter) 4rem;
+  }
+
+  .hero-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(16rem, 0.9fr);
+    align-items: center;
+    gap: clamp(3rem, 8vw, 8rem);
+  }
+
+  .hero-copy { max-width: 35rem; }
+  .eyebrow, .hero-kicker { margin: 0; color: var(--text-muted); font-size: var(--size-label); letter-spacing: 0.13em; text-transform: uppercase; }
+  .hero-kicker { margin-top: 2.2rem; color: var(--accent); }
+  .movie-title { margin-top: 0.55rem; font-size: clamp(3.2rem, 8vw, 7rem); line-height: 0.98; letter-spacing: -0.055em; }
+  .hero-original { margin: 1rem 0 0; color: var(--text-muted); font-style: italic; font-size: 1.15rem; }
+  .hero-meta { margin: 1.15rem 0 0; color: var(--text-muted); font-size: 0.9rem; }
+  .hero-quote { max-width: 31rem; margin: clamp(2.5rem, 5vw, 4rem) 0 0; color: var(--ink); font-size: clamp(1.15rem, 2vw, 1.45rem); line-height: 1.8; }
+  .quote-mark { color: var(--gold); font-size: 2.2em; line-height: 0; vertical-align: -0.25em; }
+  .hero-quote cite { display: block; margin-top: 0.85rem; color: var(--text-muted); font-size: 0.85rem; font-style: normal; }
+  .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 2.5rem; }
+  .action-primary, .action-secondary { display: inline-flex; align-items: center; gap: 0.7rem; min-height: 2.9rem; padding: 0.65rem 1rem; border: 1px solid var(--ink); font-size: 0.9rem; }
+  .action-primary { background: var(--ink); color: var(--paper); }
+  .action-primary:hover { border-color: var(--gold); background: var(--gold); color: var(--ink); }
+  .action-secondary { border-color: var(--border); color: var(--text-muted); }
+  .action-secondary:hover { border-color: var(--ink); color: var(--ink); }
+  .hero-poster-wrap { width: min(100%, 24rem); justify-self: end; }
+  .hero-poster { aspect-ratio: 2 / 3; overflow: hidden; box-shadow: 1.4rem 1.4rem 0 rgba(184, 152, 90, 0.18); }
+  .hero-poster img { width: 100%; height: 100%; display: block; object-fit: cover; opacity: 0; transition: opacity 0.5s ease; }
+  .hero-poster img.loaded, .hero-poster img[src='/fallback-poster.svg'] { opacity: 1; }
+  .poster-caption, .sequence-nav { display: flex; justify-content: space-between; gap: 1rem; color: var(--text-muted); font-size: 0.76rem; letter-spacing: 0.04em; }
+  .poster-caption { margin-top: 1rem; }
+  .sequence-nav { max-width: 35rem; margin-top: clamp(3.5rem, 8vw, 6rem); border-top: 1px solid var(--border); padding-top: 1rem; }
+  .sequence-nav a { color: var(--ink); }
+  .sequence-nav a:hover { color: var(--gold); }
+  .sequence-note { color: var(--text-muted); }
+  .is-disabled { opacity: 0.3; }
+
+  @media (max-width: 700px) {
+    .cinema { padding-top: 2.5rem; }
+    .hero-shell { grid-template-columns: 1fr; gap: 3rem; }
+    .hero-poster-wrap { width: min(70vw, 19rem); justify-self: start; }
+    .hero-quote { margin-top: 2rem; }
+    .sequence-nav { margin-top: 3rem; }
+    .sequence-note { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-poster img { transition: none; }
+  }
+</style>

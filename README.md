@@ -1,6 +1,6 @@
 # 每日电影
 
-每天推荐一部经典电影。基于 Astro + Zod 静态站点。
+每天推荐一部经典电影。基于 Astro + Zod 的单页静态站点。
 
 ## 开发
 
@@ -18,7 +18,9 @@ npm run preview
 
 ## 添加电影
 
-编辑 `src/data/movies.yaml`，运行 `npm run test` 验证 schema。
+在 `src/data/movies/` 新增一篇 `{id}.md`，运行 `npm run test` 和 `npm run build` 验证 schema。
+
+每篇 Markdown 文档使用 YAML frontmatter 保存结构化字段，正文保存策展备注。`quotes` 可以写 3–10 条语录，详情页会全部展示。
 
 ## 技术栈
 
@@ -34,7 +36,7 @@ npm run preview
 daily-movie/
 ├── src/
 │   ├── components/     # 组件
-│   ├── data/          # 数据文件
+│   ├── data/          # Markdown 电影文档与加载器
 │   ├── layouts/       # 布局
 │   └── pages/         # 页面
 ├── public/            # 静态资源

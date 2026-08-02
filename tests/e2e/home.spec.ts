@@ -45,3 +45,15 @@ test('back navigation from detail works', async ({ page }) => {
   await page.locator('a[href="#/"]:visible').click();
   await expect(page.locator('.cinema')).toBeVisible();
 });
+
+test('movie detail renders every quote from its markdown document', async ({ page }) => {
+  await page.goto('/#/movie/2026-07-05', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('[data-movie-detail]:visible .quote-card')).toHaveCount(4);
+});
+
+test('movie library search filters cards without navigation', async ({ page }) => {
+  await page.goto('/#/archive', { waitUntil: 'domcontentloaded' });
+  await page.locator('[data-movie-search]').fill('天堂');
+  await expect(page.locator('.movie-card:visible')).toHaveCount(1);
+  await expect(page).toHaveURL(/#\/archive$/);
+});

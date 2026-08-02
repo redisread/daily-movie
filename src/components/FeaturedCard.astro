@@ -28,7 +28,7 @@ const { movie } = Astro.props;
 
 <script>
   // Image fade-in on load
-  document.querySelectorAll('.featured-card .poster-img').forEach(img => {
+  document.querySelectorAll<HTMLImageElement>('.featured-card .poster-img').forEach(img => {
     if (img.complete) {
       img.classList.add('loaded');
     } else {

@@ -5,14 +5,12 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
-  fullscreen?: boolean;
 }
 
 const {
   title,
   description = '每日一影院 — 每天一场放映仪式',
   image,
-  fullscreen = false,
 } = Astro.props;
 
 const canonicalURL = new URL('/', Astro.site);
@@ -62,7 +60,7 @@ const canonicalURL = new URL('/', Astro.site);
 
     <title>{title} | 每日一电影</title>
     <meta name="view-transition" content="same-origin" />
-    <script type="application/ld+json" set:html={JSON.stringify({
+    <script is:inline type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       'name': '每日一影院',
@@ -112,7 +110,7 @@ const canonicalURL = new URL('/', Astro.site);
         try {
           // 等 Cormorant 主字体加载完成
           await Promise.race([
-            (document as any).fonts.load('500 1rem "Cormorant Garamond"'),
+            document.fonts.load('500 1rem "Cormorant Garamond"'),
             new Promise((resolve) => setTimeout(resolve, 3000)),
           ]);
         } catch { /* noop */ }

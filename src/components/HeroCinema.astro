@@ -291,7 +291,7 @@ const label = mode === 'home' ? "今日影片" : displayDate;
 
 <script>
   // Mark loaded images so fallback doesn't flash
-  document.querySelectorAll('.hero-cover img').forEach(img => {
+  document.querySelectorAll<HTMLImageElement>('.hero-cover img').forEach(img => {
     if (img.complete) img.classList.add('loaded');
     else img.addEventListener('load', () => img.classList.add('loaded'));
   });
