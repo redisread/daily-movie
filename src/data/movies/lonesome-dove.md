@@ -14,15 +14,15 @@ genre:
   - 冒险
 rating: 9.2
 cover:
-  url: https://placehold.co/300x450/4a2c1a/ffffff?text=Lonesome+Dove
+  url: https://upload.wikimedia.org/wikipedia/en/1/18/Lonesome_Dove.jpg
   bg: "linear-gradient(145deg, #4a2c1a, #8b5e3c, #4a2c1a)"
 whyThisMovie: 「《孤鸽镇》之所以今天该看，是因为它告诉你：真正的牛仔不是亡命徒，而是一群在老去之前，最后一次为彼此拼命的老人。」
 posters:
-  - url: https://placehold.co/300x450/4a2c1a/ffffff?text=Lonesome+Dove
+  - url: https://upload.wikimedia.org/wikipedia/en/1/18/Lonesome_Dove.jpg
     caption: 官方海报
-  - url: https://placehold.co/300x450/4a2c1a/ffffff?text=Lonesome+Dove
+  - url: https://upload.wikimedia.org/wikipedia/en/1/18/Lonesome_Dove.jpg
     caption: 剧集封面
-  - url: https://placehold.co/300x450/4a2c1a/ffffff?text=Lonesome+Dove
+  - url: https://upload.wikimedia.org/wikipedia/en/1/18/Lonesome_Dove.jpg
     caption: 经典场景
 cast:
   - name: 罗伯特·杜瓦尔
@@ -51,4 +51,3 @@ publishedDate: 2026-07-03
 ## 影片简介
 
 前德州巡警奥斯科·麦卡斯林和伍德罗·F·卡拉汉决定联手，驱赶三千头牛，从德州一路跋涉到蒙大拿的荒野牧场。这段跨越三千英里的旅程充满艰险，两位老牛仔在风沙与枪火中，重新思考生命的意义。
-
