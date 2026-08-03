@@ -1,6 +1,7 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import { movies } from '../data/movies';
+import { movieToRssContent } from '../data/movie-rss';
 
 export function GET(context: APIContext) {
   return rss({
@@ -10,8 +11,10 @@ export function GET(context: APIContext) {
     items: movies.map(movie => ({
       title: movie.title,
       pubDate: new Date(movie.publishedDate),
-      description: movie.synopsis.slice(0, 200),
+      description: movie.synopsis,
+      content: movieToRssContent(movie),
       link: `/movie/${movie.publishedDate}/`,
+      categories: movie.genre,
     })),
     customData: '<language>zh-cn</language>',
   });
