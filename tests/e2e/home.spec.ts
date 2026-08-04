@@ -5,6 +5,17 @@ test('home page shows today movie', async ({ page }) => {
   await expect(page.locator('.movie-title').first()).toBeVisible();
 });
 
+test('RSS link opens the full feed', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const rssLink = page.getByRole('link', { name: 'RSS 订阅' });
+
+  await expect(rssLink).toBeVisible();
+  await expect(rssLink).toHaveAttribute('href', '/rss.xml');
+  await rssLink.click();
+  await expect(page).toHaveURL(/\/rss\.xml$/);
+  await expect(page.locator('body')).toContainText('content:encoded');
+});
+
 test('archive view shows all movies', async ({ page }) => {
   await page.goto('/#/archive', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.movie-card').first()).toBeVisible();

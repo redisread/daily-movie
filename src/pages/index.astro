@@ -51,6 +51,14 @@ const pageDescription = todayMovie ? `${todayMovie.title} · ${todayMovie.direct
   <footer class="app-footer">
     <span>© {new Date().getFullYear()} DAILY MOVIE</span>
     <span>一部电影，一次放映</span>
+    <a class="rss-link" href="/rss.xml">
+      <svg class="rss-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="5.5" cy="18.5" r="1.5" fill="currentColor" stroke="none" />
+        <path d="M5.5 12.5a6 6 0 0 1 6 6" />
+        <path d="M5.5 6.5a12 12 0 0 1 12 12" />
+      </svg>
+      <span>RSS 订阅</span>
+    </a>
   </footer>
 </Layout>
 
@@ -129,6 +137,11 @@ const pageDescription = todayMovie ? `${todayMovie.title} · ${todayMovie.direct
   .about-back { display: inline-block; margin-top: 2.5rem; color: var(--ink); }
   .about-back:hover { color: var(--gold); }
   .app-footer { display: flex; justify-content: space-between; gap: 1rem; max-width: 76rem; margin: 0 auto; padding: 1.2rem var(--page-gutter) 2rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.05em; }
+  .rss-link { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 2.5rem; padding: 0.45rem 0.65rem; color: var(--ink); transition: scale 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out; }
+  .rss-link:hover { color: var(--gold); border-bottom-color: var(--gold); }
+  .rss-link:active { scale: 0.96; }
+  .rss-link:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .rss-icon { width: 1rem; height: 1rem; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.75; }
   :global([hidden]) { display: none !important; }
 
   @media (max-width: 700px) {
@@ -136,6 +149,6 @@ const pageDescription = todayMovie ? `${todayMovie.title} · ${todayMovie.direct
     .app-nav { grid-column: 1 / -1; grid-row: 2; justify-content: space-between; width: 100%; margin-top: -0.5rem; }
     .header-count { display: none; }
     .app-header:has(.app-nav) { padding-bottom: 0.4rem; }
-    .app-footer { flex-direction: column; }
+    .app-footer { align-items: flex-start; flex-direction: column; }
   }
 </style>
