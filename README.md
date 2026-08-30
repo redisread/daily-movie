@@ -30,7 +30,7 @@ npm run deploy:dry-run
 - **语言**: TypeScript
 - **数据校验**: Zod
 - **部署工具**: Wrangler
-- **CI/CD**: GitHub Actions
+- **CI/CD**: GitHub Actions + Cloudflare Workers Builds Git Integration
 
 内容页、电影详情、RSS、电影清单和 404 在构建时预渲染，由 Static Assets 直接提供；`/health.json` 在 Worker 中按请求执行。`wrangler.jsonc` 是 Worker 配置的唯一来源。
 
@@ -44,21 +44,26 @@ daily-movie/
 │   ├── layouts/       # 布局
 │   └── pages/         # 页面
 ├── public/            # 静态资源
-├── .github/           # 校验与 Worker 自动部署
+├── .github/           # GitHub Actions 质量校验
 ├── wrangler.jsonc     # Worker、Static Assets 与可观测性配置
 └── package.json
 ```
 
 ## 部署
 
-`.github/workflows/cloudflare.yml` 会在 Pull Request 上运行 lint、类型检查、测试、构建和 Wrangler dry-run。代码合并或推送到 `main` 后，同一工作流才会执行 `wrangler deploy`。
+GitHub Actions 只负责质量校验：在 Pull Request 和 `main` push 上运行 lint、类型检查、测试、依赖审计、构建和 Wrangler dry-run，不执行生产部署。
 
-在 GitHub 仓库的 Actions secrets 中配置：
+生产部署由 Cloudflare Workers Builds 的 Git Integration 负责，连接 `redisread/daily-movie` 并使用以下设置：
 
-- `CLOUDFLARE_ACCOUNT_ID`：目标 Cloudflare 账号 ID
-- `CLOUDFLARE_API_TOKEN`：仅授予该账号 Workers Scripts 编辑权限的 API Token
+- 生产分支：`main`
+- 构建命令：`npm run verify`
+- 部署命令：`npx wrangler deploy`
+- 根目录：`/`
+- 非生产分支构建：关闭
 
-首次自动部署会创建或更新名为 `daily-movie` 的 Worker。先通过 Wrangler 输出的 `workers.dev` 地址验证，再把现有自定义域名从 Pages 切换到该 Worker；域名切换没有写入仓库配置，因此合并代码不会自动改动线上域名。
+`npm run verify` 会在 Cloudflare 构建环境中重新执行完整质量门禁，全部通过后才部署名为 `daily-movie` 的 Worker。Git Integration 使用 Cloudflare 管理的构建令牌，不依赖 GitHub Actions secrets。
+
+先通过 Worker 的 `workers.dev` 地址验证，再把现有自定义域名从 Pages 切换到该 Worker；域名切换没有写入仓库配置，因此合并代码不会自动改动线上域名。
 
 - **生产环境**: https://daily-movie.jiahongw.com
 - **注意**: `daily-movie.pages.dev` 已被第三方占用，请勿使用；Worker 部署不依赖该 Pages 子域名

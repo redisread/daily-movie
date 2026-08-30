@@ -1,4 +1,4 @@
-name: Cloudflare
+name: CI
 
 on:
   pull_request:
@@ -10,11 +10,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: cloudflare-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  verify-and-deploy:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -51,11 +51,3 @@ jobs:
 
       - name: Validate Worker bundle
         run: npx wrangler deploy --dry-run
-
-      - name: Deploy Worker
-        if: github.event_name == 'push'
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
