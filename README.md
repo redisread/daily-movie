@@ -63,12 +63,14 @@ GitHub Actions 只负责质量校验：在 Pull Request 和 `main` push 上运�
 
 `npm run verify` 会在 Cloudflare 构建环境中重新执行 lint、类型检查、Worker 类型检查、单元测试、依赖审计和生产构建，全部通过后才部署名为 `daily-movie` 的 Worker。浏览器 E2E 由 GitHub Actions 使用独立启动的 Astro Cloudflare 预览服务器执行。Git Integration 使用 Cloudflare 管理的构建令牌，不依赖 GitHub Actions secrets。
 
-先通过 Worker 的 `workers.dev` 地址验证，再把现有自定义域名从 Pages 切换到该 Worker；域名切换没有写入仓库配置，因此合并代码不会自动改动线上域名。
+`daily-movie.jiahongw.com` 通过 `wrangler.jsonc` 中的 Custom Domain 绑定到生产 Worker。Cloudflare 自动管理该主机名的 DNS 记录与 TLS 证书；后续 Git Integration 部署会保留这项路由配置。
 
 - **生产环境**: https://daily-movie.jiahongw.com
+- **Worker 回退地址**: https://daily-movie.wujiahong2013.workers.dev
+- **Pages 回退地址**: https://daily-movie-8ww.pages.dev
 - **注意**: `daily-movie.pages.dev` 已被第三方占用，请勿使用；Worker 部署不依赖该 Pages 子域名
 
-若 Worker 发布后需要回退，可在 Cloudflare Dashboard 的 Worker 部署历史中选择上一个版本，或使用 `npx wrangler rollback`。这只回退 Worker 版本，不会回退外部数据或域名配置。
+旧 Pages 项目暂时保留为独立回退源，不删除其 `pages.dev` 地址。若 Worker 发布后需要回退代码，可在 Cloudflare Dashboard 的 Worker 部署历史中选择上一个版本，或使用 `npx wrangler rollback`；这只回退 Worker 版本，不会改变域名绑定。若需要把生产流量整体回退到 Pages，必须先从 Worker 移除 `daily-movie.jiahongw.com`，再把同一域名重新绑定到旧 Pages 项目，并重新执行生产冒烟检查。
 
 ## 许可证
 
