@@ -3,6 +3,8 @@ import type { APIContext } from 'astro';
 import { movies } from '../data/movies';
 import { movieToRssContent } from '../data/movie-rss';
 
+export const prerender = true;
+
 export function GET(context: APIContext) {
   return rss({
     title: '每日电影',

@@ -4,6 +4,8 @@ import HeroCinema from '../../components/HeroCinema.astro';
 import MovieDetailRitual from '../../components/MovieDetailRitual.astro';
 import { movies } from '../../data/movies';
 
+export const prerender = true;
+
 export function getStaticPaths() {
   const sortedMovies = movies;
 
