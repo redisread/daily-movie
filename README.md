@@ -61,7 +61,7 @@ GitHub Actions 只负责质量校验：在 Pull Request 和 `main` push 上运�
 - 根目录：`/`
 - 非生产分支构建：关闭
 
-`npm run verify` 会在 Cloudflare 构建环境中重新执行完整质量门禁，全部通过后才部署名为 `daily-movie` 的 Worker。Git Integration 使用 Cloudflare 管理的构建令牌，不依赖 GitHub Actions secrets。
+`npm run verify` 会在 Cloudflare 构建环境中重新执行 lint、类型检查、Worker 类型检查、单元测试、依赖审计和生产构建，全部通过后才部署名为 `daily-movie` 的 Worker。浏览器 E2E 由 GitHub Actions 使用独立启动的 Astro Cloudflare 预览服务器执行。Git Integration 使用 Cloudflare 管理的构建令牌，不依赖 GitHub Actions secrets。
 
 先通过 Worker 的 `workers.dev` 地址验证，再把现有自定义域名从 Pages 切换到该 Worker；域名切换没有写入仓库配置，因此合并代码不会自动改动线上域名。
 

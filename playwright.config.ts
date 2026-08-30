@@ -14,14 +14,16 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
-  /*
   webServer: {
-    command: 'npm run preview',
+    command: 'npm run test:e2e:server',
+    env: {
+      ASTRO_PREVIEW_BACKGROUND: '0',
+    },
     url: 'http://localhost:4321',
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
   },
-  */
 });

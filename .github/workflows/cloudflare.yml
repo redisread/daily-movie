@@ -49,5 +49,11 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Install Playwright browser
+        run: npx playwright install chromium --with-deps
+
+      - name: End-to-end test
+        run: npm run test:e2e
+
       - name: Validate Worker bundle
         run: npx wrangler deploy --dry-run
