@@ -2,6 +2,9 @@
   "name": "daily-movie",
   "type": "module",
   "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -12,11 +15,16 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "cf-typegen": "wrangler types --include-runtime false",
+    "cf-typegen:check": "wrangler types --include-runtime false --check",
+    "deploy": "npm run build && wrangler deploy",
+    "deploy:dry-run": "npm run build && wrangler deploy --dry-run"
   },
   "dependencies": {
-    "@astrojs/rss": "^4.0.17",
-    "astro": "^6.4.8",
+    "@astrojs/cloudflare": "^14.2.5",
+    "@astrojs/rss": "^4.0.19",
+    "astro": "^7.2.9",
     "yaml": "^2.9.0",
     "zod": "^4.4.3"
   },
@@ -34,6 +42,6 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.1",
     "vitest": "^4.1.9",
-    "wrangler": "^4.110.0"
+    "wrangler": "^4.127.1"
   }
 }
