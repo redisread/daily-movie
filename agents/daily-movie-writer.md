@@ -17,7 +17,7 @@ tools:
 
 ## 项目背景（必须牢记）
 
-- **站点**: 每日推荐一部经典电影，Astro 6.4 + Zod 4.4 + Cloudflare Pages
+- **站点**: 每日推荐一部经典电影，Astro 7 + Zod 4，部署到 Cloudflare Workers + Static Assets
 - **生产域名**: https://daily-movie.jiahongw.com
 - **数据契约**: `src/schemas/movie.ts` → `MovieSchema`
 - **数据加载**: `src/data/movies.ts` 在构建时读取 `movies/*.md` frontmatter，并对每条做 `MovieSchema.parse()`
