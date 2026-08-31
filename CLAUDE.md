@@ -2,16 +2,16 @@
 
 ## 项目概述
 
-daily-movie 是一个静态站点，每天推荐一部经典电影。基于 Astro 6 + Zod 4 构建，部署到 Cloudflare Pages。
+daily-movie 每天推荐一部经典电影。项目基于 Astro 7 + Zod 4，运行在 Cloudflare Workers 上；预渲染页面与公共文件由 Workers Static Assets 分发，`/health.json` 由 Worker 按请求执行。
 
 **线上地址**：https://daily-movie.jiahongw.com
 
 ## 技术栈
 
-- **框架**: Astro 6.4
+- **框架**: Astro 7
 - **语言**: TypeScript
 - **数据校验**: Zod 4
-- **部署**: Cloudflare Pages（自定义域名 daily-movie.jiahongw.com）
+- **部署**: Cloudflare Workers + Static Assets（自定义域名 daily-movie.jiahongw.com）
 - **测试**: Vitest（单测）+ Playwright（E2E）
 
 ## 目录结构
@@ -27,6 +27,7 @@ daily-movie/
 ├── agents/             # 子 Agent 定义（daily-movie-writer.md）
 ├── public/             # 静态资源（styles、logo、favicon、fallback-poster、manifest 等）
 ├── tests/e2e/          # Playwright E2E（home.spec.ts）
+├── wrangler.jsonc      # Worker、Static Assets、域名与可观测性配置
 ├── playwright.config.ts
 ├── vitest.config.ts
 └── package.json
@@ -48,6 +49,8 @@ npm run typecheck      # astro check
 npm run test           # Vitest 单测
 npm run test:e2e       # Playwright E2E
 npm run test:e2e:ui    # Playwright UI 模式
+npm run verify         # 完整质量门禁
+npm run deploy:dry-run # 验证 Worker 部署包但不发布
 ```
 
 > 目前没有独立的 `validate:movies` 脚本。数据校验通过：
@@ -64,7 +67,7 @@ npm run test:e2e:ui    # Playwright UI 模式
 3. `quotes` 支持 3–10 条语录，全部会在单页详情中展示
 4. 运行 `npm run build` 或 `npm run dev`——Zod 校验会在加载阶段失败给出报错
 5. 运行 `npm run test` 校验 Schema
-6. Cloudflare Pages 自动构建部署
+6. 合并到 `main` 后由 Cloudflare Workers Builds 自动验证并部署
 
 ## 数据格式
 
@@ -105,25 +108,26 @@ publishedDate: '2026-06-30'
 ## 部署
 
 - **生产环境**: https://daily-movie.jiahongw.com
-- **部署方式**: Cloudflare Pages 直连仓库，`main` 分支合并后自动构建部署
-- **预览环境**: Cloudflare Pages 为每个 PR 生成预览链接（`daily-movie-xxx.pages.dev`）
+- **Worker 回退地址**: https://daily-movie.wujiahong2013.workers.dev
+- **Pages 回退地址**: https://daily-movie-8ww.pages.dev
+- **部署方式**: Cloudflare Workers Builds 连接仓库，`main` 分支合并后运行 `npm run verify` 与 `npx wrangler deploy`
+- **质量门禁**: GitHub Actions 在 PR 和 `main` push 上运行 lint、类型检查、单测、E2E、依赖审计、构建与 Wrangler dry-run
+- **配置真源**: `wrangler.jsonc`；控制台中的 Worker 路由必须同步回该文件
 
 ## 主题与样式
 
 - 主题 CSS 位于 `public/styles/v2-theme.css`（由 `Layout.astro` 直接 link）
-- 当前主题：**Anthropic Amber**
-  - Light（默认）：暖米背景 `#F5F4EF` + 文字 `#1A1A1A` + 强调 `#D4A800`
-  - Dark（`[data-theme="dark"]`）：`#1A1A1A` 背景 + 强调 `#F5C518`
-  - 字体：`-apple-system / Segoe UI / Noto Sans SC` 系统字体栈 + `JetBrains Mono`
-  - 无像素字体、无扫描线（scanlines/pixel/neon 已在早期 PR 中移除）
-- 主题切换按钮在 `Layout.astro` 内的 `#theme-toggle`，状态存于 `localStorage: daily-movie-theme`
-- PWA `public/manifest.webmanifest` 的 `theme_color` 需要与当前主题的强调色保持同步
+- 当前主题：**v2 放映厅**
+  - 主色：奶白 `--paper`、墨黑 `--ink`、枯金 `--gold`
+  - 字体：自托管 Cormorant Garamond + Noto Serif SC 子集
+  - 没有主题切换；`Layout.astro` 只清理旧版 `daily-movie-theme` localStorage
+- PWA `public/manifest.webmanifest` 与 `Layout.astro` 的 `theme-color` 需要保持同步
 
-> 视觉规范变更（如 task #34「星夜色」主题重塑）：先看 `notes/daily-movie-*.md` 设计规范再动手，避免破坏现有 token 体系。同时留意 `public/sw.js` 的 `CACHE_NAME` 需要 bump 以让老客户端拿到新样式。
+> 视觉规范变更前先看 `notes/daily-movie-v2-design-thinker.md`，避免破坏现有 token 体系。同时留意 `public/sw.js` 的 `CACHE_NAME` 需要 bump 以让老客户端拿到新样式。
 
 ## 注意事项
 
-1. **域名占用**: `daily-movie.pages.dev` 被他人注册为赌博站点，站点必须使用自定义域名 `daily-movie.jiahongw.com`
+1. **域名占用**: `daily-movie.pages.dev` 被他人注册为赌博站点，生产站点必须使用自定义域名 `daily-movie.jiahongw.com`
 2. **图片资源**: 使用 Wikimedia Commons 等公开图源，确保版权合规
 3. **数据校验**: 每次新增电影必须构建通过并跑 `npm run test`
 4. **响应式**: 移动端 1 列、平板 2 列、桌面 3–4 列
@@ -143,8 +147,8 @@ publishedDate: '2026-06-30'
 - Zod 校验错误会指向具体电影 `id` 和字段
 
 ### 部署失败
-- 检查 Cloudflare Pages 构建日志（自定义域名 DNS / API Token）
-- 确认 `main` 分支最新提交在 Pages 触发列表里
+- 先检查 GitHub Actions 的 `CI` 工作流，再检查 Cloudflare Workers Builds 日志
+- 确认 `main` 最新提交已触发 Workers Builds，且 `wrangler.jsonc` 中保留 Custom Domain
 
 ### 图片不显示
 - 检查 URL 可访问性
@@ -154,4 +158,4 @@ publishedDate: '2026-06-30'
 ## 相关工具
 
 - **写入子 Agent**: `agents/daily-movie-writer.md`（新增电影条目时优先使用）
-- **视觉规范文档**: `notes/daily-movie-*.md`（如有，主题重塑前必读）
+- **视觉规范文档**: `notes/daily-movie-v2-design-thinker.md`（主题重塑前必读）
