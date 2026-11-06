@@ -28,3 +28,8 @@ playwright-report/
 
 # Dev artifacts
 tasks/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+artifacts/
+*.log
