@@ -51,6 +51,6 @@ npx tsx scripts/smoke-local.ts  # 仅本地：创建、补金句、发布、公�
 
 ## 部署安全
 
-本轮生产上线已获明确授权，按 [切换/回滚清单](docs/cutover.md) 协调执行；远端资源、导入和发布由 Pi 唯一操作，代码准备由 Jeff 负责。现有站在 Worker（不是 Pages），main 的 Workers Builds 会自动发布。正式配置绑定专用 daily-movie-prod，初始 `WRITES_PAUSED=1`；远端导入核对、密钥和最终CI就绪后才合并/发布。验证后开放写入必须同步配置，避免下一次自动部署把状态覆盖。保留旧Worker版本和新D1增量，回滚先暂停写入并导出，不能丢失新内容。
+本轮生产上线已获明确授权，按 [切换/回滚清单](docs/cutover.md) 协调执行；远端资源、导入和发布由 Pi 唯一操作，代码准备由 Jeff 负责。现有站在 Worker（不是 Pages），main 的 Workers Builds 会自动发布。正式配置绑定专用 daily-movie-prod；首发以 `WRITES_PAUSED=1` 完成读/鉴权核验后，配置目标现同步为 `0`（远端实值以最终发布版本为准）；远端导入核对、密钥和最终CI就绪后才合并/发布。验证后开放写入必须同步配置，避免下一次自动部署把状态覆盖。保留旧Worker版本和新D1增量，回滚先暂停写入并导出，不能丢失新内容。
 
 网站：https://daily-movie.jiahongw.com 。不要使用被第三方占用的 `daily-movie.pages.dev`。

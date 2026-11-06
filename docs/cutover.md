@@ -14,7 +14,7 @@ Victor explicitly authorized “改完生产配置之后，部署新版上线”
 
 ## Config / environment separation
 
-Default `wrangler.jsonc` now targets the existing production Worker/domain and real DB, binding **DB**, assets **ASSETS**, required server secret **CONTENT_API_KEY**, initial **WRITES_PAUSED=1**. Preserve original workers.dev/preview settings by not introducing new overrides. Every local script explicitly uses `wrangler.local.jsonc` and `--local`, whose DB id stays a dummy. No local script calls remote D1.
+Default `wrangler.jsonc` now targets the existing production Worker/domain and real DB, binding **DB**, assets **ASSETS**, required server secret **CONTENT_API_KEY**, bootstrap **WRITES_PAUSED=1**, then source target **0** after Pi reports the bootstrap checks below passed. Preserve original workers.dev/preview settings by not introducing new overrides. Every local script explicitly uses `wrangler.local.jsonc` and `--local`, whose DB id stays a dummy. No local script calls remote D1.
 
 The handler fails closed: only the exact pause value `0` permits writes. Paused/missing/invalid values return503+Retry-After for authenticated writes. Unauthenticated writes still401. Never publish without the key provisioned. Keys stay with Pi and Cloudflare; don't paste them to chats, PRs or browser bundles.
 
@@ -38,3 +38,9 @@ The handler fails closed: only the exact pause value `0` permits writes. Paused/
 ## Remaining evidence
 
 Pi must report remote import five-row results, key provisioned (no value), actual deployed commit/version, post-publish read/write results and pause state. Local/CI green does not replace these remote checks. No unverified production success claim.
+
+## Paused bootstrap evidence /17:35 UTC
+
+Pi reported main8cea62b505fa7d009e259e7216bb255384a578d3, Cloudflare build7eeecd7b-2d5b-4001-a619-7cfd738c48da, deployment1f98945e-d729-4334-b131-536220b0e211, versionc330cf15-35dc-480d-86ad-7993b57c6041 at100%. Correct DB/ASSETS/CONTENT_API_KEY/pause bindings present. Home/library/detail/health/OpenAPI200;12 public works; nonexistent route404; title/canonical correct; Chrome interactive page rendered. No-key POST401; valid-key POST503 + Retry-After300.
+
+These provider/runtime facts are Pi's observations, not inferred from build success. They satisfy the paused release gate. The next source commit changes only the production pause target to0 and matching types/records; Pi remains sole merge/publish operator and must report the actual write-enabled version and authenticated QA acceptance before closure. Local config remains isolated.

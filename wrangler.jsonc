@@ -1,13 +1,14 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   // Production target verified by Pi; Victor authorized launch in msg1f47383c.
-  // Bootstrap with writes paused. Pi is the only remote deployment operator.
+  // Paused bootstrap read/auth checks passed on version c330cf15 (Pi).
+  // Enable writes in the next coordinated release; Pi is the sole remote operator.
   "name": "daily-movie",
   "main": "worker/index.ts",
   "compatibility_date": "2026-11-06",
   "compatibility_flags": ["nodejs_compat"],
   "routes": [{ "pattern": "daily-movie.jiahongw.com", "custom_domain": true }],
-  "vars": { "WRITES_PAUSED": "1" },
+  "vars": { "WRITES_PAUSED": "0" },
   "secrets": { "required": ["CONTENT_API_KEY"] },
   "assets": {
     "binding": "ASSETS",
