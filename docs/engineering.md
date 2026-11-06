@@ -18,9 +18,9 @@ Worker用React renderToString/StaticRouter输出完整首屏、标题/descriptio
 
 ## 本地 / 远端边界
 
-wrangler.jsonc仅本地预览，DB UUID是占位，不含生产route。数据库和API均在真实workerd+SQLite的Miniflare里测试，不是内存mock。导入源Markdown保留在Git，但运行时只读D1。首次导入verification比较每个字段、正文和金句稳定id/次序；缺省可空字段按SQL NULL统一，不丢内容。重复导入不覆盖已存在id的API更新；已运营库再次导入前先导出和显式审核差异。
+本地脚本显式使用wrangler.local.jsonc，DB UUID是占位且无生产route；默认wrangler.jsonc是正式目标daily-movie及已核实专用D1，初始WRITES_PAUSED=1。缺失或不正确的暂停状态一律拒写，只有显式0才开放。数据库和API均在真实workerd+SQLite的Miniflare里测试，不是内存mock。导入源Markdown保留在Git，但运行时只读D1。首次导入verification比较每个字段、正文和金句稳定id/次序；缺省可空字段按SQL NULL统一，不丢内容。重复导入不覆盖已存在id的API更新；已运营库再次导入前先导出和显式审核差异。
 
-当前main已经是Worker，不能照旧文档再做Pages迁移。生产Worker当前名/域名已在原配置和Git基线保留；生产DB创建、绑定、secret与发布均需另批。代码合并不能等同上线授权。
+当前main已经是Worker，不能照旧文档再做Pages迁移。生产Worker当前名/域名已在原配置和Git基线保留；本轮已获Victor正式上线授权；远端操作归Pi，Jeff只准备代码和SQL。即便已有授权，仍须在合并前完成真实D1导入/全字段核对、密钥设置和最终CI，不使用过期占位信息。
 
 ## 验证边界
 

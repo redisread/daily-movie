@@ -9,6 +9,6 @@ Read README.md, docs/rebuild-spec-v1.2.md, DESIGN.md and docs/engineering.md fir
 - Preserve all content/cast/poster/video/quote fields. Do not invent media, ratings, quotes, or contact details.
 - Source-import schema scripts/legacy-schema.ts describes the OLD 3–5 poster/cast, 3–10 quote requirement. NEW API schema src/shared/model.ts permits empty media/quotes in draft and >=1 quote when publishing. Do not impose legacy quotas on API callers.
 - npm run verify; npm run test:e2e; npm run db:verify:local. Playwright uses real local Worker/D1. See README for local secret setup.
-- Feature branches use raft/ prefix, PR review required, never push main or self-merge. main has external Workers Builds auto-deploy: no merge until explicit production approval.
-- wrangler.jsonc is deliberately preview/local-only with placeholder DB and no production route. No remote database/secret/deployment changes without explicit scoped approval. See docs/cutover.md.
+- Feature branches use raft/ prefix, PR review required, never push main or self-merge. main has external Workers Builds auto-deploy. This rollout has Victor approval, but Pi is sole remote operator; coordinate import/key/CI before merge.
+- All local commands MUST use wrangler.local.jsonc with --local. Default wrangler.jsonc is production daily-movie / daily-movie-prod with WRITES_PAUSED=1 initially. Jeff does not run remote database/secret/deployment commands; Pi owns this rollout. See docs/cutover.md.
 - Production custom domain https://daily-movie.jiahongw.com. Never use daily-movie.pages.dev (third-party-owned).

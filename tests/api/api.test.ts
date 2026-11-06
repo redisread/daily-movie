@@ -651,4 +651,56 @@ describe("Content API with real local D1 (Miniflare)", () => {
       rmSync(persist, { recursive: true, force: true });
     }
   });
+  it.each(["1", undefined, "unexpected"])(
+    "fails closed when pause binding is %s",
+    async (mode) => {
+      const instance = new Miniflare(
+        convertV4MiniflareOptions({
+          modules: true,
+          script,
+          compatibilityDate: "2026-11-06",
+          compatibilityFlags: ["nodejs_compat"],
+          d1Databases: ["DB"],
+          bindings: {
+            CONTENT_API_KEY: KEY,
+            ...(mode === undefined ? {} : { WRITES_PAUSED: mode }),
+          },
+        }),
+      );
+      try {
+        const storage = await instance.getD1Database("DB");
+        for (const statement of readFileSync(
+          "migrations/0001_content.sql",
+          "utf8",
+        )
+          .replace(/^--.*$/gm, "")
+          .split(";")
+          .filter((s) => s.trim()))
+          await storage.prepare(statement).run();
+        const r = await instance.dispatchFetch(
+          "https://movie.test/api/v1/movies",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${KEY}`,
+              "Content-Type": "application/json",
+              "Idempotency-Key": "paused",
+            },
+            body: JSON.stringify(input()),
+          },
+        );
+        expect(r.status).toBe(503);
+        expect(r.headers.get("Retry-After")).toBe("300");
+        expect(
+          (
+            await storage
+              .prepare("SELECT count(*) n FROM movies")
+              .first<{ n: number }>()
+          )?.n,
+        ).toBe(0);
+      } finally {
+        await instance.dispose();
+      }
+    },
+  );
 });

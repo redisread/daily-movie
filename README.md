@@ -4,7 +4,7 @@ React + Vite + TypeScript 前端，同源 Cloudflare Worker HTTP API，D1 保存
 
 ## 本地启动
 
-Node >=22.12，npm。配置中的 D1 id 是**本地占位符**，默认 Worker 名是 `daily-movie-rebuild-preview`，不含任何生产域名。
+Node >=22.12，npm。**所有本地脚本显式使用 `wrangler.local.jsonc`**：仅本地占位D1、预览Worker名、无生产域名。默认 `wrangler.jsonc` 是已核实的正式生产目标，不要把生产配置当本地命令省略参数使用。
 
 ```sh
 npm ci
@@ -37,7 +37,7 @@ npm run preview            # http://localhost:4321，真实本地D1 + Worker + �
 
 ## 内容导入
 
-`src/data/movies/*.md` 是旧内容只读备份，**不是新版本运行时数据源**。脚本严格校验、保留所有原字段和正文，生成 `artifacts/import-manifest.json` 与 SQL。按稳定电影id和金句UUID重跑不重复、不覆盖API编辑；`db:verify:local` 在首次导入库逐字段核对。无旧URL/RSS/JSON格式兼容层，旧路径返回404，见用户确认后的 [v1.2规范](docs/rebuild-spec-v1.2.md)。
+`src/data/movies/*.md` 是旧内容只读备份，**不是新版本运行时数据源**。脚本严格校验、保留所有原字段和正文，生成 `artifacts/import-manifest.json` 、导入SQL和 `artifacts/import-verification.sql`（可在D1控制台逐字段核对）。按稳定电影id和金句UUID重跑不重复、不覆盖API编辑；`db:verify:local` 在首次导入库逐字段核对。无旧URL/RSS/JSON格式兼容层，旧路径返回404，见用户确认后的 [v1.2规范](docs/rebuild-spec-v1.2.md)。
 
 ## 测试
 
@@ -51,6 +51,6 @@ npx tsx scripts/smoke-local.ts  # 仅本地：创建、补金句、发布、公�
 
 ## 部署安全
 
-**此分支不可直接当作生产切换授权。**现有生产站已在 Worker（不是 Pages），main 的 Workers Builds 会自动发布。合并前必须完成人工生产批准及 [切换/回滚清单](docs/cutover.md)。本地配置无真实DB和域名，不提供一条命令自动创建或覆盖生产资源。保留旧Worker版本和新D1增量，回滚先暂停写入并导出，不能丢失新内容。
+本轮生产上线已获明确授权，按 [切换/回滚清单](docs/cutover.md) 协调执行；远端资源、导入和发布由 Pi 唯一操作，代码准备由 Jeff 负责。现有站在 Worker（不是 Pages），main 的 Workers Builds 会自动发布。正式配置绑定专用 daily-movie-prod，初始 `WRITES_PAUSED=1`；远端导入核对、密钥和最终CI就绪后才合并/发布。验证后开放写入必须同步配置，避免下一次自动部署把状态覆盖。保留旧Worker版本和新D1增量，回滚先暂停写入并导出，不能丢失新内容。
 
 网站：https://daily-movie.jiahongw.com 。不要使用被第三方占用的 `daily-movie.pages.dev`。

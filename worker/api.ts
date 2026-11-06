@@ -289,7 +289,7 @@ export async function api(
       Allow: allowed,
     });
   if (!auth) throw new HttpError(401, "UNAUTHORIZED", "鉴权失败");
-  if (String(env.WRITES_PAUSED) === "1")
+  if (String(env.WRITES_PAUSED) !== "0")
     throw new HttpError(503, "WRITES_PAUSED", "内容写入暂时暂停", undefined, {
       "Retry-After": "300",
     });
