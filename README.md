@@ -1,77 +1,56 @@
-# 每日电影
+# 每日电影 · 电影转盘
 
-每天推荐一部经典电影。项目运行在 Cloudflare Workers 上，由 Astro 同时提供预渲染页面与按需服务端路由，静态文件通过 Workers Static Assets 分发。
+React + Vite + TypeScript 前端，同源 Cloudflare Worker HTTP API，D1 保存电影、剧集与独立金句。Agent 用普通 HTTP API + 服务端 Bearer Key 写入，无 MCP、账号后台或 OAuth。
 
-## 开发
+## 本地启动
 
-```bash
-npm install
-npm run dev    # http://localhost:4321
-```
+Node >=22.12，npm。**所有本地脚本显式使用 `wrangler.local.jsonc`**：仅本地占位D1、预览Worker名、无生产域名。默认 `wrangler.jsonc` 是已核实的正式生产目标，不要把生产配置当本地命令省略参数使用。
 
-## 构建
-
-```bash
+```sh
+npm ci
+cp .dev.vars.example .dev.vars
+# 将 .dev.vars 中 CONTENT_API_KEY 替换成随机高熵值，不要提交该文件
+npm run db:migrate:local
+npm run db:import:local
+npm run db:verify:local
 npm run build
-npm run preview
-npm run deploy:dry-run
+npm run preview            # http://localhost:4321，真实本地D1 + Worker + 构建前端
 ```
 
-## 添加电影
+热更新开发：两个终端分别运行 `npm run dev:api`（8787）与 `npm run dev`（4321，代理 `/api`）。Vite 开发服务器仅用于UI开发，真实404/SEO必须在 `npm run preview` 的 Worker 中验收。
 
-在 `src/data/movies/` 新增一篇 `{id}.md`，运行 `npm run test` 和 `npm run build` 验证 schema。
+## 内容与 API
 
-每篇 Markdown 文档使用 YAML frontmatter 保存结构化字段，正文保存策展备注。`quotes` 可以写 3–10 条语录，详情页会全部展示。
+- 公共页面 `/`、`/library`、`/movies/:id`、`/api-docs`、`/about`。
+- `GET /api/v1/movies`：q/type/cursor/limit，公开仅返回已发布且上海日期已到的条目。
+- `GET /api/v1/movies/:id` 与 `GET /api/v1/quotes/:id` 返回 ETag。
+- `POST /api/v1/movies` 创建草稿；`POST /api/v1/movies/:id/quotes` 追加金句。
+- `PATCH /api/v1/movies/:id` / `PATCH /api/v1/quotes/:id` 要求 If-Match。
+- 写入要求 `Authorization: Bearer $CONTENT_API_KEY` 和 `Idempotency-Key`，请求体最多256KiB。
+- 同一键/方法/路径/请求体/If-Match重试7天内返回原结果。改变载荷复用键409；更新无版本428，过期412；同片同NFC文本返回已有金句200。
+- `GET /api/openapi.json` 为 OpenAPI 3.1；`GET /api/health` 检查D1。
+- 所有写响应与鉴权读no-store，公开读最多缓存30秒。IP限流使用D1固定分钟计数（写40/分钟，读600/分钟），429带Retry-After。
+- 前端没有写密钥输入或管理界面，构建产物不包含密钥。
+- 无DELETE；设为draft撤回。日期可版本化修改，id链接保持稳定。
 
-## 技术栈
+完整调用示例：[docs/api.md](docs/api.md)。D1原子写与边界：[docs/engineering.md](docs/engineering.md)。
 
-- **运行时**: Cloudflare Workers + Workers Static Assets
-- **框架**: [Astro](https://astro.build/)（SSR/SSG）
-- **语言**: TypeScript
-- **数据校验**: Zod
-- **部署工具**: Wrangler
-- **CI/CD**: GitHub Actions + Cloudflare Workers Builds Git Integration
+## 内容导入
 
-内容页、电影详情、RSS、电影清单和 404 在构建时预渲染，由 Static Assets 直接提供；`/health.json` 在 Worker 中按请求执行。`wrangler.jsonc` 是 Worker 配置的唯一来源。
+`src/data/movies/*.md` 是旧内容只读备份，**不是新版本运行时数据源**。脚本严格校验、保留所有原字段和正文，生成 `artifacts/import-manifest.json` 、导入SQL和 `artifacts/import-verification.sql`（可在D1控制台逐字段核对）。按稳定电影id和金句UUID重跑不重复、不覆盖API编辑；`db:verify:local` 在首次导入库逐字段核对。无旧URL/RSS/JSON格式兼容层，旧路径返回404，见用户确认后的 [v1.2规范](docs/rebuild-spec-v1.2.md)。
 
-## 项目结构
+## 测试
 
+```sh
+npm run verify            # lint、类型、生成绑定、真实本地D1 API/并发单测、构建
+npx playwright install chromium
+npm run test:e2e          # 自动本地迁移/导入并启动Worker（可复用已有本地服务）
+npm run deploy:dry-run    # 只打包，不发布
+npx tsx scripts/smoke-local.ts  # 仅本地：创建、补金句、发布、公开页、落盘验证，finally清理测试数据
 ```
-daily-movie/
-├── src/
-│   ├── components/     # 组件
-│   ├── data/          # Markdown 电影文档与加载器
-│   ├── layouts/       # 布局
-│   └── pages/         # 页面
-├── public/            # 静态资源
-├── .github/           # GitHub Actions 质量校验
-├── wrangler.jsonc     # Worker、Static Assets 与可观测性配置
-└── package.json
-```
 
-## 部署
+## 部署安全
 
-GitHub Actions 只负责质量校验：在 Pull Request 和 `main` push 上运行 lint、类型检查、测试、依赖审计、构建和 Wrangler dry-run，不执行生产部署。
+本轮生产上线已获明确授权，按 [切换/回滚清单](docs/cutover.md) 协调执行；远端资源、导入和发布由 Pi 唯一操作，代码准备由 Jeff 负责。现有站在 Worker（不是 Pages），main 的 Workers Builds 会自动发布。正式配置绑定专用 daily-movie-prod，初始 `WRITES_PAUSED=1`；远端导入核对、密钥和最终CI就绪后才合并/发布。验证后开放写入必须同步配置，避免下一次自动部署把状态覆盖。保留旧Worker版本和新D1增量，回滚先暂停写入并导出，不能丢失新内容。
 
-生产部署由 Cloudflare Workers Builds 的 Git Integration 负责，连接 `redisread/daily-movie` 并使用以下设置：
-
-- 生产分支：`main`
-- 构建命令：`npm run verify`
-- 部署命令：`npx wrangler deploy`
-- 根目录：`/`
-- 非生产分支构建：关闭
-
-`npm run verify` 会在 Cloudflare 构建环境中重新执行 lint、类型检查、Worker 类型检查、单元测试、依赖审计和生产构建，全部通过后才部署名为 `daily-movie` 的 Worker。浏览器 E2E 由 GitHub Actions 使用独立启动的 Astro Cloudflare 预览服务器执行。Git Integration 使用 Cloudflare 管理的构建令牌，不依赖 GitHub Actions secrets。
-
-`daily-movie.jiahongw.com` 通过 `wrangler.jsonc` 中的 Custom Domain 绑定到生产 Worker。Cloudflare 自动管理该主机名的 DNS 记录与 TLS 证书；后续 Git Integration 部署会保留这项路由配置。
-
-- **生产环境**: https://daily-movie.jiahongw.com
-- **Worker 回退地址**: https://daily-movie.wujiahong2013.workers.dev
-- **Pages 回退地址**: https://daily-movie-8ww.pages.dev
-- **注意**: `daily-movie.pages.dev` 已被第三方占用，请勿使用；Worker 部署不依赖该 Pages 子域名
-
-旧 Pages 项目暂时保留为独立回退源，不删除其 `pages.dev` 地址。若 Worker 发布后需要回退代码，可在 Cloudflare Dashboard 的 Worker 部署历史中选择上一个版本，或使用 `npx wrangler rollback`；这只回退 Worker 版本，不会改变域名绑定。若需要把生产流量整体回退到 Pages，必须先从 Worker 移除 `daily-movie.jiahongw.com`，再把同一域名重新绑定到旧 Pages 项目，并重新执行生产冒烟检查。
-
-## 许可证
-
-MIT
+网站：https://daily-movie.jiahongw.com 。不要使用被第三方占用的 `daily-movie.pages.dev`。

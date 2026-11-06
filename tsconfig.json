@@ -1,8 +1,26 @@
 {
-  "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
     "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
-  }
+    "noUnusedParameters": true,
+    "types": ["@cloudflare/workers-types", "vite/client", "node"]
+  },
+  "include": [
+    "src",
+    "worker",
+    "scripts",
+    "tests",
+    "*.ts",
+    "worker-configuration.d.ts"
+  ]
 }

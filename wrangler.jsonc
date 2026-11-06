@@ -1,20 +1,28 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
+  // Production target verified by Pi; Victor authorized launch in msg1f47383c.
+  // Bootstrap with writes paused. Pi is the only remote deployment operator.
   "name": "daily-movie",
-  "main": "@astrojs/cloudflare/entrypoints/server",
-  "compatibility_date": "2026-08-30",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-11-06",
   "compatibility_flags": ["nodejs_compat"],
-  "routes": [
-    {
-      "pattern": "daily-movie.jiahongw.com",
-      "custom_domain": true
-    }
-  ],
+  "routes": [{ "pattern": "daily-movie.jiahongw.com", "custom_domain": true }],
+  "vars": { "WRITES_PAUSED": "1" },
+  "secrets": { "required": ["CONTENT_API_KEY"] },
   "assets": {
     "binding": "ASSETS",
-    "directory": "./dist"
+    "directory": "./dist",
+    "run_worker_first": true,
+    "html_handling": "none",
+    "not_found_handling": "none",
   },
-  "observability": {
-    "enabled": true
-  }
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "daily-movie-prod",
+      "database_id": "38ad8d52-dadd-416d-8e16-e1e299706ddc",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "observability": { "enabled": true, "head_sampling_rate": 0.1 },
 }

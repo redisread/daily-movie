@@ -1,19 +1,31 @@
-import js from '@eslint/js';
-import ts from 'typescript-eslint';
-import astro from 'eslint-plugin-astro';
-
+import js from "@eslint/js";
+import ts from "typescript-eslint";
+import hooks from "eslint-plugin-react-hooks";
 export default [
+  {
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      ".wrangler/**",
+      "worker-configuration.d.ts",
+      "artifacts/**",
+      "playwright-report/**",
+      "test-results/**",
+    ],
+  },
   js.configs.recommended,
   ...ts.configs.recommended,
-  ...astro.configs['flat/recommended'],
   {
-    ignores: ['dist/', '.astro/', 'node_modules/', '.wrangler/'],
-  },
-  {
+    files: ["**/*.{ts,tsx}"],
+    plugins: { "react-hooks": hooks },
     rules: {
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "error",
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_" },
+      ],
     },
   },
 ];

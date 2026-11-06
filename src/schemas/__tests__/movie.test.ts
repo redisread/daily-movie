@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { MovieSchema } from '../movie';
-import { movies } from '../../data/movies';
+import { MovieSchema } from '../../../scripts/legacy-schema';
+import { sourceContent } from '../../../scripts/content';
+const movies = sourceContent().map(x=>MovieSchema.parse(x.manifest.frontmatter));
 
 describe('MovieSchema', () => {
   it('validates all sample movies', () => {

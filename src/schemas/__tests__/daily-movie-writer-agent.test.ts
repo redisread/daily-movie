@@ -28,7 +28,7 @@ describe('daily-movie-writer agent', () => {
     const raw = readFileSync(AGENT_PATH, 'utf-8');
     const fm = raw.slice(4, raw.indexOf('\n---\n', 4));
     const descLine = fm.split('\n').find((line: string) => line.startsWith('description:')) ?? '';
-    const hits = ['daily-movie', 'movies/', 'MovieSchema'].filter((k) =>
+    const hits = ['daily-movie', 'movies/', 'HTTP API'].filter((k) =>
       descLine.includes(k)
     );
     expect(hits.length).toBeGreaterThanOrEqual(2);
@@ -40,7 +40,9 @@ describe('daily-movie-writer agent', () => {
     expect(body).toMatch(/kebab-case/);
     expect(body).toMatch(/publishedDate/);
     expect(body).toMatch(/posters/);
-    expect(body).toMatch(/3\s*[–-]\s*5/);
+    expect(body).toContain('Idempotency-Key');
+    expect(body).toContain('If-Match');
+    expect(body).toContain('CONTENT_API_KEY');
     expect(body).toMatch(/不要.*commit|不要.*push/i);
     expect(body).toMatch(/npm run test/);
   });

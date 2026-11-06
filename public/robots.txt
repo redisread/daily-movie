@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
-Sitemap: https://daily-movie.jiahongw.com/sitemap.xml
+Disallow: /api/
