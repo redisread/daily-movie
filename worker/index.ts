@@ -31,6 +31,7 @@ export default {
         );
       else if (
         url.pathname.startsWith("/assets/") ||
+        /^\/covers\/original\/[a-zA-Z0-9_-]+\.png$/.test(url.pathname) ||
         /^\/(?:favicon\.(?:png|svg)|logo\.png|fallback-poster\.svg|robots\.txt|sw\.js|manifest\.webmanifest)$/.test(
           url.pathname,
         )
