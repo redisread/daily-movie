@@ -11,153 +11,15 @@ import {
 } from "react-router-dom";
 const ReactMarkdown = lazy(() => import("react-markdown"));
 import type { Movie, Quote } from "../shared/model";
-import { movieHref } from "../shared/format";
+import { movieHref, durationLabel } from "../shared/format";
 import { SeedContext, useResource, type ListResult, type Seed } from "./data";
-import { Carousel, PosterImage, MediaImage } from "./Carousel";
+import { PosterImage, MediaImage } from "./Carousel";
 import styles from "./styles.generated";
+import { State } from "./State";
+import { Home } from "./Home";
+import { WalkMemoryProvider } from "./walk/useRandomWalk";
+import { galleryFor, imageSet, imageVariant } from "../shared/media";
 
-export function State({
-  error,
-  retry,
-  empty = false,
-}: {
-  error?: string | null;
-  retry?: () => void;
-  empty?: boolean;
-}) {
-  return (
-    <section className={styles.state} aria-live="polite">
-      <p className={styles.eyebrow}>
-        {error
-          ? "TEMPORARILY UNAVAILABLE"
-          : empty
-            ? "A BLANK REEL"
-            : "LOADING THE REEL"}
-      </p>
-      <h1>
-        {error
-          ? "暂时无法读取电影"
-          : empty
-            ? "下一场，还在准备"
-            : "正在整理放映资料"}
-      </h1>
-      <p>
-        {error ?? (empty ? "片库还没有发布内容，请稍后再来。" : "请稍候。")}
-      </p>
-      {retry && (
-        <button onClick={retry} className={styles.outline}>
-          重新读取
-        </button>
-      )}
-    </section>
-  );
-}
-function MovieInfo({ movie }: { movie: Movie }) {
-  return (
-    <>
-      <p className={styles.eyebrow}>
-        {movie.publishedDate?.replaceAll("-", ".")} ·{" "}
-        {movie.type === "tv" ? "剧集" : "电影"}
-      </p>
-      <h1>{movie.title}</h1>
-      {movie.titleOriginal && (
-        <p className={styles.original}>{movie.titleOriginal}</p>
-      )}
-      <p className={styles.facts}>
-        {movie.year} <span>/</span> {movie.director.name} <span>/</span>{" "}
-        {movie.duration} 分钟
-      </p>
-      <blockquote className={styles.heroQuote}>
-        {movie.quotes[0]?.text}
-      </blockquote>
-      {movie.quotes[0]?.speaker && (
-        <p className={styles.speaker}>出自 {movie.quotes[0].speaker}</p>
-      )}
-      <Link to={movieHref(movie.id)} className={styles.primary}>
-        查看电影 <span aria-hidden="true">↗</span>
-      </Link>
-    </>
-  );
-}
-function HomeLoaded({ movies }: { movies: Movie[] }) {
-  const ordered = [...movies].reverse();
-  const [params, setParams] = useSearchParams();
-  const requested = params.get("movie"),
-    found = ordered.findIndex((m) => m.id === requested);
-  const index = found >= 0 ? found : ordered.length - 1,
-    selected = ordered[index];
-  useEffect(() => {
-    document.title = `${selected.title} | 每日电影`;
-  }, [selected.title]);
-  const [outgoing, setOutgoing] = useState<Movie | null>(null),
-    [animate, setAnimate] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
-  function select(i: number, motion: boolean) {
-    if (i === index) return;
-    if (timer.current) clearTimeout(timer.current);
-    setAnimate(motion);
-    setOutgoing(motion ? selected : null);
-    if (motion) timer.current = setTimeout(() => setOutgoing(null), 80);
-    const p = new URLSearchParams(params);
-    p.set("movie", ordered[i].id);
-    setParams(p, { replace: true, preventScrollReset: true });
-  }
-  return (
-    <>
-      <div className={styles.homeIntro}>
-        <p>一部电影，一句留在心里的话。</p>
-        <Link to="/library">探索完整片库 ↗</Link>
-      </div>
-      {requested && found < 0 && (
-        <p className={styles.notice} role="status">
-          未找到这部电影，已为你展示最近发布的选片。
-        </p>
-      )}
-      <div className={styles.home}>
-        <Carousel movies={ordered} index={index} onSelect={select} />
-        <section className={styles.selection} aria-label="选中影片">
-          <div className={styles.infoWrap}>
-            <div
-              key={selected.id}
-              className={animate ? styles.incoming : undefined}
-            >
-              <MovieInfo movie={selected} />
-            </div>
-            {outgoing && (
-              <div className={styles.outgoing} aria-hidden="true" inert>
-                <MovieInfo movie={outgoing} />
-              </div>
-            )}
-          </div>
-          <div className={styles.catalogNote}>
-            <span>RECENT SELECTION</span>
-            <p>
-              这里展示最近 {ordered.length} 部选片。
-              <br />
-              每一句台词，都有它的来处。
-            </p>
-          </div>
-        </section>
-      </div>
-      <span className={styles.srOnly} role="status">
-        已选择《{selected.title}》，第 {index + 1} 部，共 {ordered.length} 部
-      </span>
-    </>
-  );
-}
-function Home() {
-  const r = useResource<ListResult<Movie>>("/api/v1/movies?limit=12");
-  if (r.error) return <State error={r.error} retry={r.retry} />;
-  if (!r.data) return <State />;
-  if (!r.data.data.length) return <State empty />;
-  return <HomeLoaded movies={r.data.data} />;
-}
 function Library() {
   const [params, setParams] = useSearchParams(),
     q = params.get("q") ?? "",
@@ -239,7 +101,7 @@ function Library() {
                 key={m.id}
               >
                 <div className={styles.libraryPoster}>
-                  <PosterImage movie={m} />
+                  <PosterImage movie={m} kind="library" />
                 </div>
                 <div className={styles.libraryMeta}>
                   <h2>{m.title}</h2>
@@ -323,7 +185,9 @@ function SafeImage({
 }) {
   return (
     <MediaImage
-      src={src}
+      src={imageVariant(src, width * 2)}
+      srcSet={imageSet(src, [width, width * 2])}
+      sizes={`${width}px`}
       alt={alt}
       width={width}
       height={height}
@@ -347,6 +211,7 @@ function Detail() {
   if (r.error) return <State error={r.error} retry={r.retry} />;
   if (!r.data) return <State />;
   const m = r.data.data;
+  const gallery = galleryFor(m);
   return (
     <article className={styles.detail}>
       <Link className={styles.backLink} to="/library">
@@ -354,7 +219,7 @@ function Detail() {
       </Link>
       <header className={styles.detailHead}>
         <div className={styles.detailPoster}>
-          <PosterImage movie={m} priority />
+          <PosterImage movie={m} priority kind="detail" />
         </div>
         <div>
           <p className={styles.eyebrow}>
@@ -378,7 +243,7 @@ function Detail() {
             <div>
               <dt>年份 / 时长</dt>
               <dd>
-                {m.year} / {m.duration} 分钟
+                {m.year} / {durationLabel(m)}
               </dd>
             </div>
             <div>
@@ -431,11 +296,11 @@ function Detail() {
           </ul>
         </section>
       )}
-      {!!m.posters.length && (
+      {!!gallery.length && (
         <section className={styles.bodySection}>
-          <h2>留下的画面</h2>
+          <h2>海报与画面</h2>
           <div className={styles.gallery}>
-            {m.posters.map((p, i) => (
+            {gallery.map((p, i) => (
               <figure key={i}>
                 <SafeImage
                   src={p.url}
@@ -625,50 +490,52 @@ export function App({
   const initialPath = useRef(path);
   return (
     <SeedContext.Provider value={seed}>
-      <LocationEffects />
-      <a href="#main" className={styles.skip}>
-        跳到主要内容
-      </a>
-      <header className={styles.header}>
-        <Link className={styles.brand} to="/" aria-label="每日电影，返回选片">
-          <span className={styles.brandMark} aria-hidden="true">
-            ◒
-          </span>
-          <span>
-            每日电影<small>DAILY MOVIE</small>
-          </span>
-        </Link>
-        <nav aria-label="主导航">
-          <NavLink to="/" end>
-            选片
-          </NavLink>
-          <NavLink to="/library">片库</NavLink>
-          <NavLink to="/api-docs">API</NavLink>
-        </nav>
-        <span className={styles.headerNote}>A MOMENT IN FILM</span>
-      </header>
-      <main id="main" tabIndex={-1} className={styles.main}>
-        {notFound && path === initialPath.current ? (
-          <NotFound />
-        ) : (
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/library" element={<Library />} />
-            <Route path="/movies/:id" element={<Detail />} />
-            <Route path="/api-docs" element={<Docs />} />
-            <Route path="/about" element={<About />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        )}
-      </main>
-      <footer className={styles.footer}>
-        <Link to="/">◒ 每日电影</Link>
-        <span>把片刻，留给电影。</span>
-        <div>
-          <Link to="/about">关于</Link>
-          <Link to="/api-docs">API</Link>
-        </div>
-      </footer>
+      <WalkMemoryProvider>
+        <LocationEffects />
+        <a href="#main" className={styles.skip}>
+          跳到主要内容
+        </a>
+        <header className={styles.header}>
+          <Link className={styles.brand} to="/" aria-label="每日电影，返回选片">
+            <span className={styles.brandMark} aria-hidden="true">
+              ◒
+            </span>
+            <span>
+              每日电影<small>DAILY MOVIE</small>
+            </span>
+          </Link>
+          <nav aria-label="主导航">
+            <NavLink to="/" end>
+              选片
+            </NavLink>
+            <NavLink to="/library">片库</NavLink>
+            <NavLink to="/api-docs">API</NavLink>
+          </nav>
+          <span className={styles.headerNote}>A MOMENT IN FILM</span>
+        </header>
+        <main id="main" tabIndex={-1} className={styles.main}>
+          {notFound && path === initialPath.current ? (
+            <NotFound />
+          ) : (
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/library" element={<Library />} />
+              <Route path="/movies/:id" element={<Detail />} />
+              <Route path="/api-docs" element={<Docs />} />
+              <Route path="/about" element={<About />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          )}
+        </main>
+        <footer className={styles.footer}>
+          <Link to="/">◒ 每日电影</Link>
+          <span>把片刻，留给电影。</span>
+          <div>
+            <Link to="/about">关于</Link>
+            <Link to="/api-docs">API</Link>
+          </div>
+        </footer>
+      </WalkMemoryProvider>
     </SeedContext.Provider>
   );
 }

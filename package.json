@@ -27,7 +27,9 @@
     "verify": "npm run styles:check && npm run lint && npm run typecheck && npm run cf-typegen:check && npm test && npm run build",
     "deploy:dry-run": "npm run build && wrangler deploy --dry-run",
     "styles:gen": "tsx scripts/css-modules.ts",
-    "styles:check": "tsx scripts/css-modules.ts --check"
+    "styles:check": "tsx scripts/css-modules.ts --check",
+    "content:plan": "tsx scripts/plan-content-corrections.ts",
+    "content:apply": "tsx scripts/apply-content-corrections.ts"
   },
   "dependencies": {
     "react": "^19.2.0",

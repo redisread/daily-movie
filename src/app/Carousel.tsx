@@ -5,18 +5,29 @@ import {
   type CSSProperties,
   type PointerEvent,
   type ImgHTMLAttributes,
+  type ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Movie } from "../shared/model";
 import { movieHref } from "../shared/format";
 import styles from "./styles.generated";
+import { imageVariant, imageSet } from "../shared/media";
+function readAngle(node: HTMLElement | null, fallback: number) {
+  const transform = node ? getComputedStyle(node).transform : "none";
+  if (transform === "none") return fallback;
+  const matrix = new DOMMatrixReadOnly(transform);
+  return (Math.atan2(matrix.b, matrix.a) * 180) / Math.PI;
+}
 export function MediaImage(
   props: ImgHTMLAttributes<HTMLImageElement> & { src: string; alt: string },
 ) {
   const image = useRef<HTMLImageElement>(null);
   function fallback(el: HTMLImageElement) {
-    if (!el.src.endsWith("/fallback-poster.svg"))
+    if (!el.src.endsWith("/fallback-poster.svg")) {
+      el.removeAttribute("srcset");
+      el.removeAttribute("sizes");
       el.src = "/fallback-poster.svg";
+    }
   }
   useEffect(() => {
     const el = image.current;
@@ -29,13 +40,25 @@ export function MediaImage(
 export function PosterImage({
   movie,
   priority = false,
+  kind = "reel",
 }: {
   movie: Movie;
   priority?: boolean;
+  kind?: "reel" | "detail" | "library";
 }) {
+  const source = movie.cover?.url ?? "/fallback-poster.svg";
+  const widths = kind === "reel" ? [96, 144, 216] : [320, 640, 960];
   return (
     <MediaImage
-      src={movie.cover?.url ?? "/fallback-poster.svg"}
+      src={imageVariant(source, kind === "reel" ? 144 : 640)}
+      srcSet={imageSet(source, widths)}
+      sizes={
+        kind === "reel"
+          ? "(max-width:767px) 48px, 72px"
+          : kind === "detail"
+            ? "(max-width:1023px) 280px, 350px"
+            : "(max-width:340px) 288px, (max-width:767px) 44vw, 25vw"
+      }
       alt={`《${movie.title}》海报`}
       width="144"
       height="216"
@@ -48,10 +71,16 @@ export function Carousel({
   movies,
   index,
   onSelect,
+  children,
+  externalSequence = 0,
+  externalMotion = false,
 }: {
   movies: Movie[];
   index: number;
   onSelect: (index: number, animate: boolean) => void;
+  children?: ReactNode;
+  externalSequence?: number;
+  externalMotion?: boolean;
 }) {
   const step = 360 / movies.length;
   const [rotation, setRotation] = useState(-index * step);
@@ -60,6 +89,7 @@ export function Carousel({
   const [hidden, setHidden] = useState(false);
   const ring = useRef<HTMLDivElement>(null),
     buttons = useRef<(HTMLButtonElement | null)[]>([]);
+  const lastExternal = useRef(externalSequence);
   const last = useRef(index),
     focusNext = useRef(false),
     dragged = useRef(false);
@@ -85,16 +115,20 @@ export function Carousel({
     };
   }, []);
   useEffect(() => {
-    if (last.current !== index) {
-      setDuration(0);
-      setRotation(-index * step);
+    if (last.current !== index || lastExternal.current !== externalSequence) {
+      const from = readAngle(ring.current, -index * step);
+      const target = -index * step;
+      const delta = ((((target - from + 540) % 360) + 360) % 360) - 180;
+      setDuration(externalMotion && !reduced && !hidden ? 420 : 0);
+      setRotation(from + delta);
       last.current = index;
+      lastExternal.current = externalSequence;
     }
     if (focusNext.current) {
       buttons.current[index]?.focus();
       focusNext.current = false;
     }
-  }, [index, step]);
+  }, [index, step, externalSequence, externalMotion, reduced, hidden]);
   function currentAngle() {
     const transform = ring.current
       ? getComputedStyle(ring.current).transform
@@ -283,6 +317,7 @@ export function Carousel({
           </button>
         </div>
       )}
+      {children}
     </section>
   );
 }
