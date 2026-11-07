@@ -1,4 +1,5 @@
 import { MoviePatch, type Movie } from "../src/shared/model";
+import { etag } from "../src/shared/format";
 import {
   canonical,
   fingerprint,
@@ -64,7 +65,10 @@ export async function executeContentPlan(
       throw Error("Plan contains invalid/out-of-scope data");
     MoviePatch.parse(e.patch);
     const read = await fetcher(`${base}/api/v1/movies/${e.id}`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Accept-Encoding": "identity",
+      },
       cache: "no-store",
       signal: AbortSignal.timeout(20000),
     });
@@ -77,6 +81,13 @@ export async function executeContentPlan(
       throw Error(
         `${e.id}: quotes/identity changed since plan; reread/review required`,
       );
+    // Compression proxies can weaken validators. Never normalize W/ into authority.
+    if (
+      !Number.isSafeInteger(current.version) ||
+      current.version < 1 ||
+      read.headers.get("etag") !== etag(current)
+    )
+      throw Error(`${e.id}: strong ETag required; stopped before new writes`);
     // Matching target after a prior ambiguous attempt permits only ORIGINAL-key replay;
     // the server, not the client, decides whether there is an existing receipt.
     if (
@@ -98,6 +109,7 @@ export async function executeContentPlan(
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
+          "Accept-Encoding": "identity",
           "If-Match": e.expectedEtag,
           "Idempotency-Key": e.idempotencyKey,
         },
@@ -148,6 +160,16 @@ export async function executeContentPlan(
       receipt(record);
       throw Error(
         `${e.id}: accepted result mismatch; stop and inspect, do not force overwrite`,
+      );
+    }
+    if (
+      !Number.isSafeInteger(updated.version) ||
+      updated.version < 1 ||
+      response.headers.get("etag") !== etag(updated)
+    ) {
+      receipt(record);
+      throw Error(
+        `${e.id}: accepted response lacks a strong ETag; stop and inspect, retain original plan/key`,
       );
     }
     receipt({ ...record, status: "applied_or_idempotent_replay" });

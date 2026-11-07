@@ -41,9 +41,9 @@ npm run content:plan
 npm run content:apply -- artifacts/content-correction-plan.json --apply
 ```
 
-执行器仅允许目标生产origin；先预读全部目标，任何版本/金句冲突在新写入前停止。只允许 `posters/whyThisMovie/synopsis`，绝不携带quotes、cast、cover或其他整库字段。每片使用原If-Match和稳定Idempotency-Key；中途412/429/网络结果不明立即停，回执写 `artifacts/content-correction-receipts.json`，无密钥。
+执行器仅允许目标生产origin；读写均显式请求 `Accept-Encoding: identity`，避免压缩代理将版本标签弱化。预读必须得到与响应版本一致的强ETag；弱/缺失标签直接停止，绝不剥掉 `W/` 当作并发凭据。先预读全部目标，任何版本/金句冲突在新写入前停止。只允许 `posters/whyThisMovie/synopsis`，绝不携带quotes、cast、cover或其他整库字段。每片使用原If-Match和稳定Idempotency-Key；中途412/429/网络结果不明立即停，回执写 `artifacts/content-correction-receipts.json`，无密钥。
 
-网络超时不等于未写入；保留原计划和原键进行服务器幂等重放，不能盲目换键。若已有其他编辑/新增金句，重新读取并人工审阅新对照；不得将数据库压回“12/37”——生产还有应保留的QA草稿及审计数据。
+网络超时不等于未写入；保留原计划和原键进行服务器幂等重放，不能盲目换键。重放也要求当前读取具有强ETag，且仍发送原If-Match/原键；由服务器原回执确认，不能把目标字段相同当作已获新写入许可。如果已接受的写响应仍缺少强ETag，保存“待验证”回执后停止后续条目，不能强行继续。若已有其他编辑/新增金句，重新读取并人工审阅新对照；不得将数据库压回“12/37”——生产还有应保留的QA草稿及审计数据。
 
 ## 回滚
 
