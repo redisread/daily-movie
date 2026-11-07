@@ -509,7 +509,6 @@ export function App({
               选片
             </NavLink>
             <NavLink to="/library">片库</NavLink>
-            <NavLink to="/api-docs">API</NavLink>
           </nav>
           <span className={styles.headerNote}>A MOMENT IN FILM</span>
         </header>
