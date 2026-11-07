@@ -1,3 +1,9 @@
+import { sourceContent } from "../../scripts/content";
+import {
+  buildContentPlan,
+  fingerprint,
+} from "../../scripts/content-corrections";
+import { movieColumns, movieValues } from "../../worker/store";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Miniflare, convertV4MiniflareOptions } from "miniflare";
 import { build } from "esbuild";
@@ -703,4 +709,72 @@ describe("Content API with real local D1 (Miniflare)", () => {
       }
     },
   );
+});
+
+it("reviewed corrections and changed-field rollback preserve all37 original quotes in real D1", async () => {
+  const originals = sourceContent().map((x) => x.movie);
+  await db.batch(
+    originals.flatMap((m) => [
+      db
+        .prepare(
+          `INSERT INTO movies (${movieColumns.join(",")}) VALUES (${movieColumns.map(() => "?").join(",")})`,
+        )
+        .bind(...movieValues(m)),
+      ...m.quotes.map((q) =>
+        db
+          .prepare(
+            "INSERT INTO quotes(id,movieId,text,speaker,timestamp,sortOrder,createdAt,updatedAt,version) VALUES (?,?,?,?,?,?,?,?,?)",
+          )
+          .bind(
+            q.id,
+            q.movieId,
+            q.text,
+            q.speaker,
+            q.timestamp,
+            q.sortOrder,
+            q.createdAt,
+            q.updatedAt,
+            q.version,
+          ),
+      ),
+    ]),
+  );
+  const plan = buildContentPlan(originals, "https://daily-movie.jiahongw.com");
+  for (const e of plan.entries) {
+    const response = await request(`/api/v1/movies/${e.id}`, "PATCH", e.patch, {
+      key: e.idempotencyKey,
+      match: e.expectedEtag,
+    });
+    expect(response.status, await response.clone().text()).toBe(200);
+    const updated = ((await response.json()) as { data: Movie }).data,
+      before = originals.find((m) => m.id === e.id)!;
+    expect(fingerprint(updated.quotes)).toBe(e.quotesHash);
+    expect({
+      ...updated,
+      ...e.rollback,
+      updatedAt: before.updatedAt,
+      version: before.version,
+    }).toEqual(before);
+    const replay = await request(`/api/v1/movies/${e.id}`, "PATCH", e.patch, {
+      key: e.idempotencyKey,
+      match: e.expectedEtag,
+    });
+    expect(replay.status).toBe(200);
+    expect(((await replay.json()) as { data: Movie }).data.version).toBe(2);
+  }
+  expect(
+    (await db.prepare("SELECT COUNT(*) n FROM quotes").first<{ n: number }>())
+      ?.n,
+  ).toBe(37);
+  const e = plan.entries.find((e) => e.id === "the-godfather")!;
+  const rollback = await request(
+    `/api/v1/movies/${e.id}`,
+    "PATCH",
+    e.rollback,
+    { match: `"${e.id}:v2"` },
+  );
+  expect(rollback.status).toBe(200);
+  const restored = ((await rollback.json()) as { data: Movie }).data;
+  expect(restored.posters).toEqual(e.before.posters);
+  expect(fingerprint(restored.quotes)).toBe(e.quotesHash);
 });

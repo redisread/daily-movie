@@ -61,5 +61,11 @@ export default {
   "srOnly": "dm_srOnly",
   "state": "dm_state",
   "textButton": "dm_textButton",
+  "walkActions": "dm_walkActions",
+  "walkControls": "dm_walkControls",
+  "walkError": "dm_walkError",
+  "walkHint": "dm_walkHint",
+  "walkNext": "dm_walkNext",
+  "walkStatus": "dm_walkStatus",
   "wheelStage": "dm_wheelStage"
 } as const;

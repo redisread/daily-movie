@@ -1,0 +1,37 @@
+{
+  "checkedAt": "2026-11-07",
+  "added": [
+    {
+      "movieId": "the-godfather",
+      "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/4/48/Marlon_Brando_as_Vito_Corleone.png",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Marlon_Brando_as_Vito_Corleone.png",
+      "originalSourceListedByCommons": "https://www.ebay.com/itm/204476893830",
+      "work": "The Godfather (1972), Marlon Brando as Vito Corleone",
+      "credit": "NBC Television",
+      "sourceDescription": "Marlon Brando as Vito Corleone from NBC's promotion of the 45th Academy Awards in 1973",
+      "date": "Photo described as circa 1972, publicity dated 23 February 1973",
+      "useBasis": "Commons source wikitext explicitly applies PD-Pre1978; API extmetadata marks Public domain / PD US no notice. This records the source's US public-domain assessment, not a comprehensive global-rights warranty.",
+      "licensePage": "https://commons.wikimedia.org/wiki/Template:PD-Pre1978",
+      "caption": "马龙·白兰度饰维托·柯里昂，NBC 1973 年角色宣传照（非剧情剧照）",
+      "visualCheck": "Original downloaded and visually checked: Brando in Corleone costume, tuxedo/rose/cat, distinct from the main poster; browser preview verified full portrait with object-fit contain; no cropped-off head.",
+      "uploadedByUs": false,
+      "delivery": "Commons original retained in the data; existing weserv service supplies size-limited derivatives"
+    }
+  ],
+  "notAdded": [
+    "cinema-paradiso",
+    "lonesome-dove",
+    "breaking-bad",
+    "fight-club",
+    "the-shawshank-redemption",
+    "forrest-gump",
+    "leon-the-professional",
+    "schindlers-list",
+    "inception",
+    "interstellar",
+    "the-dark-knight"
+  ],
+  "notAddedReason": "No additional distinct poster/still with verified reuse basis admitted for these films in this patch. Existing usable covers remain; duplicates/misleading captions are corrected. Do not substitute AI images, unrelated actor photos, remakes or a poster labelled as a scene.",
+  "existingMediaRights": "Existing source URLs are preserved, not claimed to have completed a copyright audit. Wikipedia non-free cover presence is not blanket permission to mirror. No uploads to new object storage or paid image services.",
+  "avatars": "Optional, still absent; no guessed photos or empty-avatar grids added."
+}
