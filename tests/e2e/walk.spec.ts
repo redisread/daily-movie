@@ -66,16 +66,32 @@ test("walk keeps its selected catalog movie when daily recommendations are empty
     status: "listed" as const,
     publishedDate: null,
   }));
-  await catalogue(page, rows, undefined, true);
+  await catalogue(
+    page,
+    rows,
+    async (id, route) => {
+      const movie = rows.find((candidate) => candidate.id === id);
+      if (!movie) return false;
+      await route.fulfill({
+        json: { data: { ...movie, title: `更新：${movie.title}` } },
+      });
+      return true;
+    },
+    true,
+  );
   const first = rows[0];
   await page.goto(`/?movie=${first.id}&mode=walk`, {
     waitUntil: "domcontentloaded",
   });
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(first.title);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    `更新：${first.title}`,
+  );
   const secondId = await next(page);
   expect(secondId).not.toBe(first.id);
   const second = rows.find((movie) => movie.id === secondId)!;
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(second.title);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    `更新：${second.title}`,
+  );
   await expect(page.getByRole("button", { name: "再遇见一部" })).toBeVisible();
 });
 

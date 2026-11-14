@@ -26,12 +26,15 @@ type Memory = {
   available: boolean;
   pool: Movie[] | null;
   poolAt: number;
+  walkMovie: Movie | null;
 };
 const MemoryContext = createContext<Memory | null>(null);
 export function useWalkMovie(id: string | null): Movie | undefined {
   const memory = useContext(MemoryContext);
   if (!memory) throw Error("Walk provider missing");
-  return id ? memory.pool?.find((movie) => movie.id === id) : undefined;
+  if (!id) return undefined;
+  if (memory.walkMovie?.id === id) return memory.walkMovie;
+  return memory.pool?.find((movie) => movie.id === id);
 }
 export function WalkMemoryProvider({ children }: { children: ReactNode }) {
   const memory = useRef<Memory>({
@@ -40,6 +43,7 @@ export function WalkMemoryProvider({ children }: { children: ReactNode }) {
     available: true,
     pool: null,
     poolAt: 0,
+    walkMovie: null,
   });
   return (
     <MemoryContext.Provider value={memory.current}>
@@ -129,12 +133,18 @@ export function useRandomWalk({
     return movies;
   }
   function select(movie: Movie, motion: boolean, walk: boolean) {
+    memory!.walkMovie = walk ? movie : null;
+    if (walk && memory!.pool)
+      memory!.pool = memory!.pool.map((candidate) =>
+        candidate.id === movie.id ? movie : candidate,
+      );
     expected.current = { id: movie.id, walk };
     latest.current.onSelect(movie, motion, walk);
   }
   function fail(e: unknown, number: number, candidate?: string) {
     if (!valid(number)) return;
     if (e instanceof MovieReadError && e.status === 404 && candidate) {
+      if (memory!.walkMovie?.id === candidate) memory!.walkMovie = null;
       memory!.pool = memory!.pool?.filter((m) => m.id !== candidate) ?? null;
       const ids = memory!.pool?.map((m) => m.id) ?? [];
       setPoolSize(ids.length);
