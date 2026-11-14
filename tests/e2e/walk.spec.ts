@@ -154,6 +154,92 @@ test("share URL beyond recent12 starts a new path at that exact movie", async ({
   );
 });
 
+test("a walk SSR seed is removed after detail 404, including when returning to its URL", async ({
+  page,
+}) => {
+  const rows = await seed(page);
+  const selected = rows[0];
+  const listed = { ...selected, status: "listed" as const, publishedDate: null };
+  const url = `/?movie=${selected.id}&mode=walk`;
+  let releaseDetails!: () => void;
+  let detailGate = Promise.resolve();
+  const holdDetails = () => {
+    detailGate = new Promise<void>((resolve) => {
+      releaseDetails = resolve;
+    });
+  };
+  holdDetails();
+
+  await page.route(
+    (candidate) =>
+      candidate.pathname === "/" &&
+      candidate.searchParams.get("movie") === selected.id &&
+      candidate.searchParams.get("mode") === "walk",
+    async (route) => {
+      const response = await route.fetch();
+      let html = await response.text();
+      const match = html.match(
+        /(<script id="bootstrap" type="application\/json">)([\s\S]*?)(<\/script>)/,
+      );
+      expect(match).not.toBeNull();
+      const bootstrap = JSON.parse(match![2]!) as {
+        seed: Record<string, unknown>;
+      };
+      const dailyKey = "/api/v1/movies?scope=daily&limit=12";
+      const daily = bootstrap.seed[dailyKey] as { data: Movie[] };
+      daily.data = daily.data.filter((movie) => movie.id !== selected.id);
+      bootstrap.seed[`/api/v1/movies/${selected.id}`] = {
+        data: listed,
+        meta: { previous: null, next: null },
+      };
+      const serialized = JSON.stringify(bootstrap)
+        .replace(/</g, "\\u003c")
+        .replace(/>/g, "\\u003e")
+        .replace(/\u2028/g, "\\u2028")
+        .replace(/\u2029/g, "\\u2029");
+      html = html.replace(match![0], `${match![1]}${serialized}${match![3]}`);
+      await route.fulfill({ response, body: html });
+    },
+  );
+  await page.route("**/api/v1/movies?scope=daily&limit=12", async (route) => {
+    await route.fulfill({
+      json: {
+        data: rows.filter((movie) => movie.id !== selected.id),
+        meta: { nextCursor: null, previousCursor: null, limit: 12 },
+      },
+    });
+  });
+  await page.route(`**/api/v1/movies/${selected.id}`, async (route) => {
+    await detailGate;
+    await route.fulfill({
+      status: 404,
+      json: { error: { message: "withdrawn" } },
+    });
+  });
+
+  await page.goto(url, { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    selected.title,
+  );
+  releaseDetails();
+  await expect(page.getByText(/这部暂时不可浏览/)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).not.toHaveText(
+    selected.title,
+  );
+
+  await page.goto("/about", { waitUntil: "domcontentloaded" });
+  holdDetails();
+  await page.goto(url, { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    selected.title,
+  );
+  releaseDetails();
+  await expect(page.getByText(/这部暂时不可浏览/)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).not.toHaveText(
+    selected.title,
+  );
+});
+
 test("failed second page never shrinks the pool; retry loads all pages", async ({
   page,
 }) => {

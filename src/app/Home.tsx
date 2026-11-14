@@ -172,13 +172,19 @@ export function Home() {
     ? (seed[requestedPath] as { data?: Movie } | undefined)?.data
     : undefined;
   const isRequestedInDaily = requestedId && r.data?.data.some((movie) => movie.id === requestedId);
-  const needsDirectSelection = requestedId && params.get("mode") !== "walk" && !isRequestedInDaily;
+  const isWalking = params.get("mode") === "walk";
+  const needsDirectSelection =
+    requestedId &&
+    !isRequestedInDaily &&
+    (!isWalking || Boolean(seededRequestedMovie));
   const requested = useResource<{ data: Movie }>(
     needsDirectSelection ? requestedPath : null,
   );
   if (r.error) return <State error={r.error} retry={r.retry} />;
   if (!r.data) return <State />;
-  const selectedMovie = requested.data?.data ?? seededRequestedMovie;
+  const selectedMovie = needsDirectSelection && !requested.error
+    ? requested.data?.data ?? seededRequestedMovie
+    : undefined;
   const selectionMissing = requested.error === "未找到这部电影";
   if (needsDirectSelection && requested.error && !selectionMissing)
     return <State error={requested.error} retry={requested.retry} />;
