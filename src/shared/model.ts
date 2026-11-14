@@ -94,7 +94,7 @@ export const MovieInput = z
     whyThisMovie: z.string().max(200).nullable().optional(),
     editorialMarkdown: z.string().max(150000).default(""),
     publishedDate: Day.nullable().default(null),
-    status: z.enum(["draft", "published"]).default("draft"),
+    status: z.enum(["draft", "listed", "published"]).default("draft"),
     quotes: z.array(QuoteInput).max(100).default([]),
   })
   .strict();
@@ -138,9 +138,9 @@ export type Movie = Omit<z.output<typeof MovieInput>, "quotes"> & {
 };
 export type MovieCreate = z.output<typeof MovieInput>;
 export function publicationErrors(m: MovieCreate | Movie): string[] {
-  if (m.status !== "published") return [];
-  return [
-    !m.publishedDate && "publishedDate",
+  if (m.status === "draft") return [];
+  const missing = [
+    m.status === "published" && !m.publishedDate && "publishedDate",
     !m.director.name.trim() && "director.name",
     !m.year && "year",
     !m.duration && "duration",
@@ -149,4 +149,9 @@ export function publicationErrors(m: MovieCreate | Movie): string[] {
     !m.cover && "cover",
     !m.quotes.length && "quotes",
   ].filter((x): x is string => !!x);
+  return m.status === "listed" ? missing.filter((x) => x !== "publishedDate") : missing;
+}
+export function stateErrors(m: MovieCreate | Movie): string[] {
+  if (m.status === "listed" && m.publishedDate !== null) return ["publishedDate"];
+  return publicationErrors(m);
 }

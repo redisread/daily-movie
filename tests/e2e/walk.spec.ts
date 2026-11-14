@@ -169,7 +169,7 @@ test("failed second page never shrinks the pool; retry loads all pages", async (
   ];
   let fail = true;
   await catalogue(page, rows);
-  await page.route("**/api/v1/movies?limit=100&cursor=100", async (route) => {
+  await page.route("**/api/v1/movies?scope=catalog&limit=100&cursor=100", async (route) => {
     if (fail)
       await route.fulfill({
         status: 503,

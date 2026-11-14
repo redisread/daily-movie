@@ -10,10 +10,11 @@ import { useRandomWalk } from "./walk/useRandomWalk";
 import { WalkControls } from "./walk/WalkControls";
 import styles from "./styles.generated";
 function MovieInfo({ movie }: { movie: Movie }) {
+  const listed = movie.status === "listed";
   return (
     <>
       <p className={styles.eyebrow}>
-        {movie.publishedDate?.replaceAll("-", ".")} ·{" "}
+        {listed ? "片库收录" : movie.publishedDate?.replaceAll("-", ".")} ·{" "}
         {movie.type === "tv" ? "剧集" : "电影"}
       </p>
       <h1>{movie.title}</h1>
@@ -31,19 +32,20 @@ function MovieInfo({ movie }: { movie: Movie }) {
         <p className={styles.speaker}>出自 {movie.quotes[0].speaker}</p>
       )}
       <Link to={movieHref(movie.id)} className={styles.primary}>
-        查看电影 <span aria-hidden="true">↗</span>
+        {listed ? "浏览片库电影" : "查看电影"} <span aria-hidden="true">↗</span>
       </Link>
     </>
   );
 }
-function HomeLoaded({ movies }: { movies: Movie[] }) {
+function HomeLoaded({ movies, requestedMovie }: { movies: Movie[]; requestedMovie?: Movie }) {
   const [params, setParams] = useSearchParams(),
     [extras, setExtras] = useState<Record<string, Movie>>({});
   const requested = params.get("movie"),
     selected =
-      (requested &&
+      requestedMovie ??
+      ((requested &&
         (extras[requested] ?? movies.find((m) => m.id === requested))) ||
-      movies[0];
+        movies[0]);
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
   const ordered = reelWindow(movies, selected),
@@ -143,11 +145,11 @@ function HomeLoaded({ movies }: { movies: Movie[] }) {
             )}
           </div>
           <div className={styles.catalogNote}>
-            <span>FILM SELECTION</span>
+            <span>{selected.status === "listed" ? "LIBRARY BROWSE" : "FILM SELECTION"}</span>
             <p>
-              转盘预览 {ordered.length} 部选片。
-              <br />
-              每一句台词，都有它的来处。
+              {selected.status === "listed"
+                ? "正在浏览片库收录内容；首页每日推荐保持独立。"
+                : <>转盘预览 {ordered.length} 部选片。<br />每一句台词，都有它的来处。</>}
             </p>
           </div>
         </section>
@@ -161,9 +163,20 @@ function HomeLoaded({ movies }: { movies: Movie[] }) {
   );
 }
 export function Home() {
-  const r = useResource<ListResult<Movie>>("/api/v1/movies?limit=12");
+  const [params] = useSearchParams();
+  const requestedId = params.get("movie");
+  const r = useResource<ListResult<Movie>>("/api/v1/movies?scope=daily&limit=12");
+  const isRequestedInDaily = requestedId && r.data?.data.some((movie) => movie.id === requestedId);
+  const needsDirectSelection = requestedId && params.get("mode") !== "walk" && !isRequestedInDaily;
+  const requested = useResource<{ data: Movie }>(
+    needsDirectSelection ? `/api/v1/movies/${encodeURIComponent(requestedId)}` : null,
+  );
   if (r.error) return <State error={r.error} retry={r.retry} />;
   if (!r.data) return <State />;
-  if (!r.data.data.length) return <State empty />;
-  return <HomeLoaded movies={r.data.data} />;
+  const selectionMissing = requested.error === "未找到这部电影";
+  if (needsDirectSelection && requested.error && !selectionMissing)
+    return <State error={requested.error} retry={requested.retry} />;
+  if (needsDirectSelection && !requested.data && !selectionMissing) return <State />;
+  if (!r.data.data.length && !requested.data) return <State empty />;
+  return <HomeLoaded movies={r.data.data} requestedMovie={requested.data?.data} />;
 }

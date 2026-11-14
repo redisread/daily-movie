@@ -25,7 +25,7 @@ export async function readMovie(
         : "读取失败，当前位置已保留，请重试",
     );
   const body = (await response.json()) as { data?: Movie };
-  if (!body.data || body.data.id !== id || body.data.status !== "published")
+  if (!body.data || body.data.id !== id || !["listed", "published"].includes(body.data.status))
     throw new MovieReadError(503, "影片资料暂不可用");
   return body.data;
 }
@@ -34,7 +34,7 @@ export async function loadCatalogue(signal: AbortSignal): Promise<Movie[]> {
     cursors = new Set<string>();
   let cursor: string | null = null;
   do {
-    const params = new URLSearchParams({ limit: "100" });
+    const params = new URLSearchParams({ scope: "catalog", limit: "100" });
     if (cursor) params.set("cursor", cursor);
     const response = await fetch(`/api/v1/movies?${params}`, {
       signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]),
@@ -59,7 +59,7 @@ export async function loadCatalogue(signal: AbortSignal): Promise<Movie[]> {
       if (
         !movie ||
         typeof movie.id !== "string" ||
-        movie.status !== "published"
+        !["listed", "published"].includes(movie.status)
       )
         throw Error("片库内容暂不可用，请重试");
       if (rows.has(movie.id)) throw Error("片库分页发生变化，请重试");

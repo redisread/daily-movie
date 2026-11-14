@@ -22,7 +22,7 @@ npm run preview            # http://localhost:4321，真实本地D1 + Worker + �
 ## 内容与 API
 
 - 公共页面 `/`、`/library`、`/movies/:id`、`/api-docs`、`/about`。
-- `GET /api/v1/movies`：q/type/cursor/limit，公开仅返回已发布且上海日期已到的条目。
+- `GET /api/v1/movies`：q/type/cursor/limit，公开默认 `scope=daily`；`scope=catalog` 返回片库收录与已到上海日期的推荐。
 - `GET /api/v1/movies/:id` 与 `GET /api/v1/quotes/:id` 返回 ETag。
 - `POST /api/v1/movies` 创建草稿；`POST /api/v1/movies/:id/quotes` 追加金句。
 - `PATCH /api/v1/movies/:id` / `PATCH /api/v1/quotes/:id` 要求 If-Match。
@@ -31,9 +31,10 @@ npm run preview            # http://localhost:4321，真实本地D1 + Worker + �
 - `GET /api/openapi.json` 为 OpenAPI 3.1；`GET /api/health` 检查D1。
 - 所有写响应与鉴权读no-store，公开读最多缓存30秒。IP限流使用D1固定分钟计数（写40/分钟，读600/分钟），429带Retry-After。
 - 前端没有写密钥输入或管理界面，构建产物不包含密钥。
-- 无DELETE；设为draft撤回。日期可版本化修改，id链接保持稳定。
+- `draft` 私有；`listed` 公开进入片库且 `publishedDate=null`；`published` 进入每日推荐，未来日期到上海当天才公开。设为draft撤回；状态变更保留ETag、幂等回执和审计边界。
 
 完整调用示例：[docs/api.md](docs/api.md)。D1原子写与边界：[docs/engineering.md](docs/engineering.md)。
+片库与每日推荐的状态契约及本地上线/回滚计划：[docs/library-visibility.md](docs/library-visibility.md)。
 
 ## 随机漫步与图片修正
 

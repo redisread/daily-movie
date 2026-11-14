@@ -103,6 +103,24 @@ beforeAll(async () => {
     .split(";")
     .filter((s) => s.trim()))
     await db.prepare(statement).run();
+  await db.prepare("INSERT INTO movies (id,type,title,directorJson,genreJson,coverJson,postersJson,castJson,synopsis,editorialMarkdown,status,createdAt,updatedAt) VALUES ('migration-fixture','movie','旧记录','{}','[]','null','[]','[]','保留内容','原笔记','draft','created','updated')").run();
+  await db.prepare("INSERT INTO quotes (id,movieId,text,sortOrder,createdAt,updatedAt) VALUES ('migration-quote','migration-fixture','原金句',0,'created','updated')").run();
+  const migration = readFileSync("migrations/0002_listed_catalog.sql", "utf8")
+    .replace(/^--.*$/gm, "")
+    .split(";")
+    .filter((s) => s.trim());
+  await db.batch(migration.map((statement) => db.prepare(statement)));
+  const preserved = await db.prepare("SELECT m.status,m.synopsis,q.text FROM movies m JOIN quotes q ON q.movieId=m.id WHERE m.id='migration-fixture'").first<{ status: string; synopsis: string; text: string }>();
+  if (!preserved || preserved.status !== "draft" || preserved.synopsis !== "保留内容" || preserved.text !== "原金句")
+    throw Error("listed-state migration did not preserve movie and quote rows");
+  let invalidListedRejected = false;
+  try {
+    await db.prepare("UPDATE movies SET status='listed',publishedDate='2020-01-01' WHERE id='migration-fixture'").run();
+  } catch {
+    invalidListedRejected = true;
+  }
+  if (!invalidListedRejected) throw Error("listed-state CHECK accepted a recommendation date");
+  await db.batch([db.prepare("DELETE FROM quotes WHERE id='migration-quote'"), db.prepare("DELETE FROM movies WHERE id='migration-fixture'")]);
 });
 beforeEach(async () => {
   await db.batch(
@@ -201,6 +219,53 @@ describe("Content API with real local D1 (Miniflare)", () => {
         })
       ).status,
     ).toBe(401);
+  });
+  it("lists listed movies publicly without adding them to daily recommendations", async () => {
+    const listed = await create("listed-film", {
+      status: "listed",
+      publishedDate: null,
+    });
+    await create("listed-film-two", { status: "listed", publishedDate: null });
+    const catalog = await request("/api/v1/movies?scope=catalog", "GET", undefined, { auth: false });
+    const daily = await request("/api/v1/movies?scope=daily", "GET", undefined, { auth: false });
+    expect(((await catalog.json()) as { data: Movie[] }).data.map((m) => m.id)).toContain("listed-film");
+    expect(((await daily.json()) as { data: Movie[] }).data.map((m) => m.id)).not.toContain("listed-film");
+    expect((await request("/api/v1/movies/listed-film", "GET", undefined, { auth: false })).status).toBe(200);
+    const listedDetail = (await (await request("/api/v1/movies/listed-film-two", "GET", undefined, { auth: false })).json()) as { meta: { previous: unknown; next: { id: string } | null } };
+    expect(listedDetail.meta.previous).toBeNull();
+    expect(listedDetail.meta.next?.id).toBe("listed-film");
+    const libraryDetailPage = await request("/movies/listed-film", "GET", undefined, { auth: false });
+    expect(libraryDetailPage.status).toBe(200);
+    expect(await libraryDetailPage.text()).toContain("片库收录");
+    const homeSelection = await request("/?movie=listed-film", "GET", undefined, { auth: false });
+    expect(homeSelection.status).toBe(200);
+    expect(await homeSelection.text()).toContain("片库收录");
+    const withdrawnSelection = await request("/?movie=draft", "GET", undefined, { auth: false });
+    expect(withdrawnSelection.headers.get("cache-control")).toBe("no-store");
+    expect(await withdrawnSelection.text()).not.toContain("草稿");
+    const withdrawn = await request("/api/v1/movies/draft", "GET", undefined, { auth: false });
+    expect(withdrawn.status).toBe(404);
+    expect(withdrawn.headers.get("cache-control")).toBe("no-store");
+    expect((await request(`/api/v1/quotes/${listed.quotes[0].id}`, "GET", undefined, { auth: false })).status).toBe(200);
+    const first = await request("/api/v1/movies?scope=catalog&limit=1", "GET", undefined, { auth: false });
+    const firstBody = (await first.json()) as { meta: { nextCursor: string | null } };
+    expect(firstBody.meta.nextCursor).toBeTruthy();
+    expect((await request(`/api/v1/movies?scope=daily&limit=1&cursor=${firstBody.meta.nextCursor}`, "GET", undefined, { auth: false })).status).toBe(400);
+    expect((await request("/api/v1/movies?scope=unknown", "GET", undefined, { auth: false })).status).toBe(400);
+    expect((await request("/api/v1/movies?scope=catalog")).status).toBe(400);
+  });
+  it("requires listed state to clear its recommendation date without side effects", async () => {
+    const m = await create("listed-date-check");
+    const rejected = await request("/api/v1/movies/listed-date-check", "PATCH", { status: "listed" }, { match: tag(m) });
+    expect(rejected.status).toBe(422);
+    expect(((await (await movie("listed-date-check")).json()) as { data: Movie }).data.version).toBe(m.version);
+    const accepted = await request("/api/v1/movies/listed-date-check", "PATCH", { status: "listed", publishedDate: null }, { match: tag(m) });
+    expect(accepted.status).toBe(200);
+    const listed = ((await accepted.json()) as { data: Movie }).data;
+    expect(listed.publishedDate).toBeNull();
+    expect((await request("/api/v1/movies/listed-date-check", "PATCH", { status: "published" }, { match: tag(listed) })).status).toBe(422);
+    const published = await request("/api/v1/movies/listed-date-check", "PATCH", { status: "published", publishedDate: "2020-01-01" }, { match: tag(listed) });
+    expect(published.status).toBe(200);
   });
   it("replays creation exactly; rejects mismatched payload under same key", async () => {
     const body = input(),
@@ -468,9 +533,11 @@ describe("Content API with real local D1 (Miniflare)", () => {
       undefined,
       { auth: false },
     );
-    expect(
-      ((await second.json()) as { data: Movie[] }).data.map((m) => m.id),
-    ).toEqual(["movie-1"]);
+    const secondBody = (await second.json()) as { data: Movie[]; meta: { previousCursor: string | null } };
+    expect(secondBody.data.map((m) => m.id)).toEqual(["movie-1"]);
+    expect(secondBody.meta.previousCursor).toBeTruthy();
+    const back = await request(`/api/v1/movies?limit=2&cursor=${secondBody.meta.previousCursor}`, "GET", undefined, { auth: false });
+    expect(((await back.json()) as { data: Movie[] }).data.map((m) => m.id)).toEqual(["movie-3", "movie-2"]);
     expect(
       (
         await request(

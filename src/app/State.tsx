@@ -25,7 +25,7 @@ export function State({
             : "正在整理放映资料"}
       </h1>
       <p>
-        {error ?? (empty ? "片库还没有发布内容，请稍后再来。" : "请稍候。")}
+        {error ?? (empty ? "片库还没有公开内容，请稍后再来。" : "请稍候。")}
       </p>
       {retry && (
         <button onClick={retry} className={styles.outline}>
