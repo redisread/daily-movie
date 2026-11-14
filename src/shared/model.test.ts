@@ -6,6 +6,7 @@ import {
   MovieInput,
   QuoteInput,
   publicationErrors,
+  stateErrors,
 } from "./model";
 import { sourceContent } from "../../scripts/content";
 describe("content contracts", () => {
@@ -38,6 +39,19 @@ describe("content contracts", () => {
     expect(publicationErrors({ ...m, status: "published" })).toContain(
       "quotes",
     );
+  });
+  it("requires listed entries to be complete and have no recommendation date", () => {
+    const incomplete = MovieInput.parse({ id: "listed-film", title: "片库电影", status: "listed" });
+    expect(publicationErrors(incomplete)).toContain("quotes");
+    expect(stateErrors(incomplete)).toContain("quotes");
+    const complete = MovieInput.parse({
+      id: "listed-film-complete", title: "片库电影", status: "listed",
+      director: { name: "导演" }, year: 2000, duration: 100, genre: ["剧情"],
+      cover: { url: "https://example.org/poster.jpg" }, synopsis: "简介",
+      quotes: [{ text: "台词" }],
+    });
+    expect(stateErrors(complete)).toEqual([]);
+    expect(stateErrors({ ...complete, publishedDate: "2020-01-01" })).toEqual(["publishedDate"]);
   });
   it("imports every source document without losing fields/body/order and with stable quote ids", () => {
     const a = sourceContent(),

@@ -117,7 +117,7 @@ export async function neighbors(
   const date = movie.publishedDate ?? "";
   const visibility = authenticated
     ? "1"
-    : "status='published' AND publishedDate<=?";
+    : "(status='listed' OR (status='published' AND publishedDate<=?))";
   const visibleArgs = authenticated ? [] : [shanghaiDay()];
   const run = (operator: "<" | ">", order: "ASC" | "DESC") =>
     db
@@ -127,8 +127,8 @@ export async function neighbors(
       .bind(...visibleArgs, date, date, movie.id)
       .first<{ id: string; title: string }>();
   const [previous, next] = await Promise.all([
-    run("<", "DESC"),
     run(">", "ASC"),
+    run("<", "DESC"),
   ]);
   return { previous, next };
 }

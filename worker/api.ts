@@ -1,4 +1,5 @@
 import { shanghaiDay, etag } from "../src/shared/format";
+import { catalogVisible } from "../src/shared/visibility";
 import { z } from "zod";
 import {
   MovieInput,
@@ -52,17 +53,15 @@ function parse<T>(schema: z.ZodType<T>, value: unknown): T {
     );
   return parsed.data;
 }
-const publicVisible = (m: Movie) =>
-  m.status === "published" &&
-  !!m.publishedDate &&
-  m.publishedDate <= shanghaiDay();
-function ensurePublished(m: Movie) {
+function ensurePublicState(m: Movie) {
+  if (m.status === "listed" && m.publishedDate !== null)
+    throw new HttpError(422, "INVALID_PUBLICATION_STATE", "片库收录状态不能设置每日推荐日期", ["publishedDate"]);
   const fields = publicationErrors(m);
   if (fields.length)
     throw new HttpError(
       422,
-      "PUBLISH_INCOMPLETE",
-      "发布前请补齐资料与至少一条金句",
+      m.status === "listed" ? "LISTING_INCOMPLETE" : "PUBLISH_INCOMPLETE",
+      m.status === "listed" ? "公开收录前请补齐资料与至少一条金句" : "每日推荐前请补齐资料、推荐日期与至少一条金句",
       fields,
     );
 }
@@ -136,13 +135,24 @@ export async function listMovies(req: Request, db: D1Database, auth: boolean) {
     p.get("limit") ?? 20,
   );
   const q = parse(z.string().max(200), p.get("q") ?? "");
+  if (auth && p.has("scope"))
+    throw new HttpError(400, "INVALID_SCOPE", "鉴权列表不能使用公开范围参数");
+  const requestedScope = p.get("scope") ?? "daily";
+  if (!auth && requestedScope !== "catalog" && requestedScope !== "daily")
+    throw new HttpError(400, "INVALID_SCOPE", "公开列表范围须为 catalog 或 daily");
+  const scope = auth ? null : requestedScope;
   const type = p.get("type"),
     status = p.get("status");
   const where: string[] = [],
     args: (string | number)[] = [];
   if (!auth) {
-    where.push("m.status='published' AND m.publishedDate<=?");
-    args.push(shanghaiDay());
+    if (scope === "catalog") {
+      where.push("(m.status='listed' OR (m.status='published' AND m.publishedDate<=?))");
+      args.push(shanghaiDay());
+    } else {
+      where.push("m.status='published' AND m.publishedDate<=?");
+      args.push(shanghaiDay());
+    }
   }
   if (type) {
     parse(z.enum(["movie", "tv"]), type);
@@ -151,7 +161,7 @@ export async function listMovies(req: Request, db: D1Database, auth: boolean) {
   }
   if (status) {
     if (!auth) throw new HttpError(401, "UNAUTHORIZED", "筛选发布状态需要鉴权");
-    parse(z.enum(["draft", "published"]), status);
+    parse(z.enum(["draft", "listed", "published"]), status);
     where.push("m.status=?");
     args.push(status);
   }
@@ -162,7 +172,12 @@ export async function listMovies(req: Request, db: D1Database, auth: boolean) {
     const pattern = `%${q.replace(/[\\%_]/g, "\\$&")}%`;
     args.push(pattern, pattern);
   }
-  const scope = await sha256(canonical({ q, type, status, auth }));
+  const cursorScope = await sha256(canonical({ q, type, status, auth, scope }));
+  const legacyDailyScope = scope === "daily"
+    ? await sha256(canonical({ q, type, status, auth }))
+    : null;
+  let direction: "after" | "before" = "after";
+  let hasCursor = false;
   if (p.has("cursor")) {
     let value: unknown;
     try {
@@ -172,52 +187,52 @@ export async function listMovies(req: Request, db: D1Database, auth: boolean) {
     } catch {
       throw new HttpError(400, "INVALID_CURSOR", "分页游标无效");
     }
-    const c = parse(
-      z
-        .object({ date: z.string(), id: z.string(), scope: z.string() })
-        .strict(),
-      value,
-    );
-    if (c.scope !== scope)
+    const parsedCursor = z
+      .object({ date: z.string(), id: z.string(), scope: z.string(), direction: z.enum(["after", "before"]).optional() })
+      .strict()
+      .safeParse(value);
+    if (!parsedCursor.success)
+      throw new HttpError(400, "INVALID_CURSOR", "分页游标无效");
+    const c = parsedCursor.data;
+    if (c.scope !== cursorScope && c.scope !== legacyDailyScope)
       throw new HttpError(
         400,
         "INVALID_CURSOR",
         "筛选条件改变后请从第一页开始",
       );
-    where.push(
-      "(COALESCE(m.publishedDate,'') < ? OR (COALESCE(m.publishedDate,'')=? AND m.id<?))",
-    );
+    direction = c.direction ?? "after";
+    hasCursor = true;
+    const operator = direction === "before" ? ">" : "<";
+    where.push(`(COALESCE(m.publishedDate,'') ${operator} ? OR (COALESCE(m.publishedDate,'')=? AND m.id${operator}?))`);
     args.push(c.date, c.date, c.id);
   }
+  const order = direction === "before" ? "ASC" : "DESC";
   const r = await db
     .prepare(
-      `SELECT ${movieJson()} AS value FROM movies m ${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY COALESCE(m.publishedDate,'') DESC,m.id DESC LIMIT ?`,
+      `SELECT ${movieJson()} AS value FROM movies m ${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY COALESCE(m.publishedDate,'') ${order},m.id ${order} LIMIT ?`,
     )
     .bind(...args, limit + 1)
     .all<{ value: string }>();
-  const movies = r.results
+  const hasMore = r.results.length > limit;
+  let movies = r.results
     .slice(0, limit)
     .map((row) => JSON.parse(row.value) as Movie);
+  if (direction === "before") movies = movies.reverse();
   const last = movies.at(-1);
-  const nextCursor =
-    r.results.length > limit && last
-      ? btoa(
-          JSON.stringify({
-            date: last.publishedDate ?? "",
-            id: last.id,
-            scope,
-          }),
-        )
-          .replace(/=/g, "")
-          .replace(/\+/g, "-")
-          .replace(/\//g, "_")
-      : null;
+  const first = movies[0];
+  const encodeCursor = (movie: Movie, cursorDirection: "after" | "before") =>
+    btoa(JSON.stringify({ date: movie.publishedDate ?? "", id: movie.id, scope: cursorScope, direction: cursorDirection }))
+      .replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const nextCursor = direction === "before"
+    ? last ? encodeCursor(last, "after") : null
+    : hasMore && last ? encodeCursor(last, "after") : null;
+  const previousCursor = direction === "after"
+    ? hasCursor && first ? encodeCursor(first, "before") : null
+    : hasMore && first ? encodeCursor(first, "before") : null;
   return json(
-    { data: movies, meta: { nextCursor, limit } },
+    { data: movies, meta: { nextCursor, previousCursor, limit } },
     200,
-    auth
-      ? {}
-      : { "Cache-Control": "public, max-age=30", Vary: "Authorization" },
+    { Vary: "Authorization" },
   );
 }
 export async function api(
@@ -257,22 +272,20 @@ export async function api(
     if (collection) return listMovies(req, env.DB, auth);
     if (movieMatch) {
       const movie = await getMovie(env.DB, movieMatch[1]);
-      if (!movie || (!auth && !publicVisible(movie)))
+      if (!movie || (!auth && !catalogVisible(movie)))
         throw new HttpError(404, "NOT_FOUND", "电影不存在");
       return json(
         { data: movie, meta: await neighbors(env.DB, movie, auth) },
         200,
         {
           ETag: etag(movie),
-          ...(auth
-            ? {}
-            : { "Cache-Control": "public, max-age=30", Vary: "Authorization" }),
+          ...(!auth ? { Vary: "Authorization" } : {}),
         },
       );
     }
     const quote = await getQuote(env.DB, quoteMatch![1]);
     const movie = quote ? await getMovie(env.DB, quote.movieId) : null;
-    if (!quote || !movie || (!auth && !publicVisible(movie)))
+    if (!quote || !movie || (!auth && !catalogVisible(movie)))
       throw new HttpError(404, "NOT_FOUND", "金句不存在");
     return json({ data: quote }, 200, { ETag: etag(quote) });
   }
@@ -330,7 +343,7 @@ export async function api(
       createdAt: now,
       updatedAt: now,
     };
-    ensurePublished(movie);
+    ensurePublicState(movie);
     if (new Set(movie.quotes.map((q) => q.text)).size !== movie.quotes.length)
       throw new HttpError(422, "DUPLICATE_QUOTES", "嵌套金句不能重复");
     statements.push(
@@ -349,7 +362,7 @@ export async function api(
       version: movie.version + 1,
       updatedAt: now,
     };
-    ensurePublished(updated);
+    ensurePublicState(updated);
     statements.push(
       assertVersion(env.DB, "movies", movie.id, movie.version),
       env.DB.prepare(
@@ -433,10 +446,14 @@ export async function api(
     const replay = await getReceipt(env.DB, key, req.method, path, hash);
     if (replay) return receiptResponse(replay);
     const message = err instanceof Error ? err.message : "";
+    // D1 may report the write_assertions CHECK failure without its table name.
+    const assertionFailed =
+      message.includes("write_assertions") ||
+      message.includes("CHECK constraint failed: ok=1");
     if (
       quoteCollection &&
       appendAttempt < 2 &&
-      (message.includes("write_assertions") ||
+      (assertionFailed ||
         message.includes("UNIQUE constraint"))
     ) {
       return api(
@@ -449,7 +466,7 @@ export async function api(
         appendAttempt + 1,
       );
     }
-    if (message.includes("write_assertions")) {
+    if (assertionFailed) {
       if (req.method === "PATCH")
         throw new HttpError(412, "VERSION_CONFLICT", "内容已更新，请重新读取");
       // Concurrent append can safely be retried with the SAME key. Never invent a new key.

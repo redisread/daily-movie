@@ -11,18 +11,23 @@ async function catalogue(
   page: Page,
   rows: Movie[],
   detail?: (id: string, route: Route) => Promise<boolean>,
+  emptyDaily = false,
 ) {
   await page.route("**/api/v1/movies**", async (route) => {
     const url = new URL(route.request().url());
     if (url.pathname === "/api/v1/movies") {
+      const visibleRows =
+        emptyDaily && url.searchParams.get("scope") === "daily" ? [] : rows;
       const limit = Number(url.searchParams.get("limit") ?? 20),
         offset = Number(url.searchParams.get("cursor") ?? 0);
       await route.fulfill({
         json: {
-          data: rows.slice(offset, offset + limit),
+          data: visibleRows.slice(offset, offset + limit),
           meta: {
             nextCursor:
-              offset + limit < rows.length ? String(offset + limit) : null,
+              offset + limit < visibleRows.length
+                ? String(offset + limit)
+                : null,
             limit,
           },
         },
@@ -50,6 +55,45 @@ async function next(page: Page) {
   await expect.poll(() => current(page)).not.toBe(before);
   return (await current(page))!;
 }
+
+test("walk keeps its selected catalog movie when daily recommendations are empty", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const base = await seed(page);
+  const rows = base.map((movie) => ({
+    ...movie,
+    status: "listed" as const,
+    publishedDate: null,
+  }));
+  await catalogue(
+    page,
+    rows,
+    async (id, route) => {
+      const movie = rows.find((candidate) => candidate.id === id);
+      if (!movie) return false;
+      await route.fulfill({
+        json: { data: { ...movie, title: `更新：${movie.title}` } },
+      });
+      return true;
+    },
+    true,
+  );
+  const first = rows[0];
+  await page.goto(`/?movie=${first.id}&mode=walk`, {
+    waitUntil: "domcontentloaded",
+  });
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    `更新：${first.title}`,
+  );
+  const secondId = await next(page);
+  expect(secondId).not.toBe(first.id);
+  const second = rows.find((movie) => movie.id === secondId)!;
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    `更新：${second.title}`,
+  );
+  await expect(page.getByRole("button", { name: "再遇见一部" })).toBeVisible();
+});
 
 test("one full round covers117 public items across pages; reel stays12 and history100", async ({
   page,
@@ -154,6 +198,92 @@ test("share URL beyond recent12 starts a new path at that exact movie", async ({
   );
 });
 
+test("a walk SSR seed is removed after detail 404, including when returning to its URL", async ({
+  page,
+}) => {
+  const rows = await seed(page);
+  const selected = rows[0];
+  const listed = { ...selected, status: "listed" as const, publishedDate: null };
+  const url = `/?movie=${selected.id}&mode=walk`;
+  let releaseDetails!: () => void;
+  let detailGate = Promise.resolve();
+  const holdDetails = () => {
+    detailGate = new Promise<void>((resolve) => {
+      releaseDetails = resolve;
+    });
+  };
+  holdDetails();
+
+  await page.route(
+    (candidate) =>
+      candidate.pathname === "/" &&
+      candidate.searchParams.get("movie") === selected.id &&
+      candidate.searchParams.get("mode") === "walk",
+    async (route) => {
+      const response = await route.fetch();
+      let html = await response.text();
+      const match = html.match(
+        /(<script id="bootstrap" type="application\/json">)([\s\S]*?)(<\/script>)/,
+      );
+      expect(match).not.toBeNull();
+      const bootstrap = JSON.parse(match![2]!) as {
+        seed: Record<string, unknown>;
+      };
+      const dailyKey = "/api/v1/movies?scope=daily&limit=12";
+      const daily = bootstrap.seed[dailyKey] as { data: Movie[] };
+      daily.data = daily.data.filter((movie) => movie.id !== selected.id);
+      bootstrap.seed[`/api/v1/movies/${selected.id}`] = {
+        data: listed,
+        meta: { previous: null, next: null },
+      };
+      const serialized = JSON.stringify(bootstrap)
+        .replace(/</g, "\\u003c")
+        .replace(/>/g, "\\u003e")
+        .replace(/\u2028/g, "\\u2028")
+        .replace(/\u2029/g, "\\u2029");
+      html = html.replace(match![0], `${match![1]}${serialized}${match![3]}`);
+      await route.fulfill({ response, body: html });
+    },
+  );
+  await page.route("**/api/v1/movies?scope=daily&limit=12", async (route) => {
+    await route.fulfill({
+      json: {
+        data: rows.filter((movie) => movie.id !== selected.id),
+        meta: { nextCursor: null, previousCursor: null, limit: 12 },
+      },
+    });
+  });
+  await page.route(`**/api/v1/movies/${selected.id}`, async (route) => {
+    await detailGate;
+    await route.fulfill({
+      status: 404,
+      json: { error: { message: "withdrawn" } },
+    });
+  });
+
+  await page.goto(url, { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    selected.title,
+  );
+  releaseDetails();
+  await expect(page.getByText(/这部暂时不可浏览/)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).not.toHaveText(
+    selected.title,
+  );
+
+  await page.goto("/about", { waitUntil: "domcontentloaded" });
+  holdDetails();
+  await page.goto(url, { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    selected.title,
+  );
+  releaseDetails();
+  await expect(page.getByText(/这部暂时不可浏览/)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).not.toHaveText(
+    selected.title,
+  );
+});
+
 test("failed second page never shrinks the pool; retry loads all pages", async ({
   page,
 }) => {
@@ -169,7 +299,7 @@ test("failed second page never shrinks the pool; retry loads all pages", async (
   ];
   let fail = true;
   await catalogue(page, rows);
-  await page.route("**/api/v1/movies?limit=100&cursor=100", async (route) => {
+  await page.route("**/api/v1/movies?scope=catalog&limit=100&cursor=100", async (route) => {
     if (fail)
       await route.fulfill({
         status: 503,

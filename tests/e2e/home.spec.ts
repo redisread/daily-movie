@@ -221,7 +221,7 @@ test("empty, single, short and long collections do not invent entries", async ({
               title: "测试用长片名：一部有着很长中文名称的电影",
             })),
           ];
-    await page.route("**/api/v1/movies?limit=12", (route) =>
+    await page.route("**/api/v1/movies?scope=daily&limit=12", (route) =>
       route.fulfill({
         json: { data: all.slice(0, 12), meta: { nextCursor: null, limit: 12 } },
       }),
@@ -240,21 +240,21 @@ test("empty, single, short and long collections do not invent entries", async ({
           page.getByRole("button", { name: "下一部", exact: true }),
         ).toHaveCount(0);
     }
-    await page.unroute("**/api/v1/movies?limit=12");
+    await page.unroute("**/api/v1/movies?scope=daily&limit=12");
   }
 });
 
 test("API failures are retryable and broken images use an honest fallback", async ({
   page,
 }) => {
-  await page.route("**/api/v1/movies?limit=12", (route) =>
+  await page.route("**/api/v1/movies?scope=daily&limit=12", (route) =>
     route.fulfill({ status: 503, json: { error: { message: "不可用" } } }),
   );
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(
     page.getByRole("heading", { name: "暂时无法读取电影" }),
   ).toBeVisible();
-  await page.unroute("**/api/v1/movies?limit=12");
+  await page.unroute("**/api/v1/movies?scope=daily&limit=12");
   await page.getByRole("button", { name: "重新读取" }).click();
   await expect(page.getByRole("heading", { name: "天堂电影院" })).toBeVisible();
   await page.route("https://images.weserv.nl/**", (route) => route.abort());
@@ -263,6 +263,32 @@ test("API failures are retryable and broken images use an honest fallback", asyn
     "src",
     "/fallback-poster.svg",
   );
+});
+
+test("listed movie is labelled in the catalog and remains usable at narrow widths", async ({ page, request }) => {
+  const source = ((await (await request.get("/api/v1/movies?scope=daily&limit=1")).json()) as { data: Movie[] }).data[0];
+  const listed: Movie = { ...source, id: "listed-layout-fixture", title: "片库收录测试", status: "listed", publishedDate: null };
+  await page.route("**/api/v1/movies?scope=catalog&limit=20", (route) =>
+    route.fulfill({ json: { data: [listed], meta: { nextCursor: null, previousCursor: null, limit: 20 } } }),
+  );
+  await page.route("**/api/v1/movies/listed-layout-fixture", (route) =>
+    route.fulfill({ json: { data: listed, meta: { previous: null, next: null } } }),
+  );
+  await page.setViewportSize({ width: 375, height: 900 });
+  await page.goto("/library", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { level: 1, name: "片库" })).toBeVisible();
+  await expect(page.getByText("已公开的电影与剧集，不限每日推荐。")).toBeVisible();
+  await expect(page.getByText("片库收录", { exact: true })).toBeVisible();
+  const overflow375 = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  expect(overflow375).toBe(false);
+  const card = page.getByRole("link", { name: /片库收录测试/ });
+  await card.focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/movies\/listed-layout-fixture$/);
+  await expect(page.getByText("电影 · 片库收录")).toBeVisible();
+  await page.setViewportSize({ width: 188, height: 900 });
+  const overflow200 = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  expect(overflow200).toBe(false);
 });
 
 test("mode toggles plus rapid reverse selections always allow opening the selected detail", async ({

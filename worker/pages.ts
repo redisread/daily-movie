@@ -4,7 +4,7 @@ import { createElement } from "react";
 import { App } from "../src/app/App";
 import type { Seed } from "../src/app/data";
 import type { Movie } from "../src/shared/model";
-import { shanghaiDay } from "../src/shared/format";
+import { catalogVisible } from "../src/shared/visibility";
 import { getMovie, neighbors } from "./store";
 import { listMovies } from "./api";
 import { HttpError } from "./http";
@@ -33,12 +33,7 @@ export async function page(req: Request, env: Env): Promise<Response> {
   const detail = /^\/movies\/([a-z0-9-]+)$/.exec(path);
   if (detail) {
     const m = await getMovie(env.DB, detail[1]);
-    if (
-      !m ||
-      m.status !== "published" ||
-      !m.publishedDate ||
-      m.publishedDate > shanghaiDay()
-    )
+    if (!m || !catalogVisible(m))
       status = 404;
     else {
       title = `${m.title} | 每日电影`;
@@ -50,7 +45,9 @@ export async function page(req: Request, env: Env): Promise<Response> {
       };
     }
   } else if (path === "/" || path === "/library") {
-    const params = new URLSearchParams({ limit: path === "/" ? "12" : "20" });
+    const params = new URLSearchParams();
+    params.set("scope", path === "/" ? "daily" : "catalog");
+    params.set("limit", path === "/" ? "12" : "20");
     if (path === "/library")
       for (const name of ["q", "type", "cursor"])
         if (url.searchParams.has(name))
@@ -65,9 +62,25 @@ export async function page(req: Request, env: Env): Promise<Response> {
     if (path === "/library") title = "片库 | 每日电影";
     if (path === "/") {
       const movies = (seed[key] as { data: Movie[] }).data;
-      const selected =
-        movies.find((m) => m.id === url.searchParams.get("movie")) ?? movies[0];
-      if (selected) title = `${selected.title} | 每日电影`;
+      const requestedId = url.searchParams.get("movie");
+      let selected = movies.find((m) => m.id === requestedId) ?? null;
+      if (requestedId && !selected) {
+        const requested = await getMovie(env.DB, requestedId);
+        if (!requested || !catalogVisible(requested)) selected = null;
+        else {
+          selected = requested;
+          seed[`/api/v1/movies/${requestedId}`] = {
+            data: requested,
+            meta: await neighbors(env.DB, requested),
+          };
+        }
+      }
+      selected ??= movies[0] ?? null;
+      if (selected) {
+        title = `${selected.title} | 每日电影`;
+        description = selected.synopsis.slice(0, 160);
+        image = selected.cover?.url;
+      }
     }
   } else if (path === "/about") title = "关于 | 每日电影";
   else if (path === "/api-docs") title = "API | 每日电影";
@@ -105,7 +118,7 @@ export async function page(req: Request, env: Env): Promise<Response> {
     status,
     headers: {
       "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": status === 200 ? "public, max-age=30" : "no-store",
+      "Cache-Control": "no-store",
     },
   });
 }

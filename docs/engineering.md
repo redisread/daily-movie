@@ -14,13 +14,13 @@ PATCH在外部校验schema/发布完整性之后，事务中再次校验版本�
 
 Worker用React renderToString/StaticRouter输出完整首屏、标题/description/OG/canonical和可索引内容，随后客户端用同一公开seed进行hydrateRoot。CSS Modules采用固定dm_前缀和生成映射，保证Worker与Vite使用同一类名；styles:check阻止映射漂移。策展Markdown仅在用户展开笔记后延迟加载，不阻塞首页。未知/草稿/未来id服务器真实404；客户端导航后重新读API。客户端写密钥不存在。
 
-首页最多12项，片库cursor分页；上海日期控制可见。公开结果max-age30，鉴权no-store且公开API带Vary: Authorization。不直接抓取传入媒体URL。Markdown只用ReactMarkdown、跳过原HTML并限制链接协议。CSP禁止脚本/iframe嵌入。旧service worker只做一次注销/缓存清除。
+首页最多12项，片库cursor分页；上海日期控制可见。动态内容API和SSR页面统一no-store；公开API仍带Vary: Authorization。撤下后的响应不缓存。静态资源可缓存。不直接抓取传入媒体URL。Markdown只用ReactMarkdown、跳过原HTML并限制链接协议。CSP禁止脚本/iframe嵌入。旧service worker只做一次注销/缓存清除。
 
 ## 本地 / 远端边界
 
 本地脚本显式使用wrangler.local.jsonc，DB UUID是占位且无生产route；默认wrangler.jsonc是正式目标daily-movie及已核实专用D1，初始WRITES_PAUSED=1。缺失或不正确的暂停状态一律拒写，只有显式0才开放。数据库和API均在真实workerd+SQLite的Miniflare里测试，不是内存mock。导入源Markdown保留在Git，但运行时只读D1。首次导入verification比较每个字段、正文和金句稳定id/次序；缺省可空字段按SQL NULL统一，不丢内容。重复导入不覆盖已存在id的API更新；已运营库再次导入前先导出和显式审核差异。
 
-当前main已经是Worker，不能照旧文档再做Pages迁移。生产Worker当前名/域名已在原配置和Git基线保留；本轮已获Victor正式上线授权；远端操作归Pi，Jeff只准备代码和SQL。即便已有授权，仍须在合并前完成真实D1导入/全字段核对、密钥设置和最终CI，不使用过期占位信息。
+当前main已经是Worker，不能照旧文档再做Pages迁移。生产Worker名/域名与D1 ID以wrangler.jsonc为准。旧发布记录将Pi列为唯一远端操作人；针对Daily Movie task #65，用户在#proj-daily-movie msg=5069ce41明确授权Jeff闭环生产迁移、部署和指定十条状态变更，该授权仅限此任务并在关闭时到期，不扩展到其他项目。task #65上线前仍须完成生产快照、迁移账本/实际schema核对、字段级迁移验证及PR/CI；不读取或更换现有生产密钥。
 
 ## 验证边界
 

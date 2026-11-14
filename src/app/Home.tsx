@@ -1,19 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import type { Movie } from "../shared/model";
 import { durationLabel, movieHref } from "../shared/format";
-import { useResource, type ListResult } from "./data";
+import { SeedContext, useResource, type ListResult } from "./data";
 import { Carousel } from "./Carousel";
 import { State } from "./State";
 import { reelWindow } from "./walk/catalogue";
-import { useRandomWalk } from "./walk/useRandomWalk";
+import { useRandomWalk, useWalkMovie } from "./walk/useRandomWalk";
 import { WalkControls } from "./walk/WalkControls";
 import styles from "./styles.generated";
 function MovieInfo({ movie }: { movie: Movie }) {
+  const listed = movie.status === "listed";
   return (
     <>
       <p className={styles.eyebrow}>
-        {movie.publishedDate?.replaceAll("-", ".")} ·{" "}
+        {listed ? "片库收录" : movie.publishedDate?.replaceAll("-", ".")} ·{" "}
         {movie.type === "tv" ? "剧集" : "电影"}
       </p>
       <h1>{movie.title}</h1>
@@ -31,19 +32,20 @@ function MovieInfo({ movie }: { movie: Movie }) {
         <p className={styles.speaker}>出自 {movie.quotes[0].speaker}</p>
       )}
       <Link to={movieHref(movie.id)} className={styles.primary}>
-        查看电影 <span aria-hidden="true">↗</span>
+        {listed ? "浏览片库电影" : "查看电影"} <span aria-hidden="true">↗</span>
       </Link>
     </>
   );
 }
-function HomeLoaded({ movies }: { movies: Movie[] }) {
+function HomeLoaded({ movies, requestedMovie }: { movies: Movie[]; requestedMovie?: Movie }) {
   const [params, setParams] = useSearchParams(),
     [extras, setExtras] = useState<Record<string, Movie>>({});
   const requested = params.get("movie"),
     selected =
-      (requested &&
+      requestedMovie ??
+      ((requested &&
         (extras[requested] ?? movies.find((m) => m.id === requested))) ||
-      movies[0];
+        movies[0]);
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
   const ordered = reelWindow(movies, selected),
@@ -143,11 +145,11 @@ function HomeLoaded({ movies }: { movies: Movie[] }) {
             )}
           </div>
           <div className={styles.catalogNote}>
-            <span>FILM SELECTION</span>
+            <span>{selected.status === "listed" ? "LIBRARY BROWSE" : "FILM SELECTION"}</span>
             <p>
-              转盘预览 {ordered.length} 部选片。
-              <br />
-              每一句台词，都有它的来处。
+              {selected.status === "listed"
+                ? "正在浏览片库收录内容；首页每日推荐保持独立。"
+                : <>转盘预览 {ordered.length} 部选片。<br />每一句台词，都有它的来处。</>}
             </p>
           </div>
         </section>
@@ -161,9 +163,37 @@ function HomeLoaded({ movies }: { movies: Movie[] }) {
   );
 }
 export function Home() {
-  const r = useResource<ListResult<Movie>>("/api/v1/movies?limit=12");
+  const seed = useContext(SeedContext);
+  const [params] = useSearchParams();
+  const requestedId = params.get("movie");
+  const r = useResource<ListResult<Movie>>("/api/v1/movies?scope=daily&limit=12");
+  const requestedPath = requestedId ? `/api/v1/movies/${encodeURIComponent(requestedId)}` : null;
+  const seededRequestedMovie = requestedPath
+    ? (seed[requestedPath] as { data?: Movie } | undefined)?.data
+    : undefined;
+  const isRequestedInDaily = requestedId && r.data?.data.some((movie) => movie.id === requestedId);
+  const isWalking = params.get("mode") === "walk";
+  const walkedMovie = useWalkMovie(isWalking ? requestedId : null);
+  const needsDirectSelection =
+    requestedId &&
+    !isRequestedInDaily &&
+    (!isWalking || Boolean(seededRequestedMovie));
+  const requested = useResource<{ data: Movie }>(
+    needsDirectSelection ? requestedPath : null,
+  );
   if (r.error) return <State error={r.error} retry={r.retry} />;
   if (!r.data) return <State />;
-  if (!r.data.data.length) return <State empty />;
-  return <HomeLoaded movies={r.data.data} />;
+  const selectedMovie = needsDirectSelection
+    ? !requested.error
+      ? requested.data?.data ?? walkedMovie ?? seededRequestedMovie
+      : undefined
+    : isWalking
+      ? walkedMovie
+      : undefined;
+  const selectionMissing = requested.error === "未找到这部电影";
+  if (needsDirectSelection && requested.error && !selectionMissing)
+    return <State error={requested.error} retry={requested.retry} />;
+  if (needsDirectSelection && !selectedMovie && !selectionMissing) return <State />;
+  if (!r.data.data.length && !selectedMovie) return <State empty />;
+  return <HomeLoaded movies={r.data.data} requestedMovie={selectedMovie} />;
 }
