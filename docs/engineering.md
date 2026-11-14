@@ -20,7 +20,7 @@ Worker用React renderToString/StaticRouter输出完整首屏、标题/descriptio
 
 本地脚本显式使用wrangler.local.jsonc，DB UUID是占位且无生产route；默认wrangler.jsonc是正式目标daily-movie及已核实专用D1，初始WRITES_PAUSED=1。缺失或不正确的暂停状态一律拒写，只有显式0才开放。数据库和API均在真实workerd+SQLite的Miniflare里测试，不是内存mock。导入源Markdown保留在Git，但运行时只读D1。首次导入verification比较每个字段、正文和金句稳定id/次序；缺省可空字段按SQL NULL统一，不丢内容。重复导入不覆盖已存在id的API更新；已运营库再次导入前先导出和显式审核差异。
 
-当前main已经是Worker，不能照旧文档再做Pages迁移。生产Worker当前名/域名已在原配置和Git基线保留；本轮已获Victor正式上线授权；远端操作归Pi，Jeff只准备代码和SQL。即便已有授权，仍须在合并前完成真实D1导入/全字段核对、密钥设置和最终CI，不使用过期占位信息。
+当前main已经是Worker，不能照旧文档再做Pages迁移。生产Worker名/域名与D1 ID以wrangler.jsonc为准。旧发布记录将Pi列为唯一远端操作人；针对Daily Movie task #65，用户在#proj-daily-movie msg=5069ce41明确授权Jeff闭环生产迁移、部署和指定十条状态变更，该授权仅限此任务并在关闭时到期，不扩展到其他项目。task #65上线前仍须完成生产快照、迁移账本/实际schema核对、字段级迁移验证及PR/CI；不读取或更换现有生产密钥。
 
 ## 验证边界
 

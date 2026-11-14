@@ -1,8 +1,14 @@
 # Production rollout / 2026-11-06
 
-## Authority and unique operators
+## Task #65 release delegation (2026-11-14)
 
-Victor explicitly authorized “改完生产配置之后，部署新版上线” at17:12UTC (Raft msg1f47383c). Pi is the sole remote resource/import/deployment operator; Jeff prepares code/config/SQL and tests. Do not perform parallel remote operations. This document is the coordination checklist, not a claim that production deployment has already occurred.
+After Jeff stated that production migration, deployment, and the ten reviewed draft-to-listed changes required authorization, the user explicitly authorized completing that scope in #proj-daily-movie msg=5069ce41. This supersedes the older Pi-only remote-operator assignment below for this Daily Movie release only. Jeff is the authorized operator for task #65 through its closure; all other project permissions remain unchanged. Preserve the user authorization reference in release evidence.
+
+The 2026-11-06/07 facts and sequence below are historical snapshots. Before each production operation, use fresh Wrangler/D1 state; the live database now contains 23 movies and 48 quotes, so the original empty-database bootstrap steps do not apply.
+
+## Historical authority and unique operators (2026-11-06)
+
+Victor authorized “改完生产配置之后，部署新版上线” at17:12UTC (Raft msg1f47383c). At that time Pi was the sole remote resource/import/deployment operator; Jeff prepared code/config/SQL and tests. This historical operator assignment is superseded only as scoped by the task #65 addendum above. This document is a coordination checklist, not a claim that production deployment has already occurred.
 
 ## Live facts verified by Pi
 

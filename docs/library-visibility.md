@@ -23,16 +23,16 @@ Task #65 的本地实现契约。既有 `docs/rebuild-spec-v1.2.md` 是历史基
 - React 片库页面、首页显式选择、SEO 服务端渲染与随机漫步使用对应范围。
 - `tests/api/api.test.ts` 在 D1/Miniflare 中验证迁移保留 movie/quote 行、约束、状态切换、幂等保护、范围隔离、分页回退、动态200的no-store和公开200→撤回→404回归；共享状态及游走列表单测覆盖可见性。
 
-## 生产数据变更计划（未执行）
+## task #65 生产发布计划
 
-基线来自 task #62 写后回读：23 movies、48 quotes；12 部现有影片公开，10 部 Top250 候选仍为 draft/null，另1部旧非公开记录保持私有。经此代码部署和独立验收后，若另获明确的生产数据变更授权：
+用户在 #proj-daily-movie msg=5069ce41 授权 task #65 完成生产迁移、部署和十部状态调整；这一授权仅适用于本次 Daily Movie 上线。当前线上基线经只读核对为23 movies、48 quotes：12 published、11 draft、0 listed；10部目标候选均为 draft/null，另1部旧草稿仍非公开。完整生产快照与字段级验证记录保存在agent workspace私有目录 `../../artifacts/daily-movie-library-release-2026-11-14/`，不得提交到Git。
 
-1. 在执行时重新读取 all-state 数据，核对下面十个稳定 ID 的当前状态、版本和日期；检查完整备份包含 movie/quote 字段和关联关系。内容或数量与此计划不符就停。
-2. 用受支持的内容写入 API，逐条以当前强 ETag + 每条唯一 Idempotency-Key 把且仅把十条 `draft/null` 改为 `listed/null`。不直接运行 SQL，不覆盖其他行，不重复导入。
-3. 每条回读并确认 status/date/version/audit；重复核对全库数量及其他 13 条的字段摘要。预期 catalog 可见 22，daily 保持 12，quotes 保持48，旧非公开条目仍隐藏。
-4. 如 API 鉴权/权限返回错误，立即停止并交由当前远端操作人处理；不得换身份、绕过保护或扩大写范围。
+1. 执行前再次核对D1现状和迁移记录。远端 `d1_migrations` 为空，但实际表、索引及外键已匹配0001，movies的CHECK仍只允许draft/published。已审查的迁移方案：仅把精确名称 `0001_content.sql` 登记为既有基线，不重跑其DDL；然后用标准Wrangler migration命令只应用 `0002_listed_catalog.sql`。写账本前确认库schema和空账本仍与预检一致；否则停止。
+2. 迁移后核对23 movies、48 quotes、所有movie/quote字段摘要不变，索引和quotes外键正确、0 orphan，ledger仅记录0001与0002。再通过最终PR/CI和独立审查，按main自动发布新Worker。
+3. 线上读路径验证通过后，使用受支持内容API，逐条以当前强ETag + 每条唯一Idempotency-Key把且仅把十条 `draft/null` 改为 `listed/null`。不直接修改业务表、不覆盖其他行、不重复导入，也不读取或更换生产密钥。
+4. 每条回读确认status/date/version/audit；再核对全库数量和旧非公开记录。预期catalog 22、daily 12、quotes 48，旧非公开草稿仍隐藏。鉴权或状态与预检不符时立即停止，不换身份、不绕过保护、不扩大范围。
 
-本次 task #65 仅含代码和本地验证，**没有**授权应用生产 migration、改变十条状态、合并、发布或部署。正式执行顺序应为：先取得单独的 schema/发布授权并做生产备份；由当期获授权的远端操作人将 `0002_listed_catalog.sql` 应用到 daily-movie-prod，核对 movies/quotes 数量、字段摘要、索引与外键；再经审查合并并发布代码，在线验证 daily/catalog 列表、详情、分页与撤下缓存；最后如再获单独的生产内容变更授权，按上表计划切换十条状态。D1 写权限不从 task #62 沿用到本次状态变更。
+本次task授权覆盖上述schema迁移、合并发布和十条状态调整，范围仅task #65。生产数据修改仍须使用应用API，不借用task #62授权外的额外数据写范围。
 
 候选 ID：
 

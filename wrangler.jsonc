@@ -1,8 +1,9 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  // Production target verified by Pi; Victor authorized launch in msg1f47383c.
-  // Paused bootstrap read/auth checks passed on version c330cf15 (Pi).
-  // Enable writes in the next coordinated release; Pi is the sole remote operator.
+  // Task #65 production release was authorized by the user in #proj-daily-movie msg=5069ce41.
+  // This supersedes the earlier Pi-only operator assignment for this Daily Movie release only;
+  // other projects and work beyond task #65 retain their own authorization requirements.
+  // The production D1 baseline and migration-ledger reconciliation are documented in docs/library-visibility.md.
   "name": "daily-movie",
   "main": "worker/index.ts",
   "compatibility_date": "2026-11-06",
