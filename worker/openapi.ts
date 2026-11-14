@@ -5,11 +5,15 @@ const error = {
   },
 };
 const response = (schema: unknown) => ({
-  description: "成功。写响应与鉴权读均为 no-store。",
+  description: "成功。动态 API 响应均为 no-store，撤下后不复用旧内容。",
   headers: {
     ETag: {
       schema: { type: "string" },
       description: "资源版本，PATCH 的 If-Match 使用原值",
+    },
+    "Cache-Control": {
+      schema: { type: "string", const: "no-store" },
+      description: "动态内容不得存入浏览器或中间缓存",
     },
   },
   content: {

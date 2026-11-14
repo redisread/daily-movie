@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import type { Movie } from "../shared/model";
 import { durationLabel, movieHref } from "../shared/format";
-import { useResource, type ListResult } from "./data";
+import { SeedContext, useResource, type ListResult } from "./data";
 import { Carousel } from "./Carousel";
 import { State } from "./State";
 import { reelWindow } from "./walk/catalogue";
@@ -163,20 +163,26 @@ function HomeLoaded({ movies, requestedMovie }: { movies: Movie[]; requestedMovi
   );
 }
 export function Home() {
+  const seed = useContext(SeedContext);
   const [params] = useSearchParams();
   const requestedId = params.get("movie");
   const r = useResource<ListResult<Movie>>("/api/v1/movies?scope=daily&limit=12");
+  const requestedPath = requestedId ? `/api/v1/movies/${encodeURIComponent(requestedId)}` : null;
+  const seededRequestedMovie = requestedPath
+    ? (seed[requestedPath] as { data?: Movie } | undefined)?.data
+    : undefined;
   const isRequestedInDaily = requestedId && r.data?.data.some((movie) => movie.id === requestedId);
   const needsDirectSelection = requestedId && params.get("mode") !== "walk" && !isRequestedInDaily;
   const requested = useResource<{ data: Movie }>(
-    needsDirectSelection ? `/api/v1/movies/${encodeURIComponent(requestedId)}` : null,
+    needsDirectSelection ? requestedPath : null,
   );
   if (r.error) return <State error={r.error} retry={r.retry} />;
   if (!r.data) return <State />;
+  const selectedMovie = requested.data?.data ?? seededRequestedMovie;
   const selectionMissing = requested.error === "未找到这部电影";
   if (needsDirectSelection && requested.error && !selectionMissing)
     return <State error={requested.error} retry={requested.retry} />;
-  if (needsDirectSelection && !requested.data && !selectionMissing) return <State />;
-  if (!r.data.data.length && !requested.data) return <State empty />;
-  return <HomeLoaded movies={r.data.data} requestedMovie={requested.data?.data} />;
+  if (needsDirectSelection && !selectedMovie && !selectionMissing) return <State />;
+  if (!r.data.data.length && !selectedMovie) return <State empty />;
+  return <HomeLoaded movies={r.data.data} requestedMovie={selectedMovie} />;
 }

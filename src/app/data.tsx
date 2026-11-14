@@ -22,6 +22,7 @@ export function useResource<T>(path: string | null) {
     fetch(path, {
       signal: controller.signal,
       headers: { Accept: "application/json" },
+      cache: "no-store",
     })
       .then(async (r) => {
         const body = await r.json();

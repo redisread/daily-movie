@@ -66,7 +66,7 @@ export async function page(req: Request, env: Env): Promise<Response> {
       let selected = movies.find((m) => m.id === requestedId) ?? null;
       if (requestedId && !selected) {
         const requested = await getMovie(env.DB, requestedId);
-        if (!requested || !catalogVisible(requested)) seed.__homeSelectionNotFound = true;
+        if (!requested || !catalogVisible(requested)) selected = null;
         else {
           selected = requested;
           seed[`/api/v1/movies/${requestedId}`] = {
@@ -118,7 +118,7 @@ export async function page(req: Request, env: Env): Promise<Response> {
     status,
     headers: {
       "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": status === 200 && !seed.__homeSelectionNotFound ? "public, max-age=30" : "no-store",
+      "Cache-Control": "no-store",
     },
   });
 }

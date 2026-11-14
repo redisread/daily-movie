@@ -29,7 +29,7 @@ npm run preview            # http://localhost:4321，真实本地D1 + Worker + �
 - 写入要求 `Authorization: Bearer $CONTENT_API_KEY` 和 `Idempotency-Key`，请求体最多256KiB。
 - 同一键/方法/路径/请求体/If-Match重试7天内返回原结果。改变载荷复用键409；更新无版本428，过期412；同片同NFC文本返回已有金句200。
 - `GET /api/openapi.json` 为 OpenAPI 3.1；`GET /api/health` 检查D1。
-- 所有写响应与鉴权读no-store，公开读最多缓存30秒。IP限流使用D1固定分钟计数（写40/分钟，读600/分钟），429带Retry-After。
+- 动态内容列表、详情与页面统一 `no-store`，防止撤下前缓存的公开内容继续展示；静态资源仍可缓存。IP限流使用D1固定分钟计数（写40/分钟，读600/分钟），429带Retry-After。
 - 前端没有写密钥输入或管理界面，构建产物不包含密钥。
 - `draft` 私有；`listed` 公开进入片库且 `publishedDate=null`；`published` 进入每日推荐，未来日期到上海当天才公开。设为draft撤回；状态变更保留ETag、幂等回执和审计边界。
 

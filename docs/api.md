@@ -46,4 +46,4 @@ curl -sS -X PATCH "$BASE_URL/api/v1/movies/cinema-note" \
 
 最后一步若资料仍不全会返回422与缺失字段，不会半发布。HTTP 401检查鉴权；409区分幂等键载荷冲突/已有id日期/并发追加冲突（后者使用原键重试）；412先重新GET核对，确认合并后用新业务幂等键提交；428补If-Match；429按Retry-After等待。请求体上限256KiB，JSON解码错误400，字段/不安全媒体422。
 
-新建201，重复金句200，撤回通过status=draft，无DELETE。`listed` 仅属于片库，日期必须为空；公开列表默认 `scope=daily`，`scope=catalog` 包含片库收录与已到期的推荐。范围及筛选被游标绑定，范围变更须从第一页开始。公开结果 `{data,meta?}`；错误 `{error:{code,message,fields?},requestId}`。公开结果最多30秒缓存，鉴权读与写入不缓存。幂等记录保留7天，同key不同If-Match也算不同请求。服务端原子提交业务数据和原结果；进程重启后仍可重试。
+新建201，重复金句200，撤回通过status=draft，无DELETE。`listed` 仅属于片库，日期必须为空；公开列表默认 `scope=daily`，`scope=catalog` 包含片库收录与已到期的推荐。范围及筛选被游标绑定，范围变更须从第一页开始。公开结果 `{data,meta?}`；错误 `{error:{code,message,fields?},requestId}`。动态内容响应统一 `Cache-Control: no-store`，防止条目撤下后浏览器或中间缓存继续显示旧内容；静态资源缓存不变。幂等记录保留7天，同key不同If-Match也算不同请求。服务端原子提交业务数据和原结果；进程重启后仍可重试。

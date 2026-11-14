@@ -14,7 +14,7 @@ PATCH在外部校验schema/发布完整性之后，事务中再次校验版本�
 
 Worker用React renderToString/StaticRouter输出完整首屏、标题/description/OG/canonical和可索引内容，随后客户端用同一公开seed进行hydrateRoot。CSS Modules采用固定dm_前缀和生成映射，保证Worker与Vite使用同一类名；styles:check阻止映射漂移。策展Markdown仅在用户展开笔记后延迟加载，不阻塞首页。未知/草稿/未来id服务器真实404；客户端导航后重新读API。客户端写密钥不存在。
 
-首页最多12项，片库cursor分页；上海日期控制可见。公开结果max-age30，鉴权no-store且公开API带Vary: Authorization。不直接抓取传入媒体URL。Markdown只用ReactMarkdown、跳过原HTML并限制链接协议。CSP禁止脚本/iframe嵌入。旧service worker只做一次注销/缓存清除。
+首页最多12项，片库cursor分页；上海日期控制可见。动态内容API和SSR页面统一no-store；公开API仍带Vary: Authorization。撤下后的响应不缓存。静态资源可缓存。不直接抓取传入媒体URL。Markdown只用ReactMarkdown、跳过原HTML并限制链接协议。CSP禁止脚本/iframe嵌入。旧service worker只做一次注销/缓存清除。
 
 ## 本地 / 远端边界
 

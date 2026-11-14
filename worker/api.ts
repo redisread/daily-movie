@@ -187,12 +187,13 @@ export async function listMovies(req: Request, db: D1Database, auth: boolean) {
     } catch {
       throw new HttpError(400, "INVALID_CURSOR", "分页游标无效");
     }
-    const c = parse(
-      z
-        .object({ date: z.string(), id: z.string(), scope: z.string(), direction: z.enum(["after", "before"]).optional() })
-        .strict(),
-      value,
-    );
+    const parsedCursor = z
+      .object({ date: z.string(), id: z.string(), scope: z.string(), direction: z.enum(["after", "before"]).optional() })
+      .strict()
+      .safeParse(value);
+    if (!parsedCursor.success)
+      throw new HttpError(400, "INVALID_CURSOR", "分页游标无效");
+    const c = parsedCursor.data;
     if (c.scope !== cursorScope && c.scope !== legacyDailyScope)
       throw new HttpError(
         400,
@@ -231,9 +232,7 @@ export async function listMovies(req: Request, db: D1Database, auth: boolean) {
   return json(
     { data: movies, meta: { nextCursor, previousCursor, limit } },
     200,
-    auth
-      ? {}
-      : { "Cache-Control": "public, max-age=30", Vary: "Authorization" },
+    { Vary: "Authorization" },
   );
 }
 export async function api(
@@ -280,9 +279,7 @@ export async function api(
         200,
         {
           ETag: etag(movie),
-          ...(auth
-            ? {}
-            : { "Cache-Control": "public, max-age=30", Vary: "Authorization" }),
+          ...(!auth ? { Vary: "Authorization" } : {}),
         },
       );
     }

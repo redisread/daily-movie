@@ -167,6 +167,7 @@ describe("Content API with real local D1 (Miniflare)", () => {
       0,
     );
     expect(publicList.headers.get("vary")).toBe("Authorization");
+    expect(publicList.headers.get("cache-control")).toBe("no-store");
   });
   it("publishes and permits version-protected date changes without changing id URL", async () => {
     const m = await create();
@@ -228,25 +229,37 @@ describe("Content API with real local D1 (Miniflare)", () => {
     await create("listed-film-two", { status: "listed", publishedDate: null });
     const catalog = await request("/api/v1/movies?scope=catalog", "GET", undefined, { auth: false });
     const daily = await request("/api/v1/movies?scope=daily", "GET", undefined, { auth: false });
+    expect(catalog.headers.get("cache-control")).toBe("no-store");
+    expect(daily.headers.get("cache-control")).toBe("no-store");
     expect(((await catalog.json()) as { data: Movie[] }).data.map((m) => m.id)).toContain("listed-film");
     expect(((await daily.json()) as { data: Movie[] }).data.map((m) => m.id)).not.toContain("listed-film");
-    expect((await request("/api/v1/movies/listed-film", "GET", undefined, { auth: false })).status).toBe(200);
+    const listedMovie = await request("/api/v1/movies/listed-film", "GET", undefined, { auth: false });
+    expect(listedMovie.status).toBe(200);
+    expect(listedMovie.headers.get("cache-control")).toBe("no-store");
     const listedDetail = (await (await request("/api/v1/movies/listed-film-two", "GET", undefined, { auth: false })).json()) as { meta: { previous: unknown; next: { id: string } | null } };
     expect(listedDetail.meta.previous).toBeNull();
     expect(listedDetail.meta.next?.id).toBe("listed-film");
     const libraryDetailPage = await request("/movies/listed-film", "GET", undefined, { auth: false });
     expect(libraryDetailPage.status).toBe(200);
+    expect(libraryDetailPage.headers.get("cache-control")).toBe("no-store");
     expect(await libraryDetailPage.text()).toContain("片库收录");
     const homeSelection = await request("/?movie=listed-film", "GET", undefined, { auth: false });
     expect(homeSelection.status).toBe(200);
+    expect(homeSelection.headers.get("cache-control")).toBe("no-store");
     expect(await homeSelection.text()).toContain("片库收录");
+    const walkSelectionOnlyListed = await request("/?movie=listed-film&mode=walk", "GET", undefined, { auth: false });
+    const onlyListedHtml = await walkSelectionOnlyListed.text();
+    expect(onlyListedHtml).toContain('property="og:title" content="测试电影 | 每日电影"');
+    expect(onlyListedHtml).toContain("<h1>测试电影</h1>");
     const withdrawnSelection = await request("/?movie=draft", "GET", undefined, { auth: false });
     expect(withdrawnSelection.headers.get("cache-control")).toBe("no-store");
     expect(await withdrawnSelection.text()).not.toContain("草稿");
     const withdrawn = await request("/api/v1/movies/draft", "GET", undefined, { auth: false });
     expect(withdrawn.status).toBe(404);
     expect(withdrawn.headers.get("cache-control")).toBe("no-store");
-    expect((await request(`/api/v1/quotes/${listed.quotes[0].id}`, "GET", undefined, { auth: false })).status).toBe(200);
+    const listedQuote = await request(`/api/v1/quotes/${listed.quotes[0].id}`, "GET", undefined, { auth: false });
+    expect(listedQuote.status).toBe(200);
+    expect(listedQuote.headers.get("cache-control")).toBe("no-store");
     const first = await request("/api/v1/movies?scope=catalog&limit=1", "GET", undefined, { auth: false });
     const firstBody = (await first.json()) as { meta: { nextCursor: string | null } };
     expect(firstBody.meta.nextCursor).toBeTruthy();
@@ -266,6 +279,48 @@ describe("Content API with real local D1 (Miniflare)", () => {
     expect((await request("/api/v1/movies/listed-date-check", "PATCH", { status: "published" }, { match: tag(listed) })).status).toBe(422);
     const published = await request("/api/v1/movies/listed-date-check", "PATCH", { status: "published", publishedDate: "2020-01-01" }, { match: tag(listed) });
     expect(published.status).toBe(200);
+  });
+  it("keeps an explicit listed selection through SSR when daily picks also exist", async () => {
+    await create("daily-ssr-first", { title: "每日推荐影片", status: "published" });
+    await create("listed-ssr-share", { title: "片库分享影片", status: "listed", publishedDate: null });
+    const response = await request("/?movie=listed-ssr-share&mode=walk", "GET", undefined, { auth: false });
+    const html = await response.text();
+    expect(response.status).toBe(200);
+    expect(html).toContain('property="og:title" content="片库分享影片 | 每日电影"');
+    expect(html).toContain("<h1>片库分享影片</h1>");
+  });
+  it("does not let a withdrawn public movie be reused from cached API or HTML responses", async () => {
+    const published = await create("cache-withdrawal", {
+      title: "撤下缓存回归电影",
+      status: "published",
+    });
+    const publicDetail = await request("/api/v1/movies/cache-withdrawal", "GET", undefined, { auth: false });
+    expect(publicDetail.status).toBe(200);
+    expect(publicDetail.headers.get("cache-control")).toBe("no-store");
+    const publicList = await request("/api/v1/movies?scope=daily", "GET", undefined, { auth: false });
+    expect(publicList.headers.get("cache-control")).toBe("no-store");
+    expect(await publicList.text()).toContain("cache-withdrawal");
+    for (const path of ["/", "/library", "/movies/cache-withdrawal", "/?movie=cache-withdrawal"]) {
+      const response = await request(path, "GET", undefined, { auth: false });
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      if (path === "/movies/cache-withdrawal" || path === "/?movie=cache-withdrawal")
+        expect(await response.text()).toContain("撤下缓存回归电影");
+    }
+    const withdrawn = await request("/api/v1/movies/cache-withdrawal", "PATCH", { status: "draft" }, { match: tag(published) });
+    expect(withdrawn.status).toBe(200);
+    const hiddenDetail = await request("/api/v1/movies/cache-withdrawal", "GET", undefined, { auth: false });
+    expect(hiddenDetail.status).toBe(404);
+    expect(hiddenDetail.headers.get("cache-control")).toBe("no-store");
+    const hiddenList = await request("/api/v1/movies?scope=catalog", "GET", undefined, { auth: false });
+    expect(hiddenList.headers.get("cache-control")).toBe("no-store");
+    expect(await hiddenList.text()).not.toContain("cache-withdrawal");
+    const hiddenDetailPage = await request("/movies/cache-withdrawal", "GET", undefined, { auth: false });
+    expect(hiddenDetailPage.status).toBe(404);
+    expect(hiddenDetailPage.headers.get("cache-control")).toBe("no-store");
+    expect(await hiddenDetailPage.text()).not.toContain("撤下缓存回归电影");
+    const fallbackHome = await request("/?movie=cache-withdrawal", "GET", undefined, { auth: false });
+    expect(fallbackHome.headers.get("cache-control")).toBe("no-store");
+    expect(await fallbackHome.text()).not.toContain("撤下缓存回归电影");
   });
   it("replays creation exactly; rejects mismatched payload under same key", async () => {
     const body = input(),
@@ -551,6 +606,13 @@ describe("Content API with real local D1 (Miniflare)", () => {
     expect(
       (
         await request("/api/v1/movies?cursor=invalid", "GET", undefined, {
+          auth: false,
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await request("/api/v1/movies?scope=catalog&cursor=e30=", "GET", undefined, {
           auth: false,
         })
       ).status,
