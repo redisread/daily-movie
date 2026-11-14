@@ -6,7 +6,7 @@ import { SeedContext, useResource, type ListResult } from "./data";
 import { Carousel } from "./Carousel";
 import { State } from "./State";
 import { reelWindow } from "./walk/catalogue";
-import { useRandomWalk } from "./walk/useRandomWalk";
+import { useRandomWalk, useWalkMovie } from "./walk/useRandomWalk";
 import { WalkControls } from "./walk/WalkControls";
 import styles from "./styles.generated";
 function MovieInfo({ movie }: { movie: Movie }) {
@@ -173,6 +173,7 @@ export function Home() {
     : undefined;
   const isRequestedInDaily = requestedId && r.data?.data.some((movie) => movie.id === requestedId);
   const isWalking = params.get("mode") === "walk";
+  const walkedMovie = useWalkMovie(isWalking ? requestedId : null);
   const needsDirectSelection =
     requestedId &&
     !isRequestedInDaily &&
@@ -182,9 +183,13 @@ export function Home() {
   );
   if (r.error) return <State error={r.error} retry={r.retry} />;
   if (!r.data) return <State />;
-  const selectedMovie = needsDirectSelection && !requested.error
-    ? requested.data?.data ?? seededRequestedMovie
-    : undefined;
+  const selectedMovie = needsDirectSelection
+    ? !requested.error
+      ? requested.data?.data ?? walkedMovie ?? seededRequestedMovie
+      : undefined
+    : isWalking
+      ? walkedMovie
+      : undefined;
   const selectionMissing = requested.error === "未找到这部电影";
   if (needsDirectSelection && requested.error && !selectionMissing)
     return <State error={requested.error} retry={requested.retry} />;

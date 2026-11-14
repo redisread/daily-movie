@@ -11,18 +11,23 @@ async function catalogue(
   page: Page,
   rows: Movie[],
   detail?: (id: string, route: Route) => Promise<boolean>,
+  emptyDaily = false,
 ) {
   await page.route("**/api/v1/movies**", async (route) => {
     const url = new URL(route.request().url());
     if (url.pathname === "/api/v1/movies") {
+      const visibleRows =
+        emptyDaily && url.searchParams.get("scope") === "daily" ? [] : rows;
       const limit = Number(url.searchParams.get("limit") ?? 20),
         offset = Number(url.searchParams.get("cursor") ?? 0);
       await route.fulfill({
         json: {
-          data: rows.slice(offset, offset + limit),
+          data: visibleRows.slice(offset, offset + limit),
           meta: {
             nextCursor:
-              offset + limit < rows.length ? String(offset + limit) : null,
+              offset + limit < visibleRows.length
+                ? String(offset + limit)
+                : null,
             limit,
           },
         },
@@ -50,6 +55,29 @@ async function next(page: Page) {
   await expect.poll(() => current(page)).not.toBe(before);
   return (await current(page))!;
 }
+
+test("walk keeps its selected catalog movie when daily recommendations are empty", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const base = await seed(page);
+  const rows = base.map((movie) => ({
+    ...movie,
+    status: "listed" as const,
+    publishedDate: null,
+  }));
+  await catalogue(page, rows, undefined, true);
+  const first = rows[0];
+  await page.goto(`/?movie=${first.id}&mode=walk`, {
+    waitUntil: "domcontentloaded",
+  });
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(first.title);
+  const secondId = await next(page);
+  expect(secondId).not.toBe(first.id);
+  const second = rows.find((movie) => movie.id === secondId)!;
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(second.title);
+  await expect(page.getByRole("button", { name: "再遇见一部" })).toBeVisible();
+});
 
 test("one full round covers117 public items across pages; reel stays12 and history100", async ({
   page,

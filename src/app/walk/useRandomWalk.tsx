@@ -28,6 +28,11 @@ type Memory = {
   poolAt: number;
 };
 const MemoryContext = createContext<Memory | null>(null);
+export function useWalkMovie(id: string | null): Movie | undefined {
+  const memory = useContext(MemoryContext);
+  if (!memory) throw Error("Walk provider missing");
+  return id ? memory.pool?.find((movie) => movie.id === id) : undefined;
+}
 export function WalkMemoryProvider({ children }: { children: ReactNode }) {
   const memory = useRef<Memory>({
     snapshot: null,
