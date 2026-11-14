@@ -446,10 +446,14 @@ export async function api(
     const replay = await getReceipt(env.DB, key, req.method, path, hash);
     if (replay) return receiptResponse(replay);
     const message = err instanceof Error ? err.message : "";
+    // D1 may report the write_assertions CHECK failure without its table name.
+    const assertionFailed =
+      message.includes("write_assertions") ||
+      message.includes("CHECK constraint failed: ok=1");
     if (
       quoteCollection &&
       appendAttempt < 2 &&
-      (message.includes("write_assertions") ||
+      (assertionFailed ||
         message.includes("UNIQUE constraint"))
     ) {
       return api(
@@ -462,7 +466,7 @@ export async function api(
         appendAttempt + 1,
       );
     }
-    if (message.includes("write_assertions")) {
+    if (assertionFailed) {
       if (req.method === "PATCH")
         throw new HttpError(412, "VERSION_CONFLICT", "内容已更新，请重新读取");
       // Concurrent append can safely be retried with the SAME key. Never invent a new key.
