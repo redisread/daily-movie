@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dialogueFreeSource } from "./dialogue-free";
 
 export const Id = z
   .string()
@@ -147,7 +148,7 @@ export function publicationErrors(m: MovieCreate | Movie): string[] {
     !m.genre.length && "genre",
     !m.synopsis.trim() && "synopsis",
     !m.cover && "cover",
-    !m.quotes.length && "quotes",
+    !m.quotes.length && !dialogueFreeSource(m) && "quotes",
   ].filter((x): x is string => !!x);
   return m.status === "listed" ? missing.filter((x) => x !== "publishedDate") : missing;
 }
