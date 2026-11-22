@@ -12,7 +12,7 @@ const originals: Record<string, string> = {
   "douban-1292226.png":
     "35f23dadef530467518feb4136aae04e9c66a12a342de097a59779dfa8fe9ab8",
   "douban-1292722.png":
-    "05084ab74d6d7b4d0389069c97b033866dc2d7c6695aebdb3f8cbefd20275370",
+    "9e693c0ccd6576502b84d5980c53f0ed73a0d0c25f989aac30bc232337573538",
   "douban-1293181.png":
     "5460d9c247344f8e45e8da3e02f48191f5d53a4c774677715a6671dd7dbdff1c",
   "douban-1293544.png":
@@ -25,6 +25,8 @@ const originals: Record<string, string> = {
     "59687e3f35824a947c6279f754062660cce710245f0c36da3d9b43c770364f8d",
   "douban-1300267.png":
     "5f2b913924528fd77f611107c65e971c910a36d2f491c6b0afe6594a0b9c11ca",
+  "douban-35426925.png":
+    "1f740fe4e4bab97433f5b89aa58268d0711efae18d89ee7b15fd5c8e7db8bcaa",
 };
 const prefix = "/covers/original/";
 
@@ -97,7 +99,7 @@ test("the PNG route rejects other methods and preserves public content", async (
   expect(docs.headers()["content-type"]).toContain("text/html");
 });
 
-test("all eleven PNGs actually decode and display at desktop and mobile sizes", async ({
+test("representative original PNGs actually decode and display at desktop and mobile sizes", async ({
   page,
   baseURL,
 }, testInfo) => {
