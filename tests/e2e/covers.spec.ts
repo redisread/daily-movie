@@ -30,7 +30,7 @@ const originals: Record<string, string> = {
 };
 const prefix = "/covers/original/";
 
-test("all original PNGs retain MIME, bytes, and bodyless HEAD through the Worker", async ({
+test("reviewed sample PNGs retain MIME, bytes, and bodyless HEAD through the Worker", async ({
   request,
 }) => {
   for (const [name, sha256] of Object.entries(originals)) {
@@ -117,7 +117,7 @@ test("representative original PNGs actually decode and display at desktop and mo
       .join("")}</main></html>`,
     { waitUntil: "domcontentloaded" },
   );
-  await expect(page.locator("img")).toHaveCount(11);
+  await expect(page.locator("img")).toHaveCount(Object.keys(originals).length);
   expect(
     await page
       .locator("img")
