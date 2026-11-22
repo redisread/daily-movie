@@ -11,6 +11,7 @@ import {
 } from "react-router-dom";
 const ReactMarkdown = lazy(() => import("react-markdown"));
 import type { Movie, Quote } from "../shared/model";
+import { dialogueFreeSource } from "../shared/dialogue-free";
 import { movieHref, durationLabel } from "../shared/format";
 import { SeedContext, useResource, type ListResult, type Seed } from "./data";
 import { PosterImage, MediaImage } from "./Carousel";
@@ -225,6 +226,7 @@ function Detail() {
   if (!r.data) return <State />;
   const m = r.data.data;
   const gallery = galleryFor(m);
+  const dialogueSource = m.quotes.length === 0 ? dialogueFreeSource(m) : undefined;
   return (
     <article className={styles.detail}>
       <Link className={styles.backLink} to="/library">
@@ -330,15 +332,24 @@ function Detail() {
           </div>
         </section>
       )}
-      <section className={styles.quotes}>
-        <div className={styles.sectionTitle}>
-          <h2>让台词多停留一会儿。</h2>
-          <span>{String(m.quotes.length).padStart(2, "0")} QUOTES</span>
-        </div>
-        {m.quotes.map((q) => (
-          <QuoteLine key={q.id} quote={q} />
-        ))}
-      </section>
+      {dialogueSource ? (
+        <section className={styles.quotes}>
+          <h2>全片无对白</h2>
+          <p>
+            <a href={dialogueSource.url}>{dialogueSource.label}</a>
+          </p>
+        </section>
+      ) : (
+        <section className={styles.quotes}>
+          <div className={styles.sectionTitle}>
+            <h2>让台词多停留一会儿。</h2>
+            <span>{String(m.quotes.length).padStart(2, "0")} QUOTES</span>
+          </div>
+          {m.quotes.map((q) => (
+            <QuoteLine key={q.id} quote={q} />
+          ))}
+        </section>
+      )}
       {m.editorialMarkdown.trim() && (
         <section className={styles.markdown}>
           <details onToggle={(e) => setNotesOpen(e.currentTarget.open)}>
@@ -402,9 +413,9 @@ function Docs() {
       <pre>{`curl -X POST "$BASE_URL/api/v1/movies/cinema-paradiso/quotes" \\\n  -H "Authorization: Bearer $CONTENT_API_KEY" \\\n  -H 'Content-Type: application/json' \\\n  -H 'Idempotency-Key: cinema-paradiso-quote-001' \\\n  --data '{"text":"生活不像电影，生活比电影难多了。","speaker":"成年萨尔瓦多"}'`}</pre>
       <h2>发布流程</h2>
       <p>
-        新建电影默认是草稿。补齐电影资料、封面和至少一条金句后，GET 取得
-        ETag，再用 If-Match 与新的 Idempotency-Key 发 PATCH，把 status 设为
-        listed 状态会公开进入片库，但 publishedDate 必须为空，不进入首页每日推荐。补齐资料、封面与至少一条金句后，GET 取得 ETag，再用 If-Match 与新的 Idempotency-Key 将其设为 listed。每日推荐则将 status 设为 published 并提供推荐日期；未来日期到上海当地日期才进入公开列表。
+        新建电影默认是草稿。公开前需补齐资料、封面和金句。已核实的无对白片库条目可保留出处并使用空金句列表。
+        GET 取得 ETag，再用 If-Match 和新的 Idempotency-Key 发 PATCH。
+        片库收录设为 listed，并将 publishedDate 留空。每日推荐设为 published，并填写推荐日期。
       </p>
       <h2>重试与冲突</h2>
       <p>

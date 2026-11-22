@@ -267,6 +267,54 @@ describe("Content API with real local D1 (Miniflare)", () => {
     expect((await request("/api/v1/movies?scope=unknown", "GET", undefined, { auth: false })).status).toBe(400);
     expect((await request("/api/v1/movies?scope=catalog")).status).toBe(400);
   });
+  it("only allows the reviewed dialogue-free listing with its public source", async () => {
+    const id = "douban-35426925";
+    const path = `/api/v1/movies/${id}`;
+    const source = "https://www.festival-cannes.com/2023/robot-dreams-entretien-avec-le-realisateur-pablo-berger/";
+    const note = `- 全片无对白。 [戛纳电影节导演访谈](${source})`;
+    const listing = {
+      ...input(id),
+      title: "机器人之梦",
+      year: 2023,
+      status: "listed",
+      publishedDate: null,
+      editorialMarkdown: note,
+      quotes: [],
+    };
+    for (const overrides of [
+      { id: "ordinary-no-quotes" },
+      { year: 2024 },
+      { editorialMarkdown: "全片无对白。" },
+      { editorialMarkdown: `- [戛纳电影节导演访谈](${source})` },
+      { editorialMarkdown: note.replace(source, "https://example.org/") },
+      { status: "published", publishedDate: "2020-01-01" },
+    ]) {
+      const invalid = await request("/api/v1/movies", "POST", { ...listing, ...overrides });
+      expect(invalid.status).toBe(422);
+    }
+
+    const key = "dialogue-free-listed-create";
+    const created = await request("/api/v1/movies", "POST", listing, { key });
+    expect(created.status).toBe(201);
+    const replay = await request("/api/v1/movies", "POST", listing, { key });
+    expect(await replay.text()).toBe(await created.clone().text());
+
+    const rejected = await request(path, "PATCH", { editorialMarkdown: "" }, {
+      match: created.headers.get("etag")!,
+    });
+    expect(rejected.status).toBe(422);
+    const readback = await request(path, "GET", undefined, { auth: false });
+    expect(readback.status).toBe(200);
+    expect((await readback.json()) as { data: Movie }).toMatchObject({
+      data: { editorialMarkdown: note, quotes: [], publishedDate: null },
+    });
+    const detail = await request(`/movies/${id}`, "GET", undefined, { auth: false });
+    expect(detail.status).toBe(200);
+    expect(await detail.text()).toContain(`href="${source}"`);
+    const daily = await request("/api/v1/movies?scope=daily", "GET", undefined, { auth: false });
+    expect(((await daily.json()) as { data: Movie[] }).data.map((m) => m.id)).not.toContain(id);
+  });
+
   it("requires listed state to clear its recommendation date without side effects", async () => {
     const m = await create("listed-date-check");
     const rejected = await request("/api/v1/movies/listed-date-check", "PATCH", { status: "listed" }, { match: tag(m) });
