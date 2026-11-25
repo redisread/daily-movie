@@ -109,7 +109,7 @@ test("one full round covers117 public items across pages; reel stays12 and histo
   }));
   const rows = [...base, ...extra];
   await catalogue(page, rows);
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     base[0].title,
   );
@@ -138,7 +138,7 @@ test("back/forward, refresh and detail return restore path; ordinary selection e
 }) => {
   const rows = await seed(page);
   await catalogue(page, rows);
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   const first = await next(page),
     second = await next(page);
   const before = await stored(page);
@@ -310,13 +310,12 @@ test("failed second page never shrinks the pool; retry loads all pages", async (
         json: { data: rows.slice(100), meta: { nextCursor: null, limit: 100 } },
       });
   });
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-  const title = await page.getByRole("heading", { level: 1 }).textContent();
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
+  const heading = page.getByRole("heading", { level: 1 });
+  await expect(heading).toHaveText(base[0].title);
   await page.getByRole("button", { name: "随机漫步", exact: true }).click();
   await expect(page.getByText("完整片库暂时无法读取，请重试")).toBeVisible();
-  expect(await page.getByRole("heading", { level: 1 }).textContent()).toBe(
-    title,
-  );
+  await expect(heading).toHaveText(base[0].title);
   expect(await stored(page)).toBeNull();
   fail = false;
   await page.getByRole("button", { name: "重试", exact: true }).click();
@@ -345,7 +344,7 @@ test("candidate500 retains the exact bag/current selection; retry uses same cand
     }
     return false;
   });
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   await next(page);
   const before = await stored(page),
     id = await current(page);
@@ -378,7 +377,7 @@ test("404 candidate is removed without displaying it or inventing private data",
     }
     return false;
   });
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "随机漫步", exact: true }).click();
   await expect(page.getByText(/这部暂时不可浏览/)).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
@@ -407,7 +406,7 @@ test("rapid second click cancels stale response; only latest success commits", a
     latest = id;
     return false;
   });
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "随机漫步", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "正在遇见…", exact: true }),
@@ -430,7 +429,7 @@ test("keyboard and reduced motion are instant and leave focus on action", async 
 }) => {
   const rows = await seed(page);
   await catalogue(page, rows);
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   const button = page.getByRole("button", { name: "随机漫步", exact: true });
   await button.focus();
   await button.press("Enter");
@@ -475,7 +474,7 @@ test("corrupt storage resets safely; blocked storage keeps path in SPA memory", 
       throw Error("blocked");
     };
   });
-  await second.goto("/", { waitUntil: "domcontentloaded" });
+  await second.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   await next(second);
   const id = await next(second);
   await expect(
@@ -497,7 +496,7 @@ for (const width of [320, 375, 1440])
     await page.setViewportSize({ width, height: 900 });
     const rows = await seed(page);
     await catalogue(page, rows);
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
     await next(page);
     expect(
       await page.evaluate(
@@ -577,7 +576,7 @@ test("withdrawn restored current exits to a public fallback, never a mismatched 
     ({ key, saved }) => sessionStorage.setItem(key, JSON.stringify(saved)),
     { key, saved },
   );
-  await page.goto(`/?movie=${gone}&mode=walk`, {
+  await page.goto(`/?view=manual&movie=${gone}&mode=walk`, {
     waitUntil: "domcontentloaded",
   });
   await expect(page.getByText(/这部暂时不可浏览/)).toBeVisible();

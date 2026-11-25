@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import type { Movie } from "../../src/shared/model";
+import { todayRecommendationPath, type TodayRecommendation } from "../../src/shared/recommendation";
 
 test("real D1 home, search, full detail and copy flow", async ({
   page,
@@ -8,7 +9,7 @@ test("real D1 home, search, full detail and copy flow", async ({
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "天堂电影院",
   );
@@ -61,7 +62,7 @@ test("real D1 home, search, full detail and copy flow", async ({
 test("keyboard is instantaneous and remains on the selected real item", async ({
   page,
 }) => {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   const selected = page.getByRole("button", {
     name: "选择《天堂电影院》，第 12 部，共 12 部",
   });
@@ -83,7 +84,7 @@ test("keyboard is instantaneous and remains on the selected real item", async ({
 
 test("reduced motion disables rotation/scale transitions", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "上一部", exact: true }).click();
   await expect(page.getByTestId("reel-number")).toHaveText("11");
   expect(
@@ -98,7 +99,7 @@ for (const width of [1440, 1280, 768, 375, 320])
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "天堂电影院",
     );
@@ -133,7 +134,7 @@ for (const width of [1440, 1280, 768, 375, 320])
 test("rapid/reverse selections end with matching number/content/url", async ({
   page,
 }) => {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   await page
     .getByRole("button", { name: "下一部", exact: true })
     .click({ clickCount: 3, delay: 25 });
@@ -160,7 +161,7 @@ test("rapid/reverse selections end with matching number/content/url", async ({
 test("drag and cancellation preserve vertical scroll and selection", async ({
   page,
 }) => {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   const box = await page.getByTestId("wheel-stage").boundingBox();
   await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
   await page.mouse.down();
@@ -182,7 +183,7 @@ test("invalid selection gracefully falls back; unknown routes really return 404"
   page,
   request,
 }) => {
-  await page.goto("/?movie=absent", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual&movie=absent", { waitUntil: "domcontentloaded" });
   await expect(
     page.getByRole("status").filter({ hasText: "未找到这部电影" }),
   ).toBeVisible();
@@ -194,6 +195,7 @@ test("invalid selection gracefully falls back; unknown routes really return 404"
     "/old-route",
     "/movies.json",
     "/rss.xml",
+    "/movie/2020-01-01/",
   ])
     expect((await request.get(path)).status()).toBe(404);
   const response = await request.get("/movies/cinema-paradiso");
@@ -226,7 +228,7 @@ test("empty, single, short and long collections do not invent entries", async ({
         json: { data: all.slice(0, 12), meta: { nextCursor: null, limit: 12 } },
       }),
     );
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
     if (!count)
       await expect(
         page.getByRole("heading", { name: "下一场，还在准备" }),
@@ -250,7 +252,7 @@ test("API failures are retryable and broken images use an honest fallback", asyn
   await page.route("**/api/v1/movies?scope=daily&limit=12", (route) =>
     route.fulfill({ status: 503, json: { error: { message: "不可用" } } }),
   );
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   await expect(
     page.getByRole("heading", { name: "暂时无法读取电影" }),
   ).toBeVisible();
@@ -295,7 +297,7 @@ test("mode toggles plus rapid reverse selections always allow opening the select
   page,
 }) => {
   test.setTimeout(60000);
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/?view=manual", { waitUntil: "domcontentloaded" });
   async function step(direction: "上一部" | "下一部") {
     const current = Number(await page.getByTestId("reel-number").textContent());
     const next =
@@ -321,4 +323,30 @@ test("mode toggles plus rapid reverse selections always allow opening the select
     await page.goBack({ waitUntil: "domcontentloaded" });
     await expect(page.getByRole("region", { name: "电影转盘" })).toBeVisible();
   }
+});
+
+test("the real Worker recommends the same film in API, SSR and hydrated home", async ({
+  page,
+  request,
+}) => {
+  const response = await request.get(todayRecommendationPath);
+  expect(response.ok()).toBe(true);
+  const { data } = await response.json() as TodayRecommendation;
+  expect(data).not.toBeNull();
+  if (!data) throw new Error("Expected a recommendation from the preexisting fixtures");
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(data.movie.title);
+  await expect(page.getByText(/今日推荐 ·/)).toBeVisible();
+  await expect(page.getByRole("link", { name: "查看电影" })).toHaveAttribute("href", data.href);
+  await page.getByRole("link", { name: "往期人工推荐" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("天堂电影院");
+  await expect(page.locator('[data-poster="true"]')).toHaveCount(12);
+  await page.getByRole("link", { name: "回到今日推荐" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(data.movie.title);
+  await page.getByRole("link", { name: "查看电影" }).click();
+  await expect(page).toHaveURL(new RegExp(data.href + "$"));
+  await expect(page.locator("article h1")).toHaveText(data.movie.title);
+  expect(errors).toEqual([]);
 });

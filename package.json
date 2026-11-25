@@ -21,7 +21,7 @@
     "db:verify:local": "tsx scripts/verify-migration.ts",
     "cf-typegen": "wrangler types --include-runtime false",
     "cf-typegen:check": "wrangler types --include-runtime false --check",
-    "test:e2e:server": "npm run build && npm run db:migrate:local && npm run db:import:local && wrangler dev --config wrangler.local.jsonc --local --port 4321",
+    "test:e2e:server": "sh tests/e2e/serve.sh",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "verify": "npm run styles:check && npm run lint && npm run typecheck && npm run cf-typegen:check && npm test && npm run build",

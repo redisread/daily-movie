@@ -4,6 +4,8 @@ import { createElement } from "react";
 import { App } from "../src/app/App";
 import type { Seed } from "../src/app/data";
 import type { Movie } from "../src/shared/model";
+import { todayRecommendationPath } from "../src/shared/recommendation";
+import { todayRecommendation } from "./recommendations";
 import { catalogVisible } from "../src/shared/visibility";
 import { getMovie, neighbors } from "./store";
 import { listMovies } from "./api";
@@ -53,17 +55,22 @@ export async function page(req: Request, env: Env): Promise<Response> {
         if (url.searchParams.has(name))
           params.set(name, url.searchParams.get(name)!);
     const key = `/api/v1/movies?${params}`;
-    const response = await listMovies(
-      new Request(new URL(key, url.origin)),
-      env.DB,
-      false,
-    );
+    const showToday = path === "/" && url.searchParams.get("view") !== "manual";
+    const [response, today] = await Promise.all([
+      listMovies(new Request(new URL(key, url.origin)), env.DB, false),
+      showToday ? todayRecommendation(env.DB) : null,
+    ]);
+    if (today) seed[todayRecommendationPath] = today;
     seed[key] = await response.json();
     if (path === "/library") title = "片库 | 每日电影";
     if (path === "/") {
       const movies = (seed[key] as { data: Movie[] }).data;
       const requestedId = url.searchParams.get("movie");
-      let selected = movies.find((m) => m.id === requestedId) ?? null;
+      const recommended = today?.data?.movie;
+      let selected =
+        requestedId && requestedId === recommended?.id
+          ? recommended
+          : (movies.find((m) => m.id === requestedId) ?? null);
       if (requestedId && !selected) {
         const requested = await getMovie(env.DB, requestedId);
         if (!requested || !catalogVisible(requested)) selected = null;
@@ -75,7 +82,7 @@ export async function page(req: Request, env: Env): Promise<Response> {
           };
         }
       }
-      selected ??= movies[0] ?? null;
+      selected ??= recommended ?? movies[0] ?? null;
       if (selected) {
         title = `${selected.title} | 每日电影`;
         description = selected.synopsis.slice(0, 160);

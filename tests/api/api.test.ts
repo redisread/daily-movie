@@ -7,6 +7,9 @@ import { movieColumns, movieValues } from "../../worker/store";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Miniflare, convertV4MiniflareOptions } from "miniflare";
 import { build } from "esbuild";
+import { unstable_splitSqlQuery } from "wrangler";
+import { shanghaiDay } from "../../src/shared/format";
+import { todayRecommendationPath, type TodayRecommendation } from "../../src/shared/recommendation";
 import { readFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -71,7 +74,27 @@ async function movie(id = "test-film") {
 const tag = (m: Movie | Quote) => `"${m.id}:v${m.version}"`;
 beforeAll(async () => {
   const result = await build({
-    entryPoints: ["worker/index.ts"],
+    stdin: {
+      sourcefile: "test-worker.ts",
+      resolveDir: process.cwd(),
+      contents: `
+        import worker from "./worker/index";
+        import { todayRecommendation } from "./worker/recommendations";
+        import { shanghaiDay } from "./src/shared/format";
+        export default {
+          ...worker,
+          fetch(req, env) {
+            const url = new URL(req.url);
+            if (url.pathname === "/_test/recommendation-at")
+              return todayRecommendation(env.DB, shanghaiDay(new Date(url.searchParams.get("at"))))
+                .then((data) => Response.json(data));
+            if (url.pathname === "/_test/cron")
+              return worker.scheduled({}, env).then(() => new Response(null, { status: 204 }));
+            return worker.fetch(req, env);
+          },
+        };
+      `,
+    },
     bundle: true,
     write: false,
     format: "esm",
@@ -120,17 +143,186 @@ beforeAll(async () => {
     invalidListedRejected = true;
   }
   if (!invalidListedRejected) throw Error("listed-state CHECK accepted a recommendation date");
-  await db.batch([db.prepare("DELETE FROM quotes WHERE id='migration-quote'"), db.prepare("DELETE FROM movies WHERE id='migration-fixture'")]);
+
+  const originals = sourceContent().map(({ movie }) => movie);
+  await db.batch(originals.flatMap((m) => [
+    db.prepare(`INSERT INTO movies (${movieColumns.join(",")}) VALUES (${movieColumns.map(() => "?").join(",")})`).bind(...movieValues(m)),
+    ...m.quotes.map((q) =>
+      db.prepare("INSERT INTO quotes VALUES (?,?,?,?,?,?,?,?,?)")
+        .bind(q.id, q.movieId, q.text, q.speaker, q.timestamp, q.sortOrder, q.createdAt, q.updatedAt, q.version),
+    ),
+  ]));
+  await db.batch([
+    db.prepare("INSERT INTO api_requests VALUES ('fixture','POST','/','hash',201,'{}',NULL,1)"),
+    db.prepare("INSERT INTO rate_limits VALUES ('fixture',1,2)"),
+    db.prepare("INSERT INTO write_assertions VALUES (1)"),
+  ]);
+  const snapshot = () => db.batch(
+    ["movies", "quotes", "api_requests", "rate_limits", "write_assertions"]
+      .map((table) => db.prepare(`SELECT * FROM ${table} ORDER BY 1`)),
+  ).then((results) => results.map(({ results }) => results));
+  const before = await snapshot();
+  expect(before.map((rows) => rows.length)).toEqual([13, 38, 1, 1, 1]);
+  const migration3 = unstable_splitSqlQuery(readFileSync("migrations/0003_daily_recommendations.sql", "utf8"));
+  await db.batch(migration3.map((statement) => db.prepare(statement)));
+  expect(await snapshot()).toEqual(before);
+  expect(await db.prepare("SELECT movie_id, eligible_on FROM movie_recommendation_starts ORDER BY movie_id").all())
+    .toHaveProperty("results", originals.map((m) => ({ movie_id: m.id, eligible_on: shanghaiDay() }))
+      .sort((a, b) => a.movie_id.localeCompare(b.movie_id)));
 });
 beforeEach(async () => {
   await db.batch(
-    ["quotes", "movies", "api_requests", "rate_limits", "write_assertions"].map(
+    ["daily_movie_recommendations", "quotes", "movies", "api_requests", "rate_limits", "write_assertions"].map(
       (table) => db.prepare(`DELETE FROM ${table}`),
     ),
   );
 });
 afterAll(async () => {
   await mf?.dispose();
+});
+
+
+describe("Daily recommendation on real local D1", () => {
+  const anonymous = { auth: false };
+  const readToday = () => request(todayRecommendationPath, "GET", undefined, anonymous);
+  const dayOffset = (days: number) => shanghaiDay(new Date(Date.now() + days * 86_400_000));
+  const readDay = async (instant: string) => {
+    const url = "/_test/recommendation-at?" + new URLSearchParams({ at: instant });
+    return await (await request(url)).json() as TodayRecommendation;
+  };
+  const storedPick = (day: string) => db.prepare(
+    "SELECT movie_id FROM daily_movie_recommendations WHERE day=?",
+  ).bind(day).first<{ movie_id: string | null }>();
+  const makeEligible = (id: string) =>
+    db.prepare("UPDATE movie_recommendation_starts SET eligible_on=? WHERE movie_id=?").bind(shanghaiDay(), id).run();
+
+  it("shares one draw across concurrent readers, SSR and a repeated cron invocation", async () => {
+    await create("manual", { status: "published" });
+    const first = await create("first", { title: "今日抽选候选一", status: "listed", publishedDate: null });
+    const second = await create("second", { title: "今日抽选候选二", status: "listed", publishedDate: null });
+    await Promise.all([makeEligible(first.id), makeEligible(second.id)]);
+    const results = await Promise.all([
+      ...Array.from({ length: 12 }, readToday),
+      request("/", "GET", undefined, anonymous),
+      request("/_test/cron"),
+    ]);
+    const jsonResults = await Promise.all(results.slice(0, 12).map(async (response) => {
+      expect(response.status).toBe(200);
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      return response.json();
+    }));
+    const selected = (jsonResults[0] as TodayRecommendation).data?.movie.id;
+    const winner = [first, second].find(({ id }) => id === selected);
+    if (!winner) throw new Error("Expected a pick from the two eligible movies");
+    const href = `/movies/${winner.id}`;
+    const expected = {
+      data: { movie: winner, href },
+      meta: { day: shanghaiDay() },
+    };
+    expect(jsonResults).toEqual(Array(12).fill(expected));
+    const home = await results[12].text();
+    expect(home).toContain(`<h1>${winner.title}</h1>`);
+    expect(home).toContain(`href="${href}"`);
+    expect(await (await request("/?view=manual", "GET", undefined, anonymous)).text())
+      .toContain("<h1>测试电影</h1>");
+    expect(results[13].status).toBe(204);
+    const repeatedCron = await Promise.all(Array.from({ length: 10 }, () => request("/_test/cron")));
+    expect(repeatedCron.map(({ status }) => status)).toEqual(Array(10).fill(204));
+    expect(await storedPick(shanghaiDay())).toEqual({ movie_id: winner.id });
+    const head = await request(todayRecommendationPath, "HEAD", undefined, anonymous);
+    expect(head.status).toBe(200);
+    expect(await head.text()).toBe("");
+    const post = await request(todayRecommendationPath, "POST", {}, anonymous);
+    expect(post.status).toBe(405);
+    const manual = await request("/api/v1/movies?scope=daily", "GET", undefined, anonymous);
+    expect((await manual.json() as { data: Movie[] }).data.map(({ id }) => id)).toEqual(["manual"]);
+  });
+
+  it("rolls over at Beijing midnight and can repeat the same film on consecutive days", async () => {
+    const solo = await create("solo", { status: "listed", publishedDate: null });
+    await makeEligible(solo.id);
+    const today = shanghaiDay();
+    const tomorrow = dayOffset(1);
+    expect((await readDay(`${today}T23:59:59.999+08:00`)).data?.movie.id).toBe(solo.id);
+    expect((await readDay(`${tomorrow}T00:00:00.000+08:00`)).data?.movie.id).toBe(solo.id);
+    expect(await storedPick(today)).toEqual({ movie_id: solo.id });
+    expect(await storedPick(tomorrow)).toEqual({ movie_id: solo.id });
+  });
+
+  it("admits a newly listed dialogue-free film the next day and a future publication one day after visibility", async () => {
+    const robot = await create("douban-35426925", {
+      title: "机器人之梦",
+      year: 2023,
+      quotes: [],
+      status: "listed",
+      publishedDate: null,
+      editorialMarkdown: "- 全片无对白。 [戛纳电影节导演访谈](https://www.festival-cannes.com/2023/robot-dreams-entretien-avec-le-realisateur-pablo-berger/)",
+    });
+    const tomorrow = dayOffset(1);
+    const future = await create("future", { status: "published", publishedDate: tomorrow });
+    await create("private-draft");
+    expect((await readToday()).status).toBe(200);
+    expect(await (await readToday()).json()).toEqual({ data: null, meta: { day: shanghaiDay() } });
+    expect(await storedPick(shanghaiDay())).toEqual({ movie_id: null });
+    expect(await readDay(`${tomorrow}T00:00:00+08:00`)).toEqual({
+      data: { movie: robot, href: "/movies/douban-35426925" },
+      meta: { day: tomorrow },
+    });
+    expect(await db.prepare("SELECT eligible_on FROM movie_recommendation_starts WHERE movie_id=?")
+      .bind(future.id).first("eligible_on")).toBe(dayOffset(2));
+  });
+
+  it("moves today's pick within the withdrawal transaction and leaves earlier dates alone", async () => {
+    const incumbent = await create("incumbent", { status: "published" });
+    const replacement = await create("replacement", { status: "listed", publishedDate: null });
+    await makeEligible(incumbent.id);
+    await readToday();
+    await makeEligible(replacement.id);
+    await db.prepare("INSERT INTO daily_movie_recommendations VALUES (?,?)")
+      .bind(dayOffset(-1), incumbent.id).run();
+    const body = { status: "draft" };
+    await db.prepare(`
+      CREATE TRIGGER fail_withdrawal_receipt
+      BEFORE UPDATE OF responseStatus ON api_requests
+      WHEN NEW.idempotencyKey = 'fail-withdrawal'
+      BEGIN SELECT RAISE(ABORT, 'fixture receipt failure'); END
+    `).run();
+    try {
+      const failure = await request("/api/v1/movies/incumbent", "PATCH", body, {
+        match: tag(incumbent), key: "fail-withdrawal",
+      });
+      expect(failure.status).toBe(503);
+      expect(await storedPick(shanghaiDay())).toEqual({ movie_id: incumbent.id });
+      expect(await db.prepare("SELECT status FROM movies WHERE id=?").bind(incumbent.id).first("status"))
+        .toBe("published");
+      expect(await db.prepare("SELECT idempotencyKey FROM api_requests WHERE idempotencyKey='fail-withdrawal'").first())
+        .toBeNull();
+    } finally {
+      await db.prepare("DROP TRIGGER fail_withdrawal_receipt").run();
+    }
+    const opts = { match: tag(incumbent), key: "withdraw-incumbent" };
+    const updates = await Promise.all([
+      request("/api/v1/movies/incumbent", "PATCH", body, opts),
+      request("/api/v1/movies/incumbent", "PATCH", body, opts),
+    ]);
+    expect(updates.map((r) => r.status)).toEqual([200, 200]);
+    expect(await updates[0].text()).toBe(await updates[1].text());
+    // Read D1 before making a public request so lazy repair can't mask a gap.
+    expect(await storedPick(shanghaiDay())).toEqual({ movie_id: replacement.id });
+    expect(await storedPick(dayOffset(-1))).toEqual({ movie_id: incumbent.id });
+    expect((await request("/movies/incumbent", "GET", undefined, anonymous)).status).toBe(404);
+    expect((await (await readToday()).json() as TodayRecommendation).data?.movie.id).toBe(replacement.id);
+    expect((await request("/api/v1/movies/replacement", "PATCH", {
+      status: "published", publishedDate: dayOffset(1),
+    }, { match: tag(replacement) })).status).toBe(200);
+    expect(await storedPick(shanghaiDay())).toEqual({ movie_id: null });
+    expect((await (await readToday()).json() as TodayRecommendation).data).toBeNull();
+    const republish = await request("/api/v1/movies/incumbent", "PATCH", { status: "published" }, {
+      match: '"incumbent:v2"',
+    });
+    expect(republish.status).toBe(200);
+    expect((await (await readToday()).json() as TodayRecommendation).data).toBeNull();
+  });
 });
 
 describe("Content API with real local D1 (Miniflare)", () => {
@@ -807,8 +999,18 @@ describe("Content API with real local D1 (Miniflare)", () => {
         },
       );
       expect(r.status).toBe(201);
+      for (const file of ["0002_listed_catalog.sql", "0003_daily_recommendations.sql"]) {
+        const statements = unstable_splitSqlQuery(readFileSync(`migrations/${file}`, "utf8"));
+        await storage.batch(statements.map((statement) => storage.prepare(statement)));
+      }
+      const preRestart = await instance.dispatchFetch("https://movie.test" + todayRecommendationPath);
+      expect(preRestart.status).toBe(200);
+      const recommendation = await preRestart.json() as TodayRecommendation;
+      expect(recommendation.data?.movie.id).toBe("persistent");
       await instance.dispose();
       instance = factory();
+      const postRestart = await instance.dispatchFetch("https://movie.test" + todayRecommendationPath);
+      expect(await postRestart.json()).toEqual(recommendation);
       const read = await instance.dispatchFetch(
         "https://movie.test/api/v1/movies/persistent",
       );

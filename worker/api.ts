@@ -1,6 +1,8 @@
 import { shanghaiDay, etag } from "../src/shared/format";
 import { catalogVisible } from "../src/shared/visibility";
 import { z } from "zod";
+import { todayRecommendationPath } from "../src/shared/recommendation";
+import { todayRecommendation } from "./recommendations";
 import {
   MovieInput,
   MoviePatch,
@@ -257,6 +259,14 @@ export async function api(
     return json({
       data: { status: "ok", timestamp: new Date().toISOString() },
     });
+  }
+  if (path === todayRecommendationPath) {
+    if (req.method !== "GET" && req.method !== "HEAD")
+      throw new HttpError(405, "METHOD_NOT_ALLOWED", "仅支持 GET 和 HEAD", undefined, {
+        Allow: "GET, HEAD",
+      });
+    await rateLimit(req, env.DB);
+    return json(await todayRecommendation(env.DB));
   }
   const collection = path === "/api/v1/movies";
   const movieMatch = /^\/api\/v1\/movies\/([a-z0-9-]+)$/.exec(path);
