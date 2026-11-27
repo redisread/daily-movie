@@ -4,6 +4,7 @@
   // Provisioning preview/production resources requires a separate approved change.
   "name": "daily-movie-rebuild-preview",
   "main": "worker/index.ts",
+  "triggers": { "crons": ["0 16 * * *"] },
   "compatibility_date": "2026-11-06",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,

@@ -22,6 +22,7 @@ npm run preview            # http://localhost:4321，真实本地D1 + Worker + �
 ## 内容与 API
 
 - 公共页面 `/`、`/library`、`/movies/:id`、`/api-docs`、`/about`。
+- `GET /api/v1/recommendations/today`：北京时间今日随机推荐，与首页共用结果。
 - `GET /api/v1/movies`：q/type/cursor/limit，公开默认 `scope=daily`；`scope=catalog` 返回片库收录与已到上海日期的推荐。
 - `GET /api/v1/movies/:id` 与 `GET /api/v1/quotes/:id` 返回 ETag。
 - `POST /api/v1/movies` 创建草稿；`POST /api/v1/movies/:id/quotes` 追加金句。
@@ -31,12 +32,14 @@ npm run preview            # http://localhost:4321，真实本地D1 + Worker + �
 - `GET /api/openapi.json` 为 OpenAPI 3.1；`GET /api/health` 检查D1。
 - 动态内容列表、详情与页面统一 `no-store`，防止撤下前缓存的公开内容继续展示；静态资源仍可缓存。IP限流使用D1固定分钟计数（写40/分钟，读600/分钟），429带Retry-After。
 - 前端没有写密钥输入或管理界面，构建产物不包含密钥。
-- `draft` 私有；`listed` 公开进入片库且 `publishedDate=null`；`published` 进入每日推荐，未来日期到上海当天才公开。设为draft撤回；状态变更保留ETag、幂等回执和审计边界。
+- `draft` 私有；`listed` 公开进入片库且 `publishedDate=null`；`published` 进入人工推荐，未来日期到上海当天才公开。设为draft撤回；状态变更保留ETag、幂等回执和审计边界。
 
 完整调用示例：[docs/api.md](docs/api.md)。D1原子写与边界：[docs/engineering.md](docs/engineering.md)。
 片库与每日推荐的状态契约及本地上线/回滚计划：[docs/library-visibility.md](docs/library-visibility.md)。
 
-## 随机漫步与图片修正
+## 每日随机推荐、随机漫步与图片修正
+
+首页默认显示北京时间当天从公开片库抽到的一部影片，可通过「往期人工推荐」继续浏览原转盘。新公开影片次日参选，抽中后指向既有影片详情。当日影片撤下时同步补选，候选为空时留空。迁移与生产切换见 [每日推荐上线清单](docs/daily-recommendations.md)。
 
 首页保留手动转盘，随机漫步从完整公开片库分页建池（最多1000部），洗牌袋不放回抽样；实际历史最多100条，回看后先沿原路径前进。同标签页刷新和详情返回恢复，`?movie=id&mode=walk` 分享电影而非个人路径。转盘只预览最多12部，范围另行显示；无自动播放。
 

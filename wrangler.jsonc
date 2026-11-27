@@ -6,6 +6,7 @@
   // The production D1 baseline and migration-ledger reconciliation are documented in docs/library-visibility.md.
   "name": "daily-movie",
   "main": "worker/index.ts",
+  "triggers": { "crons": ["0 16 * * *"] },
   "compatibility_date": "2026-11-06",
   "compatibility_flags": ["nodejs_compat"],
   "routes": [{ "pattern": "daily-movie.jiahongw.com", "custom_domain": true }],

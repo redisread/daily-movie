@@ -1,4 +1,5 @@
 import { api } from "./api";
+import { ensureDailyRecommendation } from "./recommendations";
 import { page } from "./pages";
 import { HttpError, json } from "./http";
 const security = {
@@ -10,6 +11,9 @@ const security = {
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
 };
 export default {
+  async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
+    await ensureDailyRecommendation(env.DB);
+  },
   async fetch(req: Request, env: Env): Promise<Response> {
     const requestId = crypto.randomUUID();
     let response: Response;

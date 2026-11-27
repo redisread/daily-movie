@@ -1,3 +1,5 @@
+import { todayRecommendationPath } from "../src/shared/recommendation";
+
 const error = {
   description: "错误",
   content: {
@@ -204,6 +206,46 @@ export const openapi = {
       get: {
         summary: "数据库健康状态",
         responses: { "200": response({ type: "object" }), "503": error },
+      },
+    },
+    [todayRecommendationPath]: {
+      get: {
+        summary: "北京时间今日随机推荐",
+        responses: {
+          "200": {
+            description: "当日影片与固定详情路径，暂无推荐时 data 为 null。Cache-Control 为 no-store。",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["data", "meta"],
+                  properties: {
+                    data: {
+                      oneOf: [
+                        {
+                          type: "object",
+                          required: ["movie", "href"],
+                          properties: {
+                            movie: { $ref: "#/components/schemas/Movie" },
+                            href: { type: "string", example: "/movies/cinema-paradiso" },
+                          },
+                        },
+                        { type: "null" },
+                      ],
+                    },
+                    meta: {
+                      type: "object",
+                      required: ["day"],
+                      properties: { day: { type: "string", format: "date" } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "429": error,
+          "503": error,
+        },
       },
     },
     "/api/v1/movies": {

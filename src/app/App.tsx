@@ -404,7 +404,7 @@ function Docs() {
         查看 OpenAPI 3.1 ↗
       </a>
       <h2>先读，再写</h2>
-      <pre>{`GET   /api/v1/movies\nGET   /api/v1/movies/:id\nPOST  /api/v1/movies\nPATCH /api/v1/movies/:id\nPOST  /api/v1/movies/:id/quotes\nGET   /api/v1/quotes/:id\nPATCH /api/v1/quotes/:id`}</pre>
+      <pre>{`GET   /api/v1/recommendations/today\nGET   /api/v1/movies\nGET   /api/v1/movies/:id\nPOST  /api/v1/movies\nPATCH /api/v1/movies/:id\nPOST  /api/v1/movies/:id/quotes\nGET   /api/v1/quotes/:id\nPATCH /api/v1/quotes/:id`}</pre>
       <h2>给电影补一句台词</h2>
       <p>
         在终端设置 BASE_URL 与 CONTENT_API_KEY
@@ -415,7 +415,7 @@ function Docs() {
       <p>
         新建电影默认是草稿。公开前需补齐资料、封面和金句。已核实的无对白片库条目可保留出处并使用空金句列表。
         GET 取得 ETag，再用 If-Match 和新的 Idempotency-Key 发 PATCH。
-        片库收录设为 listed，并将 publishedDate 留空。每日推荐设为 published，并填写推荐日期。
+        片库收录设为 listed，并将 publishedDate 留空。人工推荐设为 published，并填写推荐日期。
       </p>
       <h2>重试与冲突</h2>
       <p>

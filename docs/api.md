@@ -4,8 +4,9 @@
 
 ```sh
 # 先由运行环境安全设置 BASE_URL 和 CONTENT_API_KEY，不把真实密钥写进命令历史。
+curl -sS "$BASE_URL/api/v1/recommendations/today"
 curl -sS "$BASE_URL/api/v1/movies?limit=20"
-# 片库范围包含已收录影片；首页每日推荐保持默认daily。
+# 片库范围包含已收录影片；默认 daily 仍为人工推荐列表。
 curl -sS "$BASE_URL/api/v1/movies?scope=catalog&limit=20"
 
 # 创建草稿（稳定业务id）；一次业务操作使用一个幂等键，重试复用。
@@ -27,7 +28,7 @@ curl -sS -i "$BASE_URL/api/v1/movies/cinema-note" \
   -H "Authorization: Bearer $CONTENT_API_KEY"
 
 # ETag由上一条响应复制到环境变量ETAG，不要自行猜测版本。
-# 补齐资料、封面与金句后，可先公开收录到片库，不进入每日推荐（date须为空）。
+# 补齐资料、封面与金句后，可先公开收录到片库（date 须为空），次日起参与随机推荐。
 curl -sS -X PATCH "$BASE_URL/api/v1/movies/cinema-note" \
   -H "Authorization: Bearer $CONTENT_API_KEY" \
   -H 'Content-Type: application/json' \
@@ -35,7 +36,7 @@ curl -sS -X PATCH "$BASE_URL/api/v1/movies/cinema-note" \
   -H "If-Match: $ETAG" \
   --data '{"status":"listed","publishedDate":null,"director":{"name":"真实导演"},"year":2000,"duration":120,"genre":["剧情"],"cover":{"url":"https://example.org/verified-cover.jpg"},"synopsis":"经核实的影片简介"}'
 
-# 之后先重新GET取得最新ETag；进入每日推荐时必须同时提供有效日期。
+# 之后先重新GET取得最新ETag；进入人工推荐时必须同时提供有效日期。
 curl -sS -X PATCH "$BASE_URL/api/v1/movies/cinema-note" \
   -H "Authorization: Bearer $CONTENT_API_KEY" \
   -H 'Content-Type: application/json' \
@@ -48,4 +49,6 @@ curl -sS -X PATCH "$BASE_URL/api/v1/movies/cinema-note" \
 
 新建201，重复金句200，撤回通过status=draft，无DELETE。`listed` 仅属于片库，日期必须为空；公开列表默认 `scope=daily`，`scope=catalog` 包含片库收录与已到期的推荐。范围及筛选被游标绑定，范围变更须从第一页开始。公开结果 `{data,meta?}`；错误 `{error:{code,message,fields?},requestId}`。动态内容响应统一 `Cache-Control: no-store`，防止条目撤下后浏览器或中间缓存继续显示旧内容；静态资源缓存不变。幂等记录保留7天，同key不同If-Match也算不同请求。服务端原子提交业务数据和原结果；进程重启后仍可重试。
 
-《机器人之梦》（`douban-35426925`）可用空 `quotes` 收录为 `listed`。使用 2023 年电影资料，并在 `editorialMarkdown` 中保留完整独立行 `- 全片无对白。 [戛纳电影节导演访谈](https://www.festival-cannes.com/2023/robot-dreams-entretien-avec-le-realisateur-pablo-berger/)`。普通片库条目和每日推荐仍需至少一条金句。
+《机器人之梦》（`douban-35426925`）可用空 `quotes` 收录为 `listed`。使用 2023 年电影资料，并在 `editorialMarkdown` 中保留完整独立行 `- 全片无对白。 [戛纳电影节导演访谈](https://www.festival-cannes.com/2023/robot-dreams-entretien-avec-le-realisateur-pablo-berger/)`。普通片库条目和人工推荐仍需至少一条金句。随机推荐可抽到公开、已到参选日期的无对白影片。
+
+今日接口返回 `{data: {movie, href} | null, meta: {day}}`。日期按北京时间计算，`href` 为现有固定影片页。它与首页共用当日结果。
